@@ -10,7 +10,7 @@ import { supabase } from './lib/supabase'
 import logo from './assets/logo.png'
 
 const WHATSAPP_LINK =
-  'https://wa.me/16026355082?text=Hi%2C%20I%27m%20interested%20in%20your%20off-market%20deals.%20Can%20I%20get%20access%3F'
+  'https://wa.me/16026355082?text=Hi%2C%20I%20just%20found%20RealEstateSniper.%20I%27m%20interested%20in%20accessing%20off-market%20deals.%20Are%20you%20currently%20accepting%20new%20investors%20for%20the%20Founders%20window%3F'
 const TELEGRAM_LINK = 'https://t.me/+wkrc3-lnWihlMDNk'
 
 function App() {
@@ -18,7 +18,7 @@ function App() {
   const [deals, setDeals] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedCity, setSelectedCity] = useState('All')
-  const [userMode, setUserMode] = useState('visitor') // visitor | founder
+  const [userMode, setUserMode] = useState('visitor')
 
   useEffect(() => {
     async function loadData() {
@@ -329,7 +329,7 @@ function App() {
         <section className="hero">
           <div className="hero-copy">
             <div className="eyebrow">FOUNDERS ACCESS: 15-DAY PRIVATE WINDOW</div>
-            <h1>Access undervalued real estate deals before the market</h1>
+            <h1>Private off-market deals before everyone else</h1>
             <p>
               Limited early access to live deal flow before full public release.
             </p>
@@ -337,7 +337,7 @@ function App() {
             <div className="hero-actions">
               <button
                 className="primary-button"
-                onClick={() => scrollToSection('deals')}
+                onClick={() => openExternalLink(WHATSAPP_LINK)}
               >
                 Enter Platform
               </button>
