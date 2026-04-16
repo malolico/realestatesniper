@@ -10,15 +10,44 @@ import { supabase } from './lib/supabase'
 import logo from './assets/logo.png'
 
 const WHATSAPP_LINK =
-  'https://wa.me/16026355082?text=Hi%2C%20I%20just%20found%20RealEstateSniper.%20I%27m%20interested%20in%20accessing%20off-market%20deals.%20Are%20you%20currently%20accepting%20new%20investors%20for%20the%20Founders%20window%3F'
+  'https://wa.me/16026355082?text=Hi%2C%20I%20came%20across%20RealEstateSniper.%20I%20am%20an%20investor%20interested%20in%20off-market%20opportunities.%20Are%20you%20currently%20accepting%20new%20founders%3F'
 const TELEGRAM_LINK = 'https://t.me/+wkrc3-lnWihlMDNk'
+
+const TOTAL_FOUNDER_SPOTS = 10
+const REMAINING_FOUNDER_SPOTS = 7
+
+const PREMIUM_ACCESS_PRICE = 4500
+const DIAMOND_LAUNCH_PRICE = 7500
+
+const FOUNDER_CODES = [
+  'RS-FOUNDER-001',
+  'RS-FOUNDER-002',
+  'RS-FOUNDER-003',
+  'RS-FOUNDER-004',
+  'RS-FOUNDER-005',
+  'RS-FOUNDER-006',
+  'RS-FOUNDER-007',
+  'RS-FOUNDER-008',
+  'RS-FOUNDER-009',
+  'RS-FOUNDER-010',
+]
+
+const FOUNDER_STORAGE_KEY = 'realestatesniper_founder_access'
+const PREMIUM_STORAGE_KEY = 'realestatesniper_premium_access'
+const DIAMOND_STORAGE_KEY = 'realestatesniper_diamond_access'
 
 function App() {
   const [markets, setMarkets] = useState([])
   const [deals, setDeals] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedCity, setSelectedCity] = useState('All')
-  const [userMode, setUserMode] = useState('visitor')
+  const [userMode, setUserMode] = useState('visitor') // visitor | founder
+  const [founderUnlocked, setFounderUnlocked] = useState(false)
+  const [premiumUnlocked, setPremiumUnlocked] = useState(false)
+  const [diamondUnlocked, setDiamondUnlocked] = useState(false)
+  const [showFounderGate, setShowFounderGate] = useState(false)
+  const [founderCodeInput, setFounderCodeInput] = useState('')
+  const [founderError, setFounderError] = useState('')
 
   useEffect(() => {
     async function loadData() {
@@ -38,6 +67,22 @@ function App() {
     }
 
     loadData()
+
+    const storedFounderAccess = window.localStorage.getItem(FOUNDER_STORAGE_KEY)
+    if (storedFounderAccess === 'granted') {
+      setFounderUnlocked(true)
+      setUserMode('founder')
+    }
+
+    const storedPremiumAccess = window.localStorage.getItem(PREMIUM_STORAGE_KEY)
+    if (storedPremiumAccess === 'granted') {
+      setPremiumUnlocked(true)
+    }
+
+    const storedDiamondAccess = window.localStorage.getItem(DIAMOND_STORAGE_KEY)
+    if (storedDiamondAccess === 'granted') {
+      setDiamondUnlocked(true)
+    }
   }, [])
 
   const cities = useMemo(() => {
@@ -131,11 +176,92 @@ function App() {
     return visibleIds.has(deal.id) ? '100%' : score >= 80 ? '25%' : '50%'
   }
 
+  function handleFounderAccessRequest() {
+    if (founderUnlocked) {
+      setUserMode('founder')
+      return
+    }
+
+    setFounderCodeInput('')
+    setFounderError('')
+    setShowFounderGate(true)
+  }
+
+  function handleFounderCodeSubmit() {
+    const normalizedCode = founderCodeInput.trim().toUpperCase()
+
+    if (!normalizedCode) {
+      setFounderError('Please enter a valid founder code.')
+      return
+    }
+
+    if (!FOUNDER_CODES.includes(normalizedCode)) {
+      setFounderError('Access denied. This founder code is not approved.')
+      return
+    }
+
+    setFounderUnlocked(true)
+    setUserMode('founder')
+    setShowFounderGate(false)
+    setFounderError('')
+    window.localStorage.setItem(FOUNDER_STORAGE_KEY, 'granted')
+  }
+
+  function handleFounderGateClose() {
+    setShowFounderGate(false)
+    setFounderCodeInput('')
+    setFounderError('')
+  }
+
+  function handleVisitorMode() {
+    setUserMode('visitor')
+  }
+
+  function handlePremiumUnlock() {
+    setPremiumUnlocked(true)
+    window.localStorage.setItem(PREMIUM_STORAGE_KEY, 'granted')
+  }
+
+  function handleDiamondUnlock() {
+    setDiamondUnlocked(true)
+    window.localStorage.setItem(DIAMOND_STORAGE_KEY, 'granted')
+  }
+
   function renderDealForTier(deal, allDeals) {
     const isDiamond = deal.access_tier === 'diamond'
     const isPremium = deal.access_tier === 'premium'
     const isStandard = deal.access_tier === 'standard'
     const score = deal.score || 0
+
+    if (isDiamond && diamondUnlocked) {
+      return {
+        estValue: formatCurrency(deal.estimated_value),
+        purchase: formatCurrency(deal.purchase_price),
+        discount: `${deal.discount_percentage ?? '—'}%`,
+        note: 'Diamond access unlocked. Owner-verified and off-market execution layer visible.',
+        ownerLayer: true,
+        footerType: 'diamond-unlocked',
+        visibilityLabel: '100%',
+        propertyType: deal.property_type,
+        showLocationData: true,
+        accessPriceLabel: `Launch Access Price: ${formatCurrency(DIAMOND_LAUNCH_PRICE)}`,
+      }
+    }
+
+    if (isPremium && premiumUnlocked) {
+      return {
+        estValue: formatCurrency(deal.estimated_value),
+        purchase: formatCurrency(deal.purchase_price),
+        discount: `${deal.discount_percentage ?? '—'}%`,
+        note: 'Premium access unlocked. Full deal intelligence and location layers visible.',
+        ownerLayer: false,
+        footerType: 'premium-unlocked',
+        visibilityLabel: '100%',
+        propertyType: deal.property_type,
+        showLocationData: true,
+        accessPriceLabel: `Access Price: ${formatCurrency(PREMIUM_ACCESS_PRICE)}`,
+      }
+    }
 
     if (userMode === 'visitor') {
       if (isDiamond) {
@@ -149,6 +275,7 @@ function App() {
           visibilityLabel: 'Private',
           propertyType: 'Locked',
           showLocationData: false,
+          accessPriceLabel: `Launch Access Price: ${formatCurrency(DIAMOND_LAUNCH_PRICE)}`,
         }
       }
 
@@ -162,6 +289,7 @@ function App() {
         visibilityLabel: isStandard ? getGuestVisibilityLevel(score) : 'Preview',
         propertyType: isPremium ? 'Locked' : deal.property_type,
         showLocationData: false,
+        accessPriceLabel: isPremium ? `Access Price: ${formatCurrency(PREMIUM_ACCESS_PRICE)}` : '',
       }
     }
 
@@ -176,6 +304,7 @@ function App() {
         visibilityLabel: 'Private',
         propertyType: 'Locked',
         showLocationData: false,
+        accessPriceLabel: `Launch Access Price: ${formatCurrency(DIAMOND_LAUNCH_PRICE)}`,
       }
     }
 
@@ -190,6 +319,7 @@ function App() {
         visibilityLabel: 'Preview',
         propertyType: 'Locked',
         showLocationData: false,
+        accessPriceLabel: `Access Price: ${formatCurrency(PREMIUM_ACCESS_PRICE)}`,
       }
     }
 
@@ -209,6 +339,7 @@ function App() {
         visibilityLabel: '100%',
         propertyType: deal.property_type,
         showLocationData: true,
+        accessPriceLabel: '',
       }
     }
 
@@ -223,6 +354,7 @@ function App() {
         visibilityLabel: '100%',
         propertyType: deal.property_type,
         showLocationData: true,
+        accessPriceLabel: '',
       }
     }
 
@@ -237,6 +369,7 @@ function App() {
         visibilityLabel: '50%',
         propertyType: 'Locked',
         showLocationData: false,
+        accessPriceLabel: '',
       }
     }
 
@@ -251,6 +384,7 @@ function App() {
         visibilityLabel: '25%',
         propertyType: 'Locked',
         showLocationData: false,
+        accessPriceLabel: '',
       }
     }
 
@@ -264,6 +398,7 @@ function App() {
       visibilityLabel: 'Preview',
       propertyType: 'Locked',
       showLocationData: false,
+      accessPriceLabel: '',
     }
   }
 
@@ -298,6 +433,15 @@ function App() {
             Live Deals
           </a>
           <a
+            href="#tiers"
+            onClick={(e) => {
+              e.preventDefault()
+              scrollToSection('tiers')
+            }}
+          >
+            Tiers
+          </a>
+          <a
             href="#access"
             onClick={(e) => {
               e.preventDefault()
@@ -310,14 +454,14 @@ function App() {
 
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           <button
-            onClick={() => setUserMode('visitor')}
+            onClick={handleVisitorMode}
             className={userMode === 'visitor' ? 'primary-button' : 'secondary-button'}
           >
             Visitor
           </button>
 
           <button
-            onClick={() => setUserMode('founder')}
+            onClick={handleFounderAccessRequest}
             className={userMode === 'founder' ? 'primary-button' : 'secondary-button'}
           >
             Founder
@@ -540,6 +684,24 @@ function App() {
 
                   <p className="deal-note">{view.note}</p>
 
+                  {view.accessPriceLabel && (
+                    <div
+                      style={{
+                        marginTop: '12px',
+                        display: 'inline-flex',
+                        padding: '8px 12px',
+                        borderRadius: '999px',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        background: 'rgba(255,255,255,0.04)',
+                        color: '#f8fafc',
+                        fontWeight: 700,
+                        fontSize: '0.9rem',
+                      }}
+                    >
+                      {view.accessPriceLabel}
+                    </div>
+                  )}
+
                   {view.showLocationData && (
                     <div className="diamond-box">
                       <div>Map zone visible</div>
@@ -556,14 +718,79 @@ function App() {
                   )}
 
                   {view.footerType === 'premium' && (
-                    <div className="premium-box">
-                      Premium listing visible. Full intelligence remains locked until purchase.
+                    <div
+                      style={{
+                        marginTop: '14px',
+                        padding: '14px 16px',
+                        borderRadius: '14px',
+                        border: '1px solid rgba(59, 130, 246, 0.25)',
+                        background: 'rgba(37, 99, 235, 0.12)',
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, color: '#93c5fd' }}>
+                        Premium Access Required
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#cbd5e1', marginTop: '4px' }}>
+                        Full deal intelligence, location layers and execution data are locked behind premium access.
+                      </div>
+                    </div>
+                  )}
+
+                  {view.footerType === 'premium-unlocked' && (
+                    <div
+                      style={{
+                        marginTop: '14px',
+                        padding: '14px 16px',
+                        borderRadius: '14px',
+                        border: '1px solid rgba(34, 197, 94, 0.28)',
+                        background: 'rgba(34, 197, 94, 0.12)',
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, color: '#86efac' }}>
+                        Premium Access Unlocked
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#dcfce7', marginTop: '4px' }}>
+                        Full deal intelligence and location layers are now visible.
+                      </div>
                     </div>
                   )}
 
                   {view.footerType === 'diamond' && (
-                    <div className="diamond-box">
-                      <div>Direct seller access layer locked behind purchase</div>
+                    <div
+                      style={{
+                        marginTop: '14px',
+                        padding: '16px 18px',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(251, 191, 36, 0.35)',
+                        background: 'rgba(120, 53, 15, 0.18)',
+                        boxShadow: '0 0 18px rgba(251, 191, 36, 0.12)',
+                      }}
+                    >
+                      <div style={{ fontWeight: 800, color: '#facc15' }}>
+                        💎 Diamond Layer — Restricted Access
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#e5e7eb', marginTop: '6px' }}>
+                        Owner-verified deal. Direct seller contact and off-market execution rights are protected behind diamond access.
+                      </div>
+                    </div>
+                  )}
+
+                  {view.footerType === 'diamond-unlocked' && (
+                    <div
+                      style={{
+                        marginTop: '14px',
+                        padding: '16px 18px',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(34, 197, 94, 0.28)',
+                        background: 'rgba(34, 197, 94, 0.12)',
+                      }}
+                    >
+                      <div style={{ fontWeight: 800, color: '#86efac' }}>
+                        💎 Diamond Access Unlocked
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#dcfce7', marginTop: '6px' }}>
+                        Owner-verified contact layer and off-market execution rights are now visible.
+                      </div>
                     </div>
                   )}
 
@@ -608,17 +835,213 @@ function App() {
           </div>
         </section>
 
+        <section id="tiers" className="section-block">
+          <div className="section-heading">
+            <div>
+              <div className="eyebrow">Access tiers</div>
+              <h2>Choose the level of intelligence you need</h2>
+            </div>
+            <p>
+              Each tier unlocks a different level of visibility, execution advantage and contact access.
+            </p>
+          </div>
+
+          <div className="grid grid-3">
+            <div
+              className="data-card"
+              style={{
+                border: '1px solid rgba(59, 130, 246, 0.25)',
+                background: 'rgba(37, 99, 235, 0.08)',
+              }}
+            >
+              <div style={{ fontWeight: 800, color: '#93c5fd', fontSize: '1.1rem' }}>
+                PREMIUM
+              </div>
+              <p style={{ marginTop: '12px', color: '#e5e7eb' }}>
+                Unlock deeper deal intelligence before the broader network sees the full opportunity.
+              </p>
+              <div style={{ marginTop: '14px', color: '#cbd5e1', lineHeight: 1.7 }}>
+                <div>• Full deal intelligence</div>
+                <div>• Location layers and execution data</div>
+                <div>• Higher-conviction opportunity access</div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: '18px',
+                  padding: '12px 14px',
+                  borderRadius: '14px',
+                  border: '1px solid rgba(59, 130, 246, 0.2)',
+                  background: 'rgba(59, 130, 246, 0.08)',
+                  color: '#e0f2fe',
+                  fontWeight: 800,
+                }}
+              >
+                Access Price: {formatCurrency(PREMIUM_ACCESS_PRICE)}
+              </div>
+
+              <div style={{ marginTop: '18px' }}>
+                <button
+                  className="primary-button"
+                  onClick={handlePremiumUnlock}
+                >
+                  {premiumUnlocked ? 'Premium Access Unlocked' : 'Unlock Premium Access'}
+                </button>
+              </div>
+            </div>
+
+            <div
+              className="data-card"
+              style={{
+                border: '1px solid rgba(251, 191, 36, 0.35)',
+                background: 'rgba(120, 53, 15, 0.12)',
+                boxShadow: '0 0 20px rgba(251, 191, 36, 0.08)',
+              }}
+            >
+              <div style={{ fontWeight: 800, color: '#facc15', fontSize: '1.1rem' }}>
+                💎 DIAMOND
+              </div>
+              <p style={{ marginTop: '12px', color: '#f3f4f6' }}>
+                Restricted access reserved for the most valuable owner-verified and off-market opportunities.
+              </p>
+              <div style={{ marginTop: '14px', color: '#e5e7eb', lineHeight: 1.7 }}>
+                <div>• Owner-verified opportunities</div>
+                <div>• Direct seller contact visibility</div>
+                <div>• Off-market execution rights</div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: '18px',
+                  padding: '12px 14px',
+                  borderRadius: '14px',
+                  border: '1px solid rgba(251, 191, 36, 0.22)',
+                  background: 'rgba(251, 191, 36, 0.08)',
+                  color: '#fef3c7',
+                  fontWeight: 800,
+                }}
+              >
+                Launch Access Price: {formatCurrency(DIAMOND_LAUNCH_PRICE)}
+              </div>
+
+              <div
+                style={{
+                  marginTop: '18px',
+                  padding: '14px 16px',
+                  borderRadius: '14px',
+                  border: '1px solid rgba(251, 191, 36, 0.22)',
+                  background: 'rgba(251, 191, 36, 0.06)',
+                }}
+              >
+                <p style={{ margin: 0, color: '#f8fafc', lineHeight: 1.7 }}>
+                  The first <strong>25 Diamond investors</strong> will secure access at a launch rate of <strong>$7,500</strong>.
+                </p>
+                <p style={{ marginTop: '10px', color: '#e5e7eb', lineHeight: 1.7 }}>
+                  Once this early access allocation is filled, Diamond access will transition to <strong>$10,500+</strong>, reflecting increased data intelligence, stronger deal validation, and higher-quality off-market opportunities.
+                </p>
+                <p style={{ marginTop: '10px', color: '#cbd5e1', lineHeight: 1.7 }}>
+                  Early participants are entering before full-scale system deployment.
+                </p>
+              </div>
+
+              <div style={{ marginTop: '18px' }}>
+                <button
+                  className="primary-button"
+                  onClick={handleDiamondUnlock}
+                >
+                  {diamondUnlocked ? 'Diamond Access Unlocked' : 'Request Diamond Access'}
+                </button>
+              </div>
+            </div>
+
+            <div
+              className="data-card"
+              style={{
+                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(255,255,255,0.03)',
+              }}
+            >
+              <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.1rem' }}>
+                WHY IT MATTERS
+              </div>
+              <p style={{ marginTop: '12px', color: '#cbd5e1' }}>
+                The faster you see the right deal, the better your pricing, negotiation and execution position becomes.
+              </p>
+              <div style={{ marginTop: '14px', color: '#e5e7eb', lineHeight: 1.7 }}>
+                <div>• Earlier access</div>
+                <div>• Better positioning</div>
+                <div>• More control before exposure expands</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section id="access" className="section-block cta-block">
           <div>
             <div className="eyebrow">Private window</div>
-            <h2>Get Early Access</h2>
+            <h2>Only 10 Investors Will Get Access</h2>
             <p>
-              Only a limited group will get early visibility before the platform opens to broader subscriptions.
-              High-confidence opportunities, off-market access and verified seller layers remain restricted during this phase.
+              Only 10 investors will be selected for the private founders window. Once full, access will close and move to paid tiers only.
             </p>
             <p style={{ marginTop: '14px', color: '#ffffff', fontWeight: 700 }}>
               Founders window active now. Limited access spots remain.
             </p>
+
+            <div
+              style={{
+                marginTop: '18px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '12px 18px',
+                borderRadius: '14px',
+                border: '1px solid rgba(255, 59, 59, 0.35)',
+                background: 'rgba(255, 59, 59, 0.08)',
+                boxShadow: '0 0 22px rgba(255, 59, 59, 0.12)',
+              }}
+            >
+              <span style={{ color: '#ff4d4d', fontWeight: 800, fontSize: '1.3rem', letterSpacing: '0.02em' }}>
+                {REMAINING_FOUNDER_SPOTS} / {TOTAL_FOUNDER_SPOTS} Spots Remaining
+              </span>
+            </div>
+
+            <div
+              style={{
+                marginTop: '18px',
+                maxWidth: '540px',
+                padding: '16px 18px',
+                borderRadius: '16px',
+                border: '1px solid rgba(139, 92, 246, 0.28)',
+                background: 'rgba(91, 33, 182, 0.14)',
+              }}
+            >
+              <p style={{ margin: 0, color: '#ffffff', fontWeight: 700, fontSize: '1.05rem', lineHeight: 1.5 }}>
+                Only the first 10 approved investors will receive 30-day free access.
+              </p>
+            </div>
+
+            <p style={{ marginTop: '14px', color: '#cbd5e1', fontWeight: 600, maxWidth: '540px' }}>
+              Applications are reviewed manually. Approval is not guaranteed.
+            </p>
+
+            {founderUnlocked && (
+              <div
+                style={{
+                  marginTop: '18px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 16px',
+                  borderRadius: '14px',
+                  border: '1px solid rgba(34, 197, 94, 0.28)',
+                  background: 'rgba(34, 197, 94, 0.12)',
+                }}
+              >
+                <span style={{ color: '#4ade80', fontWeight: 800, fontSize: '1rem' }}>
+                  Founder Access Unlocked
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="hero-actions">
@@ -638,6 +1061,110 @@ function App() {
           </div>
         </section>
       </main>
+
+      {showFounderGate && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.72)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              background: '#0b1120',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '22px',
+              padding: '28px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
+            }}
+          >
+            <div style={{ marginBottom: '18px' }}>
+              <div
+                style={{
+                  display: 'inline-block',
+                  padding: '8px 14px',
+                  borderRadius: '999px',
+                  fontSize: '0.8rem',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: '#dbeafe',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(255,255,255,0.04)',
+                }}
+              >
+                Founder Access
+              </div>
+            </div>
+
+            <h3 style={{ margin: 0, fontSize: '1.8rem', color: '#ffffff' }}>
+              Enter Founder Code
+            </h3>
+
+            <p style={{ marginTop: '12px', color: '#cbd5e1', lineHeight: 1.6 }}>
+              This area is restricted to approved founder investors only. Enter your one-time founder code to continue.
+            </p>
+
+            <input
+              type="text"
+              value={founderCodeInput}
+              onChange={(e) => {
+                setFounderCodeInput(e.target.value)
+                if (founderError) setFounderError('')
+              }}
+              placeholder="RS-FOUNDER-001"
+              autoFocus
+              style={{
+                width: '100%',
+                marginTop: '18px',
+                padding: '16px 18px',
+                borderRadius: '14px',
+                border: founderError
+                  ? '1px solid rgba(255, 77, 77, 0.8)'
+                  : '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(255,255,255,0.04)',
+                color: '#ffffff',
+                fontSize: '1rem',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleFounderCodeSubmit()
+                if (e.key === 'Escape') handleFounderGateClose()
+              }}
+            />
+
+            {founderError && (
+              <p style={{ marginTop: '12px', color: '#ff6b6b', fontWeight: 600 }}>
+                {founderError}
+              </p>
+            )}
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '22px', flexWrap: 'wrap' }}>
+              <button
+                onClick={handleFounderCodeSubmit}
+                className="primary-button"
+              >
+                Validate Founder Code
+              </button>
+
+              <button
+                onClick={handleFounderGateClose}
+                className="secondary-button"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
