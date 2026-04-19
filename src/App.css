@@ -168,7 +168,8 @@ button {
 }
 
 .main-content {
-  width: min(1280px, calc(100% - 48px));
+  width: calc(100% - 40px);
+  max-width: 2400px;
   margin: 0 auto;
   padding: 32px 0 80px;
 }
@@ -629,9 +630,10 @@ button {
 }
 
 @media (max-width: 720px) {
-  .main-content {
-    width: min(100% - 24px, 1280px);
-  }
+ .main-content {
+  width: calc(100% - 16px);
+  max-width: 100%;
+}
 
   .hero-stats,
   .signal-boxes,

@@ -4,7 +4,7 @@
 // NO INTERPRETES.
 // SOLO EJECUTA EXACTAMENTE LO QUE TE DOY.
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { supabase } from './lib/supabase'
 import logo from './assets/logo.png'
@@ -12,12 +12,22 @@ import logo from './assets/logo.png'
 const WHATSAPP_LINK =
   'https://wa.me/16026355082?text=Hi%2C%20I%20came%20across%20RealEstateSniper.%20I%20am%20an%20investor%20interested%20in%20off-market%20opportunities.%20Are%20you%20currently%20accepting%20new%20founders%3F'
 const TELEGRAM_LINK = 'https://t.me/+wkrc3-lnWihlMDNk'
+const EMAIL_LINK = 'mailto:founder@realestatesniper.io'
 
 const TOTAL_FOUNDER_SPOTS = 10
 const REMAINING_FOUNDER_SPOTS = 7
 
 const PREMIUM_ACCESS_PRICE = 4500
 const DIAMOND_LAUNCH_PRICE = 7500
+
+const PREMIUM_TOTAL_SLOTS = 15
+const PREMIUM_REMAINING_SLOTS = 12
+
+const DIAMOND_TOTAL_POSITIONS = 7
+const DIAMOND_REMAINING_POSITIONS = 5
+
+const PREMIUM_RECENT_ACTIVITY = '2 investors unlocked this in the last hour'
+const DIAMOND_RECENT_ACTIVITY = '1 investor secured access recently'
 
 const FOUNDER_CODES = [
   'RS-FOUNDER-001',
@@ -32,6 +42,29 @@ const FOUNDER_CODES = [
   'RS-FOUNDER-010',
 ]
 
+const ACTIVITY_FEED = [
+  {
+    label: 'Live activity',
+    text: 'Premium interest detected in Phoenix',
+  },
+  {
+    label: 'Live activity',
+    text: 'Diamond review opened in Tucson',
+  },
+  {
+    label: 'Live activity',
+    text: 'Founder access request submitted',
+  },
+  {
+    label: 'Live activity',
+    text: 'Premium deal page viewed in Phoenix',
+  },
+  {
+    label: 'Live activity',
+    text: 'Diamond investor position checked',
+  },
+]
+
 const FOUNDER_STORAGE_KEY = 'realestatesniper_founder_access'
 const PREMIUM_STORAGE_KEY = 'realestatesniper_premium_access'
 const DIAMOND_STORAGE_KEY = 'realestatesniper_diamond_access'
@@ -41,13 +74,17 @@ function App() {
   const [deals, setDeals] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedCity, setSelectedCity] = useState('All')
-  const [userMode, setUserMode] = useState('visitor') // visitor | founder
+  const [userMode, setUserMode] = useState('visitor')
   const [founderUnlocked, setFounderUnlocked] = useState(false)
   const [premiumUnlocked, setPremiumUnlocked] = useState(false)
   const [diamondUnlocked, setDiamondUnlocked] = useState(false)
   const [showFounderGate, setShowFounderGate] = useState(false)
   const [founderCodeInput, setFounderCodeInput] = useState('')
   const [founderError, setFounderError] = useState('')
+  const [showContactMenu, setShowContactMenu] = useState(false)
+  const [activityIndex, setActivityIndex] = useState(0)
+
+  const contactMenuRef = useRef(null)
 
   useEffect(() => {
     async function loadData() {
@@ -83,6 +120,30 @@ function App() {
     if (storedDiamondAccess === 'granted') {
       setDiamondUnlocked(true)
     }
+  }, [])
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (contactMenuRef.current && !contactMenuRef.current.contains(event.target)) {
+        setShowContactMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActivityIndex((prev) => {
+        const next = prev + 1
+        return next >= ACTIVITY_FEED.length ? 0 : next
+      })
+    }, 12000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const cities = useMemo(() => {
@@ -452,7 +513,14 @@ function App() {
           </a>
         </nav>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '10px',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
           <button
             onClick={handleVisitorMode}
             className={userMode === 'visitor' ? 'primary-button' : 'secondary-button'}
@@ -466,6 +534,56 @@ function App() {
           >
             Founder
           </button>
+
+          <div style={{ position: 'relative' }} ref={contactMenuRef}>
+            <button
+              onClick={() => setShowContactMenu((prev) => !prev)}
+              className="secondary-button"
+            >
+              Contact
+            </button>
+
+            {showContactMenu && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 10px)',
+                  right: 0,
+                  minWidth: '220px',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(10, 13, 18, 0.98)',
+                  boxShadow: '0 18px 40px rgba(0,0,0,0.35)',
+                  padding: '10px',
+                  zIndex: 20,
+                }}
+              >
+                <button
+                  className="secondary-button"
+                  style={{ width: '100%', textAlign: 'left', marginBottom: '8px' }}
+                  onClick={() => openExternalLink(EMAIL_LINK)}
+                >
+                  Email
+                </button>
+
+                <button
+                  className="secondary-button"
+                  style={{ width: '100%', textAlign: 'left', marginBottom: '8px' }}
+                  onClick={() => openExternalLink(WHATSAPP_LINK)}
+                >
+                  WhatsApp
+                </button>
+
+                <button
+                  className="secondary-button"
+                  style={{ width: '100%', textAlign: 'left' }}
+                  onClick={() => openExternalLink(TELEGRAM_LINK)}
+                >
+                  Telegram
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -477,22 +595,6 @@ function App() {
             <p>
               Limited early access to live deal flow before full public release.
             </p>
-
-            <div className="hero-actions">
-              <button
-                className="primary-button"
-                onClick={() => openExternalLink(WHATSAPP_LINK)}
-              >
-                Enter Platform
-              </button>
-
-              <button
-                className="secondary-button"
-                onClick={() => openExternalLink(TELEGRAM_LINK)}
-              >
-                Join Telegram
-              </button>
-            </div>
 
             <div className="hero-stats">
               <div className="stat-card">
@@ -646,8 +748,26 @@ function App() {
               const view = renderDealForTier(deal, filteredDeals)
 
               return (
-                <div className="deal-card" key={deal.id}>
-                  <div className="deal-top">
+                <div
+                  className="deal-card"
+                  key={deal.id}
+                  style={{
+                    padding: '24px',
+                    borderRadius: '22px',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 18px 40px rgba(0,0,0,0.18)',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: '14px',
+                      marginBottom: '18px',
+                    }}
+                  >
                     <div className="deal-badge-stack">
                       <span className={`deal-badge ${getDealBadge(deal.status)}`}>
                         {getDealLabel(deal.status)}
@@ -657,39 +777,191 @@ function App() {
                       </span>
                     </div>
 
-                    <div className="deal-score-box">
-                      <div className={`score-circle ${getScoreColor(deal.score)}`}></div>
-                      <span className="deal-score">{deal.score}/100</span>
+                    <div
+                      style={{
+                        minWidth: '84px',
+                        textAlign: 'right',
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: '0.72rem',
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                          color: '#94a3b8',
+                          marginBottom: '4px',
+                        }}
+                      >
+                        Score
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '1.4rem',
+                          fontWeight: 800,
+                          color:
+                            deal.score >= 80 ? '#ef4444' : deal.score >= 60 ? '#22c55e' : '#facc15',
+                        }}
+                      >
+                        {deal.score}/100
+                      </div>
                     </div>
                   </div>
 
-                  <h3>{deal.city} · {deal.title}</h3>
-                  <p className="deal-type">{view.propertyType}</p>
-                  <p className="deal-type">Visibility: {view.visibilityLabel}</p>
+                  <div style={{ marginBottom: '14px' }}>
+                    <h3
+                      style={{
+                        margin: 0,
+                        fontSize: '1.2rem',
+                        lineHeight: 1.3,
+                        color: '#ffffff',
+                      }}
+                    >
+                      {deal.city} · {deal.title}
+                    </h3>
+                    <p
+                      style={{
+                        marginTop: '6px',
+                        color: '#94a3b8',
+                        fontSize: '0.95rem',
+                      }}
+                    >
+                      {view.propertyType}
+                    </p>
+                    <p
+                      style={{
+                        marginTop: '4px',
+                        color: '#94a3b8',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      Visibility: {view.visibilityLabel}
+                    </p>
+                  </div>
 
-                  <div className="deal-metrics">
-                    <div>
-                      <span>Est. value</span>
-                      <strong>{view.estValue}</strong>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                      gap: '12px',
+                      marginBottom: '16px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: '12px',
+                        borderRadius: '14px',
+                        background: 'rgba(255,255,255,0.025)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: '0.72rem',
+                          letterSpacing: '0.06em',
+                          textTransform: 'uppercase',
+                          color: '#94a3b8',
+                        }}
+                      >
+                        Est. Value
+                      </div>
+                      <div
+                        style={{
+                          marginTop: '8px',
+                          fontWeight: 800,
+                          color: '#ffffff',
+                          fontSize: '1rem',
+                        }}
+                      >
+                        {view.estValue}
+                      </div>
                     </div>
-                    <div>
-                      <span>Purchase</span>
-                      <strong>{view.purchase}</strong>
+
+                    <div
+                      style={{
+                        padding: '12px',
+                        borderRadius: '14px',
+                        background: 'rgba(255,255,255,0.025)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: '0.72rem',
+                          letterSpacing: '0.06em',
+                          textTransform: 'uppercase',
+                          color: '#94a3b8',
+                        }}
+                      >
+                        Purchase
+                      </div>
+                      <div
+                        style={{
+                          marginTop: '8px',
+                          fontWeight: 800,
+                          color: '#ffffff',
+                          fontSize: '1rem',
+                        }}
+                      >
+                        {view.purchase}
+                      </div>
                     </div>
-                    <div>
-                      <span>Discount</span>
-                      <strong>{view.discount}</strong>
+
+                    <div
+                      style={{
+                        padding: '12px',
+                        borderRadius: '14px',
+                        background: 'rgba(255,255,255,0.025)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: '0.72rem',
+                          letterSpacing: '0.06em',
+                          textTransform: 'uppercase',
+                          color: '#94a3b8',
+                        }}
+                      >
+                        Discount
+                      </div>
+                      <div
+                        style={{
+                          marginTop: '8px',
+                          fontWeight: 800,
+                          color: '#22c55e',
+                          fontSize: '1rem',
+                        }}
+                      >
+                        {view.discount}
+                      </div>
                     </div>
                   </div>
 
-                  <p className="deal-note">{view.note}</p>
+                  <div
+                    style={{
+                      paddingTop: '14px',
+                      borderTop: '1px solid rgba(255,255,255,0.06)',
+                    }}
+                  >
+                    <p
+                      style={{
+                        margin: 0,
+                        color: '#cbd5e1',
+                        lineHeight: 1.65,
+                        fontSize: '0.93rem',
+                      }}
+                    >
+                      {view.note}
+                    </p>
+                  </div>
 
                   {view.accessPriceLabel && (
                     <div
                       style={{
-                        marginTop: '12px',
+                        marginTop: '14px',
                         display: 'inline-flex',
-                        padding: '8px 12px',
+                        alignSelf: 'flex-start',
+                        padding: '10px 14px',
                         borderRadius: '999px',
                         border: '1px solid rgba(255,255,255,0.1)',
                         background: 'rgba(255,255,255,0.04)',
@@ -733,6 +1005,82 @@ function App() {
                       <div style={{ fontSize: '0.9rem', color: '#cbd5e1', marginTop: '4px' }}>
                         Full deal intelligence, location layers and execution data are locked behind premium access.
                       </div>
+
+                      <div
+                        style={{
+                          marginTop: '10px',
+                          color: '#bfdbfe',
+                          fontSize: '0.88rem',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {PREMIUM_REMAINING_SLOTS} / {PREMIUM_TOTAL_SLOTS} Premium slots remaining
+                      </div>
+
+                      <button
+                        onClick={handlePremiumUnlock}
+                        style={{
+                          marginTop: '12px',
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: '10px',
+                          border: 'none',
+                          background: '#3b82f6',
+                          color: '#ffffff',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Unlock Premium
+                      </button>
+
+                      <div
+                        style={{
+                          marginTop: '10px',
+                          display: 'flex',
+                          gap: '8px',
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        {['Instant unlock', 'Secure checkout', 'Limited spots'].map((item) => (
+                          <div
+                            key={item}
+                            style={{
+                              padding: '6px 10px',
+                              borderRadius: '999px',
+                              border: '1px solid rgba(147, 197, 253, 0.18)',
+                              background: 'rgba(255,255,255,0.04)',
+                              color: '#dbeafe',
+                              fontSize: '0.76rem',
+                              fontWeight: 700,
+                            }}
+                          >
+                            {item}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: '10px',
+                          color: '#bfdbfe',
+                          fontSize: '0.82rem',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {PREMIUM_RECENT_ACTIVITY}
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: '8px',
+                          color: '#dbeafe',
+                          fontSize: '0.82rem',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        High demand. Limited premium access remains available.
+                      </div>
                     </div>
                   )}
 
@@ -771,6 +1119,82 @@ function App() {
                       </div>
                       <div style={{ fontSize: '0.9rem', color: '#e5e7eb', marginTop: '6px' }}>
                         Owner-verified deal. Direct seller contact and off-market execution rights are protected behind diamond access.
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: '10px',
+                          color: '#fde68a',
+                          fontSize: '0.88rem',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {DIAMOND_REMAINING_POSITIONS} / {DIAMOND_TOTAL_POSITIONS} Diamond positions left
+                      </div>
+
+                      <button
+                        onClick={handleDiamondUnlock}
+                        style={{
+                          marginTop: '12px',
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: '10px',
+                          border: 'none',
+                          background: '#f59e0b',
+                          color: '#000000',
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        💎 Secure Position
+                      </button>
+
+                      <div
+                        style={{
+                          marginTop: '10px',
+                          display: 'flex',
+                          gap: '8px',
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        {['Instant unlock', 'Priority access', 'Few positions'].map((item) => (
+                          <div
+                            key={item}
+                            style={{
+                              padding: '6px 10px',
+                              borderRadius: '999px',
+                              border: '1px solid rgba(253, 230, 138, 0.18)',
+                              background: 'rgba(255,255,255,0.04)',
+                              color: '#fde68a',
+                              fontSize: '0.76rem',
+                              fontWeight: 700,
+                            }}
+                          >
+                            {item}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: '10px',
+                          color: '#fde68a',
+                          fontSize: '0.82rem',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {DIAMOND_RECENT_ACTIVITY}
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: '8px',
+                          color: '#fde68a',
+                          fontSize: '0.82rem',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        Very limited allocation. Early access closes when positions are filled.
                       </div>
                     </div>
                   )}
@@ -846,132 +1270,39 @@ function App() {
             </p>
           </div>
 
-          <div className="grid grid-3">
-            <div
-              className="data-card"
-              style={{
-                border: '1px solid rgba(59, 130, 246, 0.25)',
-                background: 'rgba(37, 99, 235, 0.08)',
-              }}
-            >
-              <div style={{ fontWeight: 800, color: '#93c5fd', fontSize: '1.1rem' }}>
-                PREMIUM
-              </div>
-              <p style={{ marginTop: '12px', color: '#e5e7eb' }}>
-                Unlock deeper deal intelligence before the broader network sees the full opportunity.
-              </p>
-              <div style={{ marginTop: '14px', color: '#cbd5e1', lineHeight: 1.7 }}>
-                <div>• Full deal intelligence</div>
-                <div>• Location layers and execution data</div>
-                <div>• Higher-conviction opportunity access</div>
-              </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '24px',
+              padding: '22px 28px',
+              borderRadius: '20px',
+              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'rgba(255,255,255,0.03)',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.1rem' }}>
+              WHY IT MATTERS
+            </div>
 
-              <div
-                style={{
-                  marginTop: '18px',
-                  padding: '12px 14px',
-                  borderRadius: '14px',
-                  border: '1px solid rgba(59, 130, 246, 0.2)',
-                  background: 'rgba(59, 130, 246, 0.08)',
-                  color: '#e0f2fe',
-                  fontWeight: 800,
-                }}
-              >
-                Access Price: {formatCurrency(PREMIUM_ACCESS_PRICE)}
-              </div>
-
-              <div style={{ marginTop: '18px' }}>
-                <button
-                  className="primary-button"
-                  onClick={handlePremiumUnlock}
-                >
-                  {premiumUnlocked ? 'Premium Access Unlocked' : 'Unlock Premium Access'}
-                </button>
-              </div>
+            <div style={{ color: '#e5e7eb', fontWeight: 600, lineHeight: 1.7, flex: '1 1 420px' }}>
+              The faster you see the right deal, the better your pricing, negotiation and execution position becomes.
             </div>
 
             <div
-              className="data-card"
               style={{
-                border: '1px solid rgba(251, 191, 36, 0.35)',
-                background: 'rgba(120, 53, 15, 0.12)',
-                boxShadow: '0 0 20px rgba(251, 191, 36, 0.08)',
+                display: 'flex',
+                gap: '22px',
+                flexWrap: 'wrap',
+                color: '#cbd5e1',
+                fontWeight: 700,
               }}
             >
-              <div style={{ fontWeight: 800, color: '#facc15', fontSize: '1.1rem' }}>
-                💎 DIAMOND
-              </div>
-              <p style={{ marginTop: '12px', color: '#f3f4f6' }}>
-                Restricted access reserved for the most valuable owner-verified and off-market opportunities.
-              </p>
-              <div style={{ marginTop: '14px', color: '#e5e7eb', lineHeight: 1.7 }}>
-                <div>• Owner-verified opportunities</div>
-                <div>• Direct seller contact visibility</div>
-                <div>• Off-market execution rights</div>
-              </div>
-
-              <div
-                style={{
-                  marginTop: '18px',
-                  padding: '12px 14px',
-                  borderRadius: '14px',
-                  border: '1px solid rgba(251, 191, 36, 0.22)',
-                  background: 'rgba(251, 191, 36, 0.08)',
-                  color: '#fef3c7',
-                  fontWeight: 800,
-                }}
-              >
-                Launch Access Price: {formatCurrency(DIAMOND_LAUNCH_PRICE)}
-              </div>
-
-              <div
-                style={{
-                  marginTop: '18px',
-                  padding: '14px 16px',
-                  borderRadius: '14px',
-                  border: '1px solid rgba(251, 191, 36, 0.22)',
-                  background: 'rgba(251, 191, 36, 0.06)',
-                }}
-              >
-                <p style={{ margin: 0, color: '#f8fafc', lineHeight: 1.7 }}>
-                  The first <strong>25 Diamond investors</strong> will secure access at a launch rate of <strong>$7,500</strong>.
-                </p>
-                <p style={{ marginTop: '10px', color: '#e5e7eb', lineHeight: 1.7 }}>
-                  Once this early access allocation is filled, Diamond access will transition to <strong>$10,500+</strong>, reflecting increased data intelligence, stronger deal validation, and higher-quality off-market opportunities.
-                </p>
-                <p style={{ marginTop: '10px', color: '#cbd5e1', lineHeight: 1.7 }}>
-                  Early participants are entering before full-scale system deployment.
-                </p>
-              </div>
-
-              <div style={{ marginTop: '18px' }}>
-                <button
-                  className="primary-button"
-                  onClick={handleDiamondUnlock}
-                >
-                  {diamondUnlocked ? 'Diamond Access Unlocked' : 'Request Diamond Access'}
-                </button>
-              </div>
-            </div>
-
-            <div
-              className="data-card"
-              style={{
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: 'rgba(255,255,255,0.03)',
-              }}
-            >
-              <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.1rem' }}>
-                WHY IT MATTERS
-              </div>
-              <p style={{ marginTop: '12px', color: '#cbd5e1' }}>
-                The faster you see the right deal, the better your pricing, negotiation and execution position becomes.
-              </p>
-              <div style={{ marginTop: '14px', color: '#e5e7eb', lineHeight: 1.7 }}>
-                <div>• Earlier access</div>
-                <div>• Better positioning</div>
-                <div>• More control before exposure expands</div>
-              </div>
+              <div>Earlier access</div>
+              <div>Better positioning</div>
+              <div>More control before exposure expands</div>
             </div>
           </div>
         </section>
@@ -1044,23 +1375,132 @@ function App() {
             )}
           </div>
 
-          <div className="hero-actions">
-            <button
-              className="primary-button"
-              onClick={() => openExternalLink(WHATSAPP_LINK)}
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end',
+              flexWrap: 'wrap',
+              minWidth: '240px',
+            }}
+          >
+            <a
+              href="#"
+              onClick={(e) => e.preventDefault()}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px 16px',
+                borderRadius: '999px',
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(255,255,255,0.04)',
+                color: '#e5e7eb',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
             >
-              Request Access on WhatsApp
-            </button>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M18.901 1.153h3.68l-8.04 9.19 9.458 12.504H16.59l-5.8-7.584-6.64 7.584H.47l8.6-9.83L0 1.154h7.598l5.243 6.932 6.06-6.932Zm-1.29 19.494h2.039L6.49 3.248H4.302l13.31 17.399Z" />
+              </svg>
+              <span>X</span>
+            </a>
 
-            <button
-              className="secondary-button"
-              onClick={() => openExternalLink(TELEGRAM_LINK)}
+            <a
+              href="#"
+              onClick={(e) => e.preventDefault()}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px 16px',
+                borderRadius: '999px',
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(255,255,255,0.04)',
+                color: '#e5e7eb',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
             >
-              Join Private Telegram
-            </button>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M20.447 20.452h-3.554V14.87c0-1.331-.027-3.043-1.852-3.043-1.853 0-2.136 1.445-2.136 2.946v5.679H9.351V9h3.414v1.561h.046c.476-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286ZM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124ZM7.119 20.452H3.555V9h3.564v11.452ZM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003Z" />
+              </svg>
+              <span>LinkedIn</span>
+            </a>
           </div>
         </section>
       </main>
+
+      <div
+        style={{
+          position: 'fixed',
+          right: '18px',
+          bottom: '18px',
+          zIndex: 9998,
+          width: '320px',
+          maxWidth: 'calc(100vw - 24px)',
+          padding: '14px 16px',
+          borderRadius: '16px',
+          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(8, 15, 30, 0.92)',
+          boxShadow: '0 16px 40px rgba(0,0,0,0.35)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            marginBottom: '8px',
+          }}
+        >
+          <div
+            style={{
+              width: '10px',
+              height: '10px',
+              borderRadius: '999px',
+              background: '#22c55e',
+              boxShadow: '0 0 12px rgba(34, 197, 94, 0.6)',
+              flexShrink: 0,
+            }}
+          />
+          <div
+            style={{
+              color: '#e2e8f0',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+            }}
+          >
+            {ACTIVITY_FEED[activityIndex].label}
+          </div>
+        </div>
+
+        <div
+          style={{
+            color: '#f8fafc',
+            fontSize: '0.95rem',
+            lineHeight: 1.5,
+            fontWeight: 600,
+          }}
+        >
+          {ACTIVITY_FEED[activityIndex].text}
+        </div>
+      </div>
 
       {showFounderGate && (
         <div
