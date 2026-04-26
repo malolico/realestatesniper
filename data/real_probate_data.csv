@@ -1,0 +1,4 @@
+case_number,filing_date,owner_name,property_address,city,estimated_value,source,source_type,signal_type,discount,urgency,off_market,engine_name
+PR-2026-001,2026-04-01,John Estate,1450 Palm Street,Phoenix,265000,county_probate,public,probate,14,8,true,probate_csv_engine
+PR-2026-002,2026-04-03,Maria Holdings,88 Canyon Lane,Mesa,210000,county_probate,public,probate,19,7,true,probate_csv_engine
+PR-2026-003,2026-04-05,Thomas Family Trust,907 Desert Bloom Rd,Tucson,185000,county_probate,public,probate,23,9,true,probate_csv_engine

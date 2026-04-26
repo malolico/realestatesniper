@@ -1,0 +1,4 @@
+address,city,price,source,source_type,signal_type,discount,urgency,off_market,engine_name
+1201 East Oak Street,Phoenix,245000,csv_upload,manual,probate,15,8,true,csv_import_engine
+88 River Road,Mesa,198000,csv_upload,manual,pre_foreclosure,22,9,true,csv_import_engine
+900 Desert View Ave,Tempe,210000,csv_upload,manual,distress,18,7,true,csv_import_engine
