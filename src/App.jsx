@@ -94,6 +94,12 @@ function App() {
   const [founderUnlocked, setFounderUnlocked] = useState(false)
   const [premiumUnlocked, setPremiumUnlocked] = useState(false)
   const [diamondUnlocked, setDiamondUnlocked] = useState(false)
+
+  const accessState = resolveUserAccessState({
+    userMode,
+    founderUnlocked,
+  })
+
   const [showFounderGate, setShowFounderGate] = useState(false)
   const [founderCodeInput, setFounderCodeInput] = useState('')
   const [founderError, setFounderError] = useState('')
