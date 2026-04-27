@@ -71,6 +71,20 @@ const FOUNDER_STORAGE_KEY = 'realestatesniper_founder_access'
 const PREMIUM_STORAGE_KEY = 'realestatesniper_premium_access'
 const DIAMOND_STORAGE_KEY = 'realestatesniper_diamond_access'
 
+function resolveUserAccessState({
+  userMode,
+  founderUnlocked,
+  premiumUnlocked,
+  diamondUnlocked,
+}) {
+  if (diamondUnlocked) return 'diamondBuyer'
+  if (premiumUnlocked) return 'premiumBuyer'
+
+  if (userMode === 'founder' || founderUnlocked) return 'subscriber'
+
+  return 'visitor'
+}
+
 function App() {
   const [markets, setMarkets] = useState([])
   const [deals, setDeals] = useState([])
