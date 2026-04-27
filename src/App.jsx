@@ -72,7 +72,6 @@ const PREMIUM_STORAGE_KEY = 'realestatesniper_premium_access'
 const DIAMOND_STORAGE_KEY = 'realestatesniper_diamond_access'
 
 function resolveUserAccessState({
-  userMode,
   founderUnlocked,
   premiumUnlocked,
   diamondUnlocked,
@@ -80,7 +79,7 @@ function resolveUserAccessState({
   if (diamondUnlocked) return 'diamondBuyer'
   if (premiumUnlocked) return 'premiumBuyer'
 
-  if (userMode === 'founder' || founderUnlocked) return 'subscriber'
+  if (founderUnlocked) return 'subscriber'
 
   return 'visitor'
 }
@@ -90,14 +89,14 @@ function App() {
   const [deals, setDeals] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedCity, setSelectedCity] = useState('All')
-  const [userMode, setUserMode] = useState('visitor') // visitor | founder
   const [founderUnlocked, setFounderUnlocked] = useState(false)
   const [premiumUnlocked, setPremiumUnlocked] = useState(false)
   const [diamondUnlocked, setDiamondUnlocked] = useState(false)
 
   const accessState = resolveUserAccessState({
-    userMode,
     founderUnlocked,
+    premiumUnlocked,
+    diamondUnlocked,
   })
 
   const [showFounderGate, setShowFounderGate] = useState(false)
@@ -131,7 +130,6 @@ function App() {
     const storedFounderAccess = window.localStorage.getItem(FOUNDER_STORAGE_KEY)
     if (storedFounderAccess === 'granted') {
       setFounderUnlocked(true)
-      setUserMode('founder')
     }
 
     const storedPremiumAccess = window.localStorage.getItem(PREMIUM_STORAGE_KEY)
@@ -246,7 +244,7 @@ function App() {
   function getAccessTierLabel(accessTier) {
     if (accessTier === 'diamond') return '💎 DIAMOND PREMIUM'
     if (accessTier === 'premium') return 'PREMIUM'
-    return userMode === 'founder' ? 'FOUNDERS ACCESS' : 'FREE ACCESS'
+    return accessState === 'subscriber' ? 'FOUNDERS ACCESS' : 'FREE ACCESS'
   }
 
   function getAccessTierClass(accessTier) {
@@ -288,7 +286,6 @@ function App() {
 
   function handleFounderAccessRequest() {
     if (founderUnlocked) {
-      setUserMode('founder')
       return
     }
 
@@ -311,7 +308,6 @@ function App() {
     }
 
     setFounderUnlocked(true)
-    setUserMode('founder')
     setShowFounderGate(false)
     setFounderError('')
     window.localStorage.setItem(FOUNDER_STORAGE_KEY, 'granted')
@@ -324,7 +320,8 @@ function App() {
   }
 
   function handleVisitorMode() {
-    setUserMode('visitor')
+    window.localStorage.removeItem(FOUNDER_STORAGE_KEY)
+    setFounderUnlocked(false)
   }
 
   function handlePremiumUnlock() {
@@ -375,7 +372,7 @@ function App() {
       }
     }
 
-    if (userMode === 'visitor') {
+    if (accessState === 'visitor') {
       if (isDiamond) {
         return {
           estValue: formatCurrency(deal.estimated_value),
@@ -567,14 +564,14 @@ function App() {
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           <button
             onClick={handleVisitorMode}
-            className={userMode === 'visitor' ? 'primary-button' : 'secondary-button'}
+            className={accessState === 'visitor' ? 'primary-button' : 'secondary-button'}
           >
             Visitor
           </button>
 
           <button
             onClick={handleFounderAccessRequest}
-            className={userMode === 'founder' ? 'primary-button' : 'secondary-button'}
+            className={accessState === 'subscriber' ? 'primary-button' : 'secondary-button'}
           >
             Founder
           </button>
