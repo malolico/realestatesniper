@@ -12,6 +12,7 @@ import { supabase } from './lib/supabase'
 import logo from './assets/logo.png'
 import FloatingActivity from './components/FloatingActivity'
 import FounderModal from './components/FounderModal'
+import FounderStatus from './components/FounderStatus'
 import ContactMenu from './components/ContactMenu'
 import AuthModal from './components/AuthModal'
 
@@ -3586,6 +3587,12 @@ function App() {
                 Limited early access to live deal flow before full public release.
               </p>
 
+              <FounderStatus
+                remainingSpots={remainingFounderSpots}
+                totalSpots={TOTAL_FOUNDER_SPOTS}
+                foundersFull={remainingFounderSpots <= 0}
+              />
+
               <div className="hero-actions">
                 <button
                   onClick={() => {
@@ -4369,23 +4376,11 @@ function App() {
                 </div>
               </div>
 
-              <div
-                style={{
-                  marginTop: '18px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '12px 18px',
-                  borderRadius: '14px',
-                  border: '1px solid rgba(255, 59, 59, 0.35)',
-                  background: 'rgba(255, 59, 59, 0.08)',
-                  boxShadow: '0 0 22px rgba(255, 59, 59, 0.12)',
-                }}
-              >
-                <span style={{ color: '#ff4d4d', fontWeight: 800, fontSize: '1.3rem', letterSpacing: '0.02em' }}>
-                  {remainingFounderSpots} / {TOTAL_FOUNDER_SPOTS} Spots Remaining
-                </span>
-              </div>
+              <FounderStatus
+                remainingSpots={remainingFounderSpots}
+                totalSpots={TOTAL_FOUNDER_SPOTS}
+                foundersFull={remainingFounderSpots <= 0}
+              />
 
               <div
                 style={{
@@ -4503,6 +4498,9 @@ function App() {
         setFounderError={setFounderError}
         handleFounderCodeSubmit={handleFounderCodeSubmit}
         handleFounderGateClose={handleFounderGateClose}
+        remainingSpots={remainingFounderSpots}
+        totalSpots={TOTAL_FOUNDER_SPOTS}
+        foundersFullMock={remainingFounderSpots <= 0}
       />
 
       <AuthModal
