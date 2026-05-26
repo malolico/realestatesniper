@@ -15,6 +15,7 @@ import FounderModal from './components/FounderModal'
 import FounderStatus from './components/FounderStatus'
 import ContactMenu from './components/ContactMenu'
 import AuthModal from './components/AuthModal'
+import { redeemAndActivateFounderCode } from './lib/founder/redeemAndActivateFounderCode'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
 
@@ -86,6 +87,7 @@ const ACCESS_SIGNAL_FEED = [
 const FOUNDER_SPOT_FEED = [7, 7, 6, 6, 5]
 
 const FOUNDER_PENDING_KEY = 'realestatesniper_founder_pending_activation'
+const FOUNDER_PENDING_CODE_KEY = 'realestatesniper_founder_pending_code'
 const SUBSCRIPTION_SYNC_PENDING_KEY = 'realestatesniper_subscription_sync_pending'
 const STRIPE_SUCCESS_RELOAD_DONE_KEY = 'realestatesniper_stripe_success_reload_done'
 const DEAL_CHECKOUT_SYNC_PENDING_KEY = 'realestatesniper_deal_checkout_sync_pending'
@@ -534,10 +536,26 @@ function App() {
 
       if (metadata.access_role === 'founder' && metadata.founder_trial_ends_at) {
         window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
+        window.sessionStorage.removeItem(FOUNDER_PENDING_CODE_KEY)
         return
       }
 
-      await activateFounderForCurrentUser(currentUser)
+      const pendingCode = (
+        window.sessionStorage.getItem(FOUNDER_PENDING_CODE_KEY) || ''
+      )
+        .trim()
+        .toUpperCase()
+
+      if (!pendingCode) {
+        window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
+        setFounderUnlocked(false)
+        setFounderError('Founder code missing after sign-in. Please enter your code again.')
+        setShowFounderGate(true)
+        return
+      }
+
+      // Post sign-up/login: same atomic RPC so code is never used without founder access.
+      await redeemAndActivateFounderForUser(pendingCode, currentUser.id)
     }
 
     processPendingFounderActivation()
@@ -969,6 +987,55 @@ function App() {
     return date.toISOString()
   }
 
+  async function applyFounderSessionAfterAtomicActivate(successMessage) {
+    await supabase.auth.refreshSession().catch(() => {})
+    const { data: userData } = await supabase.auth.getUser()
+    const refreshedUser = userData?.user
+
+    if (!refreshedUser) {
+      setFounderUnlocked(false)
+      setFounderError('Founder access was applied but the session could not be refreshed.')
+      setShowFounderGate(true)
+      return false
+    }
+
+    window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
+    window.sessionStorage.removeItem(FOUNDER_PENDING_CODE_KEY)
+
+    const trialEndsAt = refreshedUser.user_metadata?.founder_trial_ends_at || null
+
+    setCurrentUser(refreshedUser)
+    setFounderUnlocked(true)
+    setFounderExpiredNotice(false)
+    setFounderTrialEndsAt(trialEndsAt)
+    setFounderDaysRemaining(trialEndsAt ? getDaysRemaining(trialEndsAt) : null)
+    setUserMode('founder')
+    setFounderError('')
+    setFounderCodeInput('')
+    setShowAuthModal(false)
+    setShowFounderGate(false)
+    setUnlockFeedbackMessage(
+      successMessage || 'Founder access activated successfully.',
+    )
+    return true
+  }
+
+  // Atomic founder path: redeem_and_activate_founder_code only (never redeemFounderCode alone).
+  async function redeemAndActivateFounderForUser(code, userId) {
+    const result = await redeemAndActivateFounderCode({ code, userId })
+
+    if (!result.success) {
+      window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
+      window.sessionStorage.removeItem(FOUNDER_PENDING_CODE_KEY)
+      setFounderUnlocked(false)
+      setFounderError(result.message || 'Unable to activate founder access.')
+      setShowFounderGate(true)
+      return false
+    }
+
+    return applyFounderSessionAfterAtomicActivate(result.message)
+  }
+
   async function activateFounderForCurrentUser(userToActivate = currentUser) {
     if (!userToActivate) return
 
@@ -1149,13 +1216,12 @@ function App() {
     }
 
     if (currentUser) {
-      await activateFounderForCurrentUser(currentUser)
-      setFounderError('')
-      setFounderCodeInput('')
+      await redeemAndActivateFounderForUser(normalizedCode, currentUser.id)
       return
     }
 
     window.sessionStorage.setItem(FOUNDER_PENDING_KEY, 'pending')
+    window.sessionStorage.setItem(FOUNDER_PENDING_CODE_KEY, normalizedCode)
     setShowFounderGate(false)
     setFounderCodeInput('')
     setFounderError('')

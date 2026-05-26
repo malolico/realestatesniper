@@ -107,13 +107,12 @@ export const FOUNDER_PHASE_CHECKLIST = {
     },
   },
   phase1b: [
-    'RLS policies on founder_codes',
-    'Edge Function or RPC: validate + redeem code atomically',
+    'supabase/redeem_and_activate_founder_code.sql (RPC + RLS select)',
+    'App.jsx wired to redeemAndActivateFounderCode helper',
   ],
   phase1c: [
-    'Replace founderVisualMock validation with API',
     'Sync FounderStatus remaining count from DB',
     'Hide Founder button when cohort full',
-    'Wire founder trial activation after successful redeem',
+    'Retire client-only activateFounderForCurrentUser when RPC is stable',
   ],
 }
