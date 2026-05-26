@@ -38,8 +38,39 @@ export const FOUNDER_FEEDBACK_COPY = {
     title: 'Code already used',
     body: 'This one-time founder code has already been redeemed.',
   },
+  expired: {
+    title: 'Code expired',
+    body: 'This founder invitation code is no longer active.',
+  },
   full: {
     title: 'Founders complete',
     body: 'All founder spots are filled. The private beta is closed to new invites.',
   },
+}
+
+/**
+ * Fallback validation when Supabase is unreachable or returns error.
+ * Visual/testing only — not authoritative for production redemption.
+ */
+export function resolveFounderVisualFeedbackMock(normalizedCode, foundersFullOverride = false) {
+  if (foundersFullOverride || FOUNDER_VISUAL_MOCK.foundersFull) {
+    return { type: 'full', message: null }
+  }
+
+  if (!normalizedCode) {
+    return {
+      type: 'invalid',
+      message: 'Please enter your founder invitation code.',
+    }
+  }
+
+  if (FOUNDER_VISUAL_MOCK.usedCodes.includes(normalizedCode)) {
+    return { type: 'used', message: null }
+  }
+
+  if (!FOUNDER_VISUAL_MOCK.validCodes.includes(normalizedCode)) {
+    return { type: 'invalid', message: null }
+  }
+
+  return { type: 'valid', message: null }
 }

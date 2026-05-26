@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import {
   FOUNDER_FEEDBACK_COPY,
   FOUNDER_VISUAL_MOCK,
+  resolveFounderVisualFeedbackMock,
 } from '../lib/founder/founderVisualMock'
+import { validateFounderCode } from '../lib/founder/validateFounderCode'
 import FounderStatus from './FounderStatus'
 
 const FEEDBACK_STYLES = {
@@ -21,6 +23,11 @@ const FEEDBACK_STYLES = {
     background: 'rgba(250, 204, 21, 0.1)',
     color: '#fde68a',
   },
+  expired: {
+    border: '1px solid rgba(249, 115, 22, 0.35)',
+    background: 'rgba(249, 115, 22, 0.1)',
+    color: '#fdba74',
+  },
   full: {
     border: '1px solid rgba(148, 163, 184, 0.35)',
     background: 'rgba(148, 163, 184, 0.12)',
@@ -33,6 +40,8 @@ function FeedbackBanner({ type, customMessage }) {
 
   const copy = FOUNDER_FEEDBACK_COPY[type]
   const style = FEEDBACK_STYLES[type]
+
+  if (!copy || !style) return null
 
   return (
     <div
@@ -50,29 +59,6 @@ function FeedbackBanner({ type, customMessage }) {
       </div>
     </div>
   )
-}
-
-function resolveVisualFeedback(normalizedCode, foundersFullOverride) {
-  if (foundersFullOverride || FOUNDER_VISUAL_MOCK.foundersFull) {
-    return { type: 'full', message: null }
-  }
-
-  if (!normalizedCode) {
-    return {
-      type: 'invalid',
-      message: 'Please enter your founder invitation code.',
-    }
-  }
-
-  if (FOUNDER_VISUAL_MOCK.usedCodes.includes(normalizedCode)) {
-    return { type: 'used', message: null }
-  }
-
-  if (!FOUNDER_VISUAL_MOCK.validCodes.includes(normalizedCode)) {
-    return { type: 'invalid', message: null }
-  }
-
-  return { type: 'valid', message: null }
 }
 
 function FounderModal({
@@ -114,45 +100,79 @@ function FounderModal({
       ? '1px solid rgba(34, 197, 94, 0.55)'
       : feedbackType === 'used'
         ? '1px solid rgba(250, 204, 21, 0.55)'
-        : feedbackType === 'full'
-          ? '1px solid rgba(148, 163, 184, 0.45)'
-          : feedbackType === 'invalid' || founderError
-            ? '1px solid rgba(255, 77, 77, 0.8)'
-            : '1px solid rgba(255,255,255,0.12)'
+        : feedbackType === 'expired'
+          ? '1px solid rgba(249, 115, 22, 0.55)'
+          : feedbackType === 'full'
+            ? '1px solid rgba(148, 163, 184, 0.45)'
+            : feedbackType === 'invalid' || founderError
+              ? '1px solid rgba(255, 77, 77, 0.8)'
+              : '1px solid rgba(255,255,255,0.12)'
 
-  function handleValidateClick() {
+  async function handleValidateClick() {
     const normalizedCode = founderCodeInput.trim().toUpperCase()
-    const result = resolveVisualFeedback(normalizedCode, foundersFullMock)
 
-    setVisualFeedback(result)
-    setIsValidating(true)
-
-    // Mock "full" is visual-only demo — does not change live access rules when false (default).
-    if (result.type === 'full') {
+    if (foundersFull) {
+      const fullResult = resolveFounderVisualFeedbackMock(normalizedCode, true)
+      setVisualFeedback(fullResult)
       if (setFounderError) {
-        setFounderError(result.message || 'Founder spots are full.')
+        setFounderError(fullResult.message || 'Founder spots are full.')
       }
-      setIsValidating(false)
       return
     }
 
-    // Invalid empty/code: mirror parent messaging; parent still authoritative on submit.
-    if (result.type === 'invalid') {
+    setIsValidating(true)
+    setVisualFeedback(null)
+
+    let result = { type: 'error', message: null }
+
+    try {
+      const validation = await validateFounderCode(normalizedCode)
+
+      if (validation.status === 'error') {
+        result = resolveFounderVisualFeedbackMock(normalizedCode, foundersFullMock)
+        result.message =
+          validation.message ||
+          'Could not reach founder inventory. Showing offline preview.'
+      } else {
+        result = {
+          type: validation.status,
+          message: validation.message,
+        }
+      }
+    } catch {
+      result = resolveFounderVisualFeedbackMock(normalizedCode, foundersFullMock)
+      result.message = 'Could not reach founder inventory. Showing offline preview.'
+    }
+
+    setVisualFeedback(result)
+
+    if (result.type === 'full' || result.type === 'invalid' || result.type === 'used' || result.type === 'expired') {
       if (setFounderError) {
         setFounderError(
-          result.message || 'Access denied. This founder code is not approved.',
+          result.message ||
+            (result.type === 'used'
+              ? 'This founder code has already been used.'
+              : result.type === 'expired'
+                ? 'This founder code has expired.'
+                : result.type === 'full'
+                  ? 'Founder spots are full.'
+                  : 'Access denied. This founder code is not approved.'),
         )
       }
       setIsValidating(false)
       return
     }
 
-    // "used" / "valid" banners are preview states; real activation stays in App.jsx handler.
-    setTimeout(() => {
-      setIsValidating(false)
-      if (result.type === 'valid' && setFounderError) setFounderError('')
-      handleFounderCodeSubmit()
-    }, result.type === 'valid' ? 650 : 400)
+    if (result.type === 'valid') {
+      setTimeout(() => {
+        setIsValidating(false)
+        if (setFounderError) setFounderError('')
+        handleFounderCodeSubmit()
+      }, 650)
+      return
+    }
+
+    setIsValidating(false)
   }
 
   return (
@@ -268,7 +288,7 @@ function FounderModal({
             lineHeight: 1.5,
           }}
         >
-          Visual validation preview only. Supabase founder inventory sync coming next.
+          Validation reads from Supabase. Codes are not redeemed in this phase.
         </p>
       </div>
     </div>
