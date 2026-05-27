@@ -115,6 +115,7 @@ function App() {
     REMAINING_FOUNDER_SPOTS,
   )
   const [totalFounderSpots, setTotalFounderSpots] = useState(TOTAL_FOUNDER_SPOTS)
+  const [foundersCohortFull, setFoundersCohortFull] = useState(false)
   const [selectedDeal, setSelectedDeal] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [showPlatformInfo, setShowPlatformInfo] = useState(false)
@@ -144,6 +145,8 @@ function App() {
   const isAdmin = currentUser?.email
     ? ADMIN_EMAILS.includes(currentUser.email.toLowerCase())
     : false
+
+  const founderAccessClosed = foundersCohortFull && !founderUnlocked
 
   function getDealTier(deal) {
     if (deal?.is_diamond === true) return 'diamond'
@@ -450,11 +453,13 @@ function App() {
       if (status.error) {
         setRemainingFounderSpots(REMAINING_FOUNDER_SPOTS)
         setTotalFounderSpots(TOTAL_FOUNDER_SPOTS)
+        setFoundersCohortFull(false)
         return
       }
 
       setRemainingFounderSpots(status.remaining)
       setTotalFounderSpots(status.total)
+      setFoundersCohortFull(status.foundersFull)
     }
 
     loadFounderCodesStatus()
@@ -463,6 +468,14 @@ function App() {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    if (!foundersCohortFull || !showFounderGate) return
+
+    setShowFounderGate(false)
+    setFounderCodeInput('')
+    setFounderError('')
+  }, [foundersCohortFull, showFounderGate])
 
   useEffect(() => {
     setSelectedDeal(null)
@@ -540,6 +553,12 @@ function App() {
 
       if (!pendingFounderActivation || !currentUser) return
 
+      if (foundersCohortFull) {
+        window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
+        window.sessionStorage.removeItem(FOUNDER_PENDING_CODE_KEY)
+        return
+      }
+
       const metadata = currentUser.user_metadata || {}
 
       if (metadata.access_role === 'founder' && metadata.founder_trial_ends_at) {
@@ -558,7 +577,7 @@ function App() {
         window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
         setFounderUnlocked(false)
         setFounderError('Founder code missing after sign-in. Please enter your code again.')
-        setShowFounderGate(true)
+        openFounderGate()
         return
       }
 
@@ -567,7 +586,7 @@ function App() {
     }
 
     processPendingFounderActivation()
-  }, [currentUser])
+  }, [currentUser, foundersCohortFull])
 
   async function loadUserPurchases(userId) {
     if (!userId) {
@@ -1001,11 +1020,13 @@ function App() {
     if (status.error) {
       setRemainingFounderSpots(REMAINING_FOUNDER_SPOTS)
       setTotalFounderSpots(TOTAL_FOUNDER_SPOTS)
+      setFoundersCohortFull(false)
       return
     }
 
     setRemainingFounderSpots(status.remaining)
     setTotalFounderSpots(status.total)
+    setFoundersCohortFull(status.foundersFull)
   }
 
   async function applyFounderSessionAfterAtomicActivate(successMessage) {
@@ -1016,7 +1037,7 @@ function App() {
     if (!refreshedUser) {
       setFounderUnlocked(false)
       setFounderError('Founder access was applied but the session could not be refreshed.')
-      setShowFounderGate(true)
+      openFounderGate()
       return false
     }
 
@@ -1051,7 +1072,7 @@ function App() {
       window.sessionStorage.removeItem(FOUNDER_PENDING_CODE_KEY)
       setFounderUnlocked(false)
       setFounderError(result.message || 'Unable to activate founder access.')
-      setShowFounderGate(true)
+      openFounderGate()
       return false
     }
 
@@ -1202,15 +1223,23 @@ function App() {
     }
   }
 
+  function openFounderGate() {
+    if (foundersCohortFull) return
+
+    setFounderCodeInput('')
+    setFounderError('')
+    setShowFounderGate(true)
+  }
+
   function handleFounderAccessRequest() {
     if (founderUnlocked) {
       setUserMode('founder')
       return
     }
 
-    setFounderCodeInput('')
-    setFounderError('')
-    setShowFounderGate(true)
+    if (foundersCohortFull) return
+
+    openFounderGate()
   }
 
   async function handleSubscriberAccessRequest() {
@@ -1225,6 +1254,8 @@ function App() {
   }
 
   async function handleFounderCodeSubmit() {
+    if (foundersCohortFull) return
+
     const normalizedCode = founderCodeInput.trim().toUpperCase()
 
     if (!normalizedCode) {
@@ -3536,10 +3567,17 @@ function App() {
           }}
         >
           <button
+            type="button"
             onClick={handleFounderAccessRequest}
+            disabled={founderAccessClosed}
             className={userMode === 'founder' ? 'primary-button' : 'secondary-button'}
+            style={
+              founderAccessClosed
+                ? { opacity: 0.55, cursor: 'not-allowed' }
+                : undefined
+            }
           >
-            Founder
+            {founderAccessClosed ? 'Founders Complete' : 'Founder'}
           </button>
 
           {!currentUser ? (
@@ -3678,7 +3716,7 @@ function App() {
               <FounderStatus
                 remainingSpots={remainingFounderSpots}
                 totalSpots={totalFounderSpots}
-                foundersFull={remainingFounderSpots <= 0}
+                foundersFull={foundersCohortFull}
               />
 
               <div className="hero-actions">
@@ -3702,10 +3740,17 @@ function App() {
                 ) : null}
 
                 <button
+                  type="button"
                   onClick={handleFounderAccessRequest}
+                  disabled={founderAccessClosed}
                   className="primary-button"
+                  style={
+                    founderAccessClosed
+                      ? { opacity: 0.55, cursor: 'not-allowed' }
+                      : undefined
+                  }
                 >
-                  Founder Access
+                  {founderAccessClosed ? 'Founders Complete' : 'Founder Access'}
                 </button>
               </div>
 
@@ -4273,7 +4318,9 @@ function App() {
                 Only 10 investors will be selected for the private founders window. Once full, access will close and move to paid tiers only.
               </p>
               <p style={{ marginTop: '14px', color: '#ffffff', fontWeight: 700 }}>
-                Founders window active now. Limited access spots remain.
+                {founderAccessClosed
+                  ? 'Founder cohort is complete. New founder invitations are closed.'
+                  : 'Founders window active now. Limited access spots remain.'}
               </p>
 
               <div
@@ -4285,7 +4332,9 @@ function App() {
                 }}
               >
                 <button
+                  type="button"
                   onClick={handleFounderAccessRequest}
+                  disabled={founderAccessClosed}
                   style={{
                     padding: '14px 22px',
                     borderRadius: '14px',
@@ -4294,11 +4343,16 @@ function App() {
                     color: '#ffffff',
                     fontWeight: 800,
                     fontSize: '1rem',
-                    cursor: 'pointer',
-                    boxShadow: '0 0 20px rgba(255,59,59,0.35)',
+                    cursor: founderAccessClosed ? 'not-allowed' : 'pointer',
+                    opacity: founderAccessClosed ? 0.55 : 1,
+                    boxShadow: founderAccessClosed
+                      ? 'none'
+                      : '0 0 20px rgba(255,59,59,0.35)',
                   }}
                 >
-                  Apply for Founder Access
+                  {founderAccessClosed
+                    ? 'Founders Complete'
+                    : 'Apply for Founder Access'}
                 </button>
 
                 {!currentUser ? (
@@ -4467,7 +4521,7 @@ function App() {
               <FounderStatus
                 remainingSpots={remainingFounderSpots}
                 totalSpots={totalFounderSpots}
-                foundersFull={remainingFounderSpots <= 0}
+                foundersFull={foundersCohortFull}
               />
 
               <div
@@ -4578,18 +4632,20 @@ function App() {
         activityIndex={activityIndex}
       />
 
-      <FounderModal
-        showFounderGate={showFounderGate}
-        founderCodeInput={founderCodeInput}
-        setFounderCodeInput={setFounderCodeInput}
-        founderError={founderError}
-        setFounderError={setFounderError}
-        handleFounderCodeSubmit={handleFounderCodeSubmit}
-        handleFounderGateClose={handleFounderGateClose}
-        remainingSpots={remainingFounderSpots}
-        totalSpots={totalFounderSpots}
-        foundersFullMock={remainingFounderSpots <= 0}
-      />
+      {!foundersCohortFull ? (
+        <FounderModal
+          showFounderGate={showFounderGate}
+          founderCodeInput={founderCodeInput}
+          setFounderCodeInput={setFounderCodeInput}
+          founderError={founderError}
+          setFounderError={setFounderError}
+          handleFounderCodeSubmit={handleFounderCodeSubmit}
+          handleFounderGateClose={handleFounderGateClose}
+          remainingSpots={remainingFounderSpots}
+          totalSpots={totalFounderSpots}
+          foundersFullMock={foundersCohortFull}
+        />
+      ) : null}
 
       <AuthModal
         showAuthModal={showAuthModal}
