@@ -53,7 +53,7 @@ export const FOUNDER_CODE_RULES = {
 
 /**
  * UI behavior (implemented in App / FounderStatus / getFounderCodesStatus).
- * founderVisualMock.js — legacy fallback only when Supabase validation errors.
+ * Legacy removed: FOUNDER_CODES (App), founderVisualMock.js — validation is Supabase-only.
  */
 export const FOUNDER_UI_FUTURE = {
   totalSpots: TOTAL_FOUNDER_SPOTS,
@@ -66,10 +66,9 @@ export const FOUNDER_UI_FUTURE = {
 }
 
 /**
- * Seed codes for SQL migrations (not loaded at runtime).
- * FOUNDER_VISUAL_MOCK in founderVisualMock.js is legacy fallback only.
+ * Example seed codes for SQL migrations only (not used at runtime).
  */
-export const FUTURE_SEED_CODES_MOCK = [
+export const FUTURE_SEED_CODES = [
   'RS-FOUNDER-001',
   'RS-FOUNDER-002',
   'RS-FOUNDER-003',
@@ -113,7 +112,13 @@ export const FOUNDER_PHASE_CHECKLIST = {
   phase1c: [
     'getFounderCodesStatus.js wired in App (FounderStatus count from DB)',
     'Founder full state: Founders Complete CTA + modal guard',
-    'founderVisualMock.js — legacy fallback only (no fake codes)',
+    'Production cleanup: FOUNDER_CODES + founderVisualMock.js removed',
+    'founderFeedbackCopy.js — UI strings only',
     'Retire client-only activateFounderForCurrentUser when RPC is stable',
+  ],
+  legacyRemoved: [
+    'App.jsx FOUNDER_CODES hardcoded list',
+    'founderVisualMock.js (fake validation / mock cohort)',
+    'Local approve-list check in handleFounderCodeSubmit',
   ],
 }

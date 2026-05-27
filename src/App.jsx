@@ -42,19 +42,6 @@ const DIAMOND_REMAINING_POSITIONS = 5
 const PREMIUM_RECENT_ACTIVITY = '2 investors unlocked this in the last hour'
 const DIAMOND_RECENT_ACTIVITY = '1 investor secured access recently'
 
-const FOUNDER_CODES = [
-  'RS-FOUNDER-001',
-  'RS-FOUNDER-002',
-  'RS-FOUNDER-003',
-  'RS-FOUNDER-004',
-  'RS-FOUNDER-005',
-  'RS-FOUNDER-006',
-  'RS-FOUNDER-007',
-  'RS-FOUNDER-008',
-  'RS-FOUNDER-009',
-  'RS-FOUNDER-010',
-]
-
 const ACTIVITY_FEED = [
   {
     label: 'Live activity',
@@ -1260,11 +1247,6 @@ function App() {
 
     if (!normalizedCode) {
       setFounderError('Please enter a valid founder code.')
-      return
-    }
-
-    if (!FOUNDER_CODES.includes(normalizedCode)) {
-      setFounderError('Access denied. This founder code is not approved.')
       return
     }
 

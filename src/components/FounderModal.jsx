@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import {
   FOUNDER_FEEDBACK_COPY,
-  resolveFounderVisualFeedbackMock,
-} from '../lib/founder/founderVisualMock'
+  FOUNDER_VERIFICATION_UNAVAILABLE,
+} from '../lib/founder/founderFeedbackCopy'
 import { validateFounderCode } from '../lib/founder/validateFounderCode'
 import FounderStatus from './FounderStatus'
 
@@ -31,6 +31,11 @@ const FEEDBACK_STYLES = {
     border: '1px solid rgba(148, 163, 184, 0.35)',
     background: 'rgba(148, 163, 184, 0.12)',
     color: '#e2e8f0',
+  },
+  unavailable: {
+    border: '1px solid rgba(148, 163, 184, 0.35)',
+    background: 'rgba(148, 163, 184, 0.1)',
+    color: '#cbd5e1',
   },
 }
 
@@ -101,37 +106,55 @@ function FounderModal({
         ? '1px solid rgba(250, 204, 21, 0.55)'
         : feedbackType === 'expired'
           ? '1px solid rgba(249, 115, 22, 0.55)'
-          : feedbackType === 'full'
+          : feedbackType === 'full' || feedbackType === 'unavailable'
             ? '1px solid rgba(148, 163, 184, 0.45)'
             : feedbackType === 'invalid' || founderError
               ? '1px solid rgba(255, 77, 77, 0.8)'
               : '1px solid rgba(255,255,255,0.12)'
 
+  function applyBlockingFeedback(result) {
+    setVisualFeedback(result)
+
+    if (setFounderError) {
+      setFounderError(
+        result.message ||
+          FOUNDER_FEEDBACK_COPY[result.type]?.body ||
+          FOUNDER_FEEDBACK_COPY.invalid.body,
+      )
+    }
+
+    setIsValidating(false)
+  }
+
   async function handleValidateClick() {
     const normalizedCode = founderCodeInput.trim().toUpperCase()
 
+    if (!normalizedCode) {
+      applyBlockingFeedback({
+        type: 'invalid',
+        message: 'Please enter your founder invitation code.',
+      })
+      return
+    }
+
     if (foundersFull) {
-      const fullResult = resolveFounderVisualFeedbackMock(normalizedCode, true)
-      setVisualFeedback(fullResult)
-      if (setFounderError) {
-        setFounderError(fullResult.message || 'Founder spots are full.')
-      }
+      applyBlockingFeedback({ type: 'full', message: null })
       return
     }
 
     setIsValidating(true)
     setVisualFeedback(null)
 
-    let result = { type: 'error', message: null }
+    let result = { type: 'invalid', message: null }
 
     try {
       const validation = await validateFounderCode(normalizedCode)
 
       if (validation.status === 'error') {
-        result = resolveFounderVisualFeedbackMock(normalizedCode, foundersFullMock)
-        result.message =
-          validation.message ||
-          'Unable to validate this code right now. Check your connection and try again.'
+        result = {
+          type: 'unavailable',
+          message: FOUNDER_VERIFICATION_UNAVAILABLE,
+        }
       } else {
         result = {
           type: validation.status,
@@ -139,31 +162,25 @@ function FounderModal({
         }
       }
     } catch {
-      result = resolveFounderVisualFeedbackMock(normalizedCode, foundersFullMock)
-      result.message =
-        'Unable to validate this code right now. Check your connection and try again.'
+      result = {
+        type: 'unavailable',
+        message: FOUNDER_VERIFICATION_UNAVAILABLE,
+      }
     }
 
-    setVisualFeedback(result)
-
-    if (result.type === 'full' || result.type === 'invalid' || result.type === 'used' || result.type === 'expired') {
-      if (setFounderError) {
-        setFounderError(
-          result.message ||
-            (result.type === 'used'
-              ? 'This founder code has already been used.'
-              : result.type === 'expired'
-                ? 'This founder code has expired.'
-                : result.type === 'full'
-                  ? 'Founder spots are full.'
-                  : 'Access denied. This founder code is not approved.'),
-        )
-      }
-      setIsValidating(false)
+    if (
+      result.type === 'full' ||
+      result.type === 'invalid' ||
+      result.type === 'used' ||
+      result.type === 'expired' ||
+      result.type === 'unavailable'
+    ) {
+      applyBlockingFeedback(result)
       return
     }
 
     if (result.type === 'valid') {
+      setVisualFeedback(result)
       setTimeout(() => {
         setIsValidating(false)
         if (setFounderError) setFounderError('')
@@ -222,8 +239,8 @@ function FounderModal({
         </h3>
 
         <p style={{ marginTop: '12px', color: '#cbd5e1', lineHeight: 1.6 }}>
-          Enter your one-time founder invitation code. Codes are validated against
-          live founder inventory in Supabase.
+          Enter your one-time founder invitation code for the private beta. Each code
+          can be redeemed once.
         </p>
 
         <FounderStatus
@@ -241,7 +258,7 @@ function FounderModal({
             setVisualFeedback(null)
             if (founderError && setFounderError) setFounderError('')
           }}
-          placeholder="RS-FOUNDER-001"
+          placeholder="Your invitation code"
           autoFocus
           disabled={foundersFull || isValidating}
           style={{
@@ -288,7 +305,8 @@ function FounderModal({
             lineHeight: 1.5,
           }}
         >
-          After validation, redeem and founder activation run atomically once you are signed in.
+          After a successful validation, founder access is activated when you sign in or
+          create your account.
         </p>
       </div>
     </div>
