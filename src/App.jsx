@@ -17,6 +17,7 @@ import ContactMenu from './components/ContactMenu'
 import AuthModal from './components/AuthModal'
 import SubscriberDashboard from './components/dashboards/SubscriberDashboard'
 import FounderDashboard from './components/dashboards/FounderDashboard'
+import OwnerDashboard from './components/dashboards/OwnerDashboard'
 import { redeemAndActivateFounderCode } from './lib/founder/redeemAndActivateFounderCode'
 import { getFounderCodesStatus } from './lib/founder/getFounderCodesStatus'
 import { getFounderAccessState } from './lib/founder/getFounderAccessState'
@@ -135,6 +136,8 @@ function App() {
   const founderSessionSyncRef = useRef(false)
 
   const SHOW_SUBSCRIBER_DASHBOARD = Boolean(currentUser)
+
+  const ownerUnlocked = currentUser?.user_metadata?.access_role === 'owner'
 
   const isAdmin = currentUser?.email
     ? ADMIN_EMAILS.includes(currentUser.email.toLowerCase())
@@ -3508,6 +3511,21 @@ function App() {
               Founder Dashboard
             </a>
           ) : null}
+          {currentUser && ownerUnlocked ? (
+            <a
+              href="#owner-dashboard"
+              onClick={(e) => {
+                e.preventDefault()
+                if (selectedDeal) {
+                  closeDealDetail()
+                  return
+                }
+                scrollToSection('owner-dashboard')
+              }}
+            >
+              Owner Dashboard
+            </a>
+          ) : null}
           <a
             href="#tiers"
             onClick={(e) => {
@@ -3970,6 +3988,22 @@ function App() {
                 founderAccessActive={founderUnlocked}
                 founderDaysRemaining={founderDashboardDaysRemaining}
               />
+            </section>
+          ) : null}
+
+          {currentUser && ownerUnlocked ? (
+            <section id="owner-dashboard" className="section-block">
+              <div className="section-heading">
+                <div>
+                  <div className="eyebrow">Owner workspace</div>
+                  <h2 style={{ color: '#ffffff' }}>Owner Dashboard</h2>
+                </div>
+                <p>
+                  Manage properties, authorization, contact preferences, and Diamond controls.
+                </p>
+              </div>
+
+              <OwnerDashboard />
             </section>
           ) : null}
 
