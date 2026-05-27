@@ -1,6 +1,5 @@
 /**
- * FounderStatus — V1 visual-only founder window status.
- * Data is passed from App (display counters) or mock defaults; no Supabase yet.
+ * FounderStatus — private beta cohort counter (data from App / Supabase).
  */
 
 const DEFAULT_TOTAL = 10
@@ -73,7 +72,7 @@ function FounderStatus({
 
       {!foundersFull && taken > 0 ? (
         <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem', fontWeight: 600 }}>
-          {taken} founder {taken === 1 ? 'spot' : 'spots'} already reserved (visual preview)
+          {taken} founder {taken === 1 ? 'spot' : 'spots'} already reserved
         </p>
       ) : null}
 
@@ -90,7 +89,7 @@ function FounderStatus({
             fontSize: '0.9rem',
           }}
         >
-          Founder cohort is full. New invitations are closed (mock state).
+          Founder cohort is full. New invitations are closed.
         </p>
       ) : null}
     </div>

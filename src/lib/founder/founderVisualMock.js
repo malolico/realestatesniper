@@ -1,29 +1,11 @@
 /**
- * Founder System V1 — visual/mock layer only.
- * Replace this module with Supabase-backed founder inventory + code redemption.
+ * Legacy fallback only. Real founder state now comes from Supabase.
+ *
+ * Used when validateFounderCode cannot reach the database (network/RLS error).
+ * Does not simulate codes, spots, or cohort occupancy.
  */
 
-export const FOUNDER_VISUAL_MOCK = {
-  /** When true, modal shows cohort-full UI (demo / future API flag) */
-  foundersFull: false,
-
-  /** Codes displayed as already redeemed (preview only until DB sync) */
-  usedCodes: ['RS-FOUNDER-003'],
-
-  /** Approved invite codes for visual validation preview */
-  validCodes: [
-    'RS-FOUNDER-001',
-    'RS-FOUNDER-002',
-    'RS-FOUNDER-003',
-    'RS-FOUNDER-004',
-    'RS-FOUNDER-005',
-    'RS-FOUNDER-006',
-    'RS-FOUNDER-007',
-    'RS-FOUNDER-008',
-    'RS-FOUNDER-009',
-    'RS-FOUNDER-010',
-  ],
-}
+export const FOUNDER_VISUAL_MOCK = {}
 
 export const FOUNDER_FEEDBACK_COPY = {
   valid: {
@@ -32,7 +14,7 @@ export const FOUNDER_FEEDBACK_COPY = {
   },
   invalid: {
     title: 'Invalid code',
-    body: 'This founder code is not on the approved invite list.',
+    body: 'This founder code was not found or is not available.',
   },
   used: {
     title: 'Code already used',
@@ -49,11 +31,15 @@ export const FOUNDER_FEEDBACK_COPY = {
 }
 
 /**
- * Fallback validation when Supabase is unreachable or returns error.
- * Visual/testing only — not authoritative for production redemption.
+ * Minimal UI feedback when Supabase validation is unavailable.
+ * Not used for successful validation paths (those use validateFounderCode).
+ *
+ * @param {string} normalizedCode
+ * @param {boolean} [foundersFullOverride]
+ * @returns {{ type: string, message: string | null }}
  */
 export function resolveFounderVisualFeedbackMock(normalizedCode, foundersFullOverride = false) {
-  if (foundersFullOverride || FOUNDER_VISUAL_MOCK.foundersFull) {
+  if (foundersFullOverride) {
     return { type: 'full', message: null }
   }
 
@@ -64,13 +50,8 @@ export function resolveFounderVisualFeedbackMock(normalizedCode, foundersFullOve
     }
   }
 
-  if (FOUNDER_VISUAL_MOCK.usedCodes.includes(normalizedCode)) {
-    return { type: 'used', message: null }
+  return {
+    type: 'invalid',
+    message: 'Unable to validate this code right now. Check your connection and try again.',
   }
-
-  if (!FOUNDER_VISUAL_MOCK.validCodes.includes(normalizedCode)) {
-    return { type: 'invalid', message: null }
-  }
-
-  return { type: 'valid', message: null }
 }

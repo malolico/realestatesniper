@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
   FOUNDER_FEEDBACK_COPY,
-  FOUNDER_VISUAL_MOCK,
   resolveFounderVisualFeedbackMock,
 } from '../lib/founder/founderVisualMock'
 import { validateFounderCode } from '../lib/founder/validateFounderCode'
@@ -93,7 +92,7 @@ function FounderModal({
 
   if (!showFounderGate) return null
 
-  const foundersFull = foundersFullMock || FOUNDER_VISUAL_MOCK.foundersFull
+  const foundersFull = foundersFullMock
   const feedbackType = visualFeedback?.type || null
   const inputBorder =
     feedbackType === 'valid'
@@ -132,7 +131,7 @@ function FounderModal({
         result = resolveFounderVisualFeedbackMock(normalizedCode, foundersFullMock)
         result.message =
           validation.message ||
-          'Could not reach founder inventory. Showing offline preview.'
+          'Unable to validate this code right now. Check your connection and try again.'
       } else {
         result = {
           type: validation.status,
@@ -141,7 +140,8 @@ function FounderModal({
       }
     } catch {
       result = resolveFounderVisualFeedbackMock(normalizedCode, foundersFullMock)
-      result.message = 'Could not reach founder inventory. Showing offline preview.'
+      result.message =
+        'Unable to validate this code right now. Check your connection and try again.'
     }
 
     setVisualFeedback(result)
@@ -213,7 +213,7 @@ function FounderModal({
               background: 'rgba(255,255,255,0.04)',
             }}
           >
-            Founder Access · V1
+            Founder Access
           </div>
         </div>
 
@@ -222,8 +222,8 @@ function FounderModal({
         </h3>
 
         <p style={{ marginTop: '12px', color: '#cbd5e1', lineHeight: 1.6 }}>
-          This area is restricted to approved founder investors only. Enter your
-          one-time founder code to continue.
+          Enter your one-time founder invitation code. Codes are validated against
+          live founder inventory in Supabase.
         </p>
 
         <FounderStatus
@@ -288,7 +288,7 @@ function FounderModal({
             lineHeight: 1.5,
           }}
         >
-          Validation reads from Supabase. Redeem and founder activation run atomically after sign-in.
+          After validation, redeem and founder activation run atomically once you are signed in.
         </p>
       </div>
     </div>
