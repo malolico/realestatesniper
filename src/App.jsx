@@ -15,6 +15,7 @@ import FounderModal from './components/FounderModal'
 import FounderStatus from './components/FounderStatus'
 import ContactMenu from './components/ContactMenu'
 import AuthModal from './components/AuthModal'
+import SubscriberDashboard from './components/SubscriberDashboard'
 import { redeemAndActivateFounderCode } from './lib/founder/redeemAndActivateFounderCode'
 import { getFounderCodesStatus } from './lib/founder/getFounderCodesStatus'
 import { getFounderAccessState } from './lib/founder/getFounderAccessState'
@@ -131,6 +132,8 @@ function App() {
   /** While true, ignore onAuthStateChange user updates (avoid stale metadata overwriting post-RPC refresh). */
   const founderSessionSyncRef = useRef(false)
 
+  const SHOW_SUBSCRIBER_DASHBOARD = Boolean(currentUser)
+
   const isAdmin = currentUser?.email
     ? ADMIN_EMAILS.includes(currentUser.email.toLowerCase())
     : false
@@ -151,6 +154,13 @@ function App() {
     founderDaysRemaining,
     founderExpiredNotice,
   } = founderAccess
+
+  const subscriberEmailVerified = Boolean(
+    currentUser?.email_confirmed_at ||
+      currentUser?.user_metadata?.email_verified === true,
+  )
+
+  const subscriberPhoneVerified = currentUser?.user_metadata?.phone_verified === true
 
   function getDealTier(deal) {
     if (deal?.is_diamond === true) return 'diamond'
@@ -3440,7 +3450,7 @@ function App() {
           >
             Live Deals
           </a>
-          {currentUser ? (
+          {currentUser && !SHOW_SUBSCRIBER_DASHBOARD ? (
             <a
               href="#my-purchases"
               onClick={(e) => {
@@ -3453,6 +3463,21 @@ function App() {
               }}
             >
               My Purchases
+            </a>
+          ) : null}
+          {currentUser ? (
+            <a
+              href="#subscriber-dashboard"
+              onClick={(e) => {
+                e.preventDefault()
+                if (selectedDeal) {
+                  closeDealDetail()
+                  return
+                }
+                scrollToSection('subscriber-dashboard')
+              }}
+            >
+              Dashboard
             </a>
           ) : null}
           <a
@@ -3900,7 +3925,37 @@ function App() {
           </section>
 
           {currentUser ? (
-            <section id="my-purchases" className="section-block">
+            <section id="subscriber-dashboard" className="section-block">
+              <div className="section-heading">
+                <div>
+                  <div className="eyebrow">Subscriber workspace</div>
+                  <h2 style={{ color: '#ffffff' }}>Dashboard</h2>
+                </div>
+                <p>
+                  Your account status, verification progress, purchases, and upcoming alerts.
+                </p>
+              </div>
+
+              <SubscriberDashboard
+                user={currentUser}
+                subscriberUnlocked={subscriberUnlocked}
+                userMode={userMode}
+                emailVerified={subscriberEmailVerified}
+                phoneVerified={subscriberPhoneVerified}
+                purchasesLoaded={purchasesLoaded}
+                myPurchasedEntries={myPurchasedEntries}
+                getDealTitle={getDealTitle}
+                getDealCity={getDealCity}
+                getDealScore={getDealScore}
+                onViewDeal={openDealDetail}
+                onGoToAccess={() => scrollToSection('access')}
+              />
+            </section>
+          ) : null}
+
+          {currentUser ? (
+            !SHOW_SUBSCRIBER_DASHBOARD && (
+              <section id="my-purchases" className="section-block">
               <div className="section-heading">
                 <div>
                   <div className="eyebrow">Your account</div>
@@ -4069,7 +4124,8 @@ function App() {
                   })}
                 </div>
               )}
-            </section>
+              </section>
+            )
           ) : null}
 
           <section id="deals" className="section-block">
