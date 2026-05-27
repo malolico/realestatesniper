@@ -17,10 +17,7 @@ import ContactMenu from './components/ContactMenu'
 import AuthModal from './components/AuthModal'
 import { redeemAndActivateFounderCode } from './lib/founder/redeemAndActivateFounderCode'
 import { getFounderCodesStatus } from './lib/founder/getFounderCodesStatus'
-import {
-  getDaysRemaining,
-  getFounderAccessState,
-} from './lib/founder/getFounderAccessState'
+import { getFounderAccessState } from './lib/founder/getFounderAccessState'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
 
@@ -748,40 +745,7 @@ function App() {
     loadDealPurchaseCounts()
   }, [currentUser, deals])
 
-  useEffect(() => {
-    async function processFounderExpiry() {
-      if (!currentUser) return
-
-      const metadata = currentUser.user_metadata || {}
-      const role = metadata.access_role || 'standard'
-      const trialEndsAt = metadata.founder_trial_ends_at || null
-      const founderTrialStatus = metadata.founder_trial_status || null
-
-      if (role !== 'founder' || !trialEndsAt) return
-
-      const remaining = getDaysRemaining(trialEndsAt)
-      if (remaining > 0) return
-      if (founderTrialStatus === 'expired') return
-
-      const hasSubscriberHistory = Boolean(metadata.subscriber_started_at)
-      const downgradedRole = hasSubscriberHistory ? 'subscriber' : 'standard'
-
-      const { data, error } = await supabase.auth.updateUser({
-        data: {
-          ...metadata,
-          access_role: downgradedRole,
-          founder_trial_status: 'expired',
-          founder_expired_at: new Date().toISOString(),
-        },
-      })
-
-      if (!error && data?.user) {
-        setCurrentUser(data.user)
-      }
-    }
-
-    processFounderExpiry()
-  }, [currentUser])
+  // Founder expiration: read-only via getFounderAccessState (no client updateUser / downgrade).
 
   const cities = useMemo(() => {
     return ['All', ...new Set(deals.map((d) => d.city).filter(Boolean))]

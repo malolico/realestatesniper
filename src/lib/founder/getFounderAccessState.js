@@ -1,26 +1,54 @@
 /**
  * Founder access is metadata-driven.
  * UI / React state must never be the source of truth for founder privileges.
- * Supabase Auth user_metadata (access_role, founder_trial_*) is authoritative.
+ * Supabase Auth user_metadata is authoritative.
  *
- * Future expiration: change metadata only (e.g. access_role away from 'founder',
- * founder_trial_status: 'expired'). Callers re-run this helper after session refresh.
+ * Expiration should eventually be enforced server-side (cron, RPC, or auth hook).
+ * The frontend only reflects auth metadata — it does not downgrade or mutate roles.
+ *
+ * Active founder requires ALL of:
+ *   access_role === 'founder'
+ *   founder_trial_status === 'active'
+ *   founder_trial_ends_at in the future
  */
 
 /**
- * @param {string | null | undefined} dateString
- * @returns {number | null}
+ * @param {string | null | undefined} founderTrialEndsAt ISO date string from user_metadata
+ * @returns {number | null} Days left (0 = last day elapsed, null = no end date)
  */
-export function getDaysRemaining(dateString) {
-  if (!dateString) return null
+export function getFounderDaysRemaining(founderTrialEndsAt) {
+  if (!founderTrialEndsAt) return null
 
   const now = Date.now()
-  const ends = new Date(dateString).getTime()
+  const ends = new Date(founderTrialEndsAt).getTime()
   const diff = ends - now
 
   if (diff <= 0) return 0
 
   return Math.ceil(diff / (1000 * 60 * 60 * 24))
+}
+
+/**
+ * @param {{
+ *   founderTrialStatus?: string | null
+ *   founderTrialEndsAt?: string | null
+ * }} params
+ * @returns {boolean}
+ */
+export function isFounderTrialExpired({
+  founderTrialStatus = null,
+  founderTrialEndsAt = null,
+} = {}) {
+  if (founderTrialStatus === 'expired') return true
+
+  if (founderTrialStatus != null && founderTrialStatus !== 'active') {
+    return true
+  }
+
+  if (!founderTrialEndsAt) return true
+
+  const daysRemaining = getFounderDaysRemaining(founderTrialEndsAt)
+  return daysRemaining === null || daysRemaining <= 0
 }
 
 /**
@@ -39,6 +67,7 @@ export function getDaysRemaining(dateString) {
  * @property {boolean} founderAccessClosed
  * @property {boolean} canEnterFounderMode
  * @property {boolean} hasFounderRole
+ * @property {boolean} isFounderTrialActive
  * @property {string} accessRole
  * @property {string | null} founderTrialEndsAt
  * @property {number | null} founderDaysRemaining
@@ -47,7 +76,7 @@ export function getDaysRemaining(dateString) {
  */
 
 /**
- * Single source for founder access flags derived from auth metadata + cohort inventory.
+ * Single source for founder access + expiration flags (read-only interpretation of metadata).
  *
  * @param {FounderAccessStateInput} params
  * @returns {FounderAccessState}
@@ -62,27 +91,30 @@ export function getFounderAccessState({
   const accessRole =
     typeof metadata.access_role === 'string' ? metadata.access_role : 'standard'
   const hasFounderRole = accessRole === 'founder'
-  const trialEndsAt = metadata.founder_trial_ends_at ?? null
+  const founderTrialEndsAt = metadata.founder_trial_ends_at ?? null
   const founderTrialStatus = metadata.founder_trial_status ?? null
 
-  const daysRemaining = trialEndsAt ? getDaysRemaining(trialEndsAt) : null
-  const trialExpiredByStatus = founderTrialStatus === 'expired'
-  const trialActiveByDate =
-    trialEndsAt != null && daysRemaining != null && daysRemaining > 0
+  const trialExpired = isFounderTrialExpired({
+    founderTrialStatus,
+    founderTrialEndsAt,
+  })
 
-  // Never grant founder UI from local state alone — metadata must say access_role === 'founder'.
-  const founderUnlocked =
-    Boolean(user) &&
-    !isAdmin &&
+  const trialStatusActive = founderTrialStatus === 'active'
+  const daysRemaining = founderTrialEndsAt
+    ? getFounderDaysRemaining(founderTrialEndsAt)
+    : null
+
+  const isFounderTrialActive =
     hasFounderRole &&
-    !trialExpiredByStatus &&
-    trialActiveByDate
+    trialStatusActive &&
+    Boolean(founderTrialEndsAt) &&
+    !trialExpired
 
-  const canEnterFounderMode = founderUnlocked && hasFounderRole
+  const founderUnlocked = Boolean(user) && !isAdmin && isFounderTrialActive
 
-  const founderExpiredNotice =
-    trialExpiredByStatus ||
-    (hasFounderRole && trialEndsAt != null && daysRemaining === 0)
+  const canEnterFounderMode = founderUnlocked
+
+  const founderExpiredNotice = hasFounderRole && trialExpired
 
   const founderAccessClosed = foundersCohortFull && !founderUnlocked
 
@@ -93,12 +125,13 @@ export function getFounderAccessState({
     founderAccessClosed,
     canEnterFounderMode,
     hasFounderRole,
+    isFounderTrialActive,
     accessRole,
-    founderTrialEndsAt: trialEndsAt,
+    founderTrialEndsAt,
     founderDaysRemaining: founderUnlocked
       ? daysRemaining
-      : hasFounderRole && trialEndsAt
-        ? 0
+      : hasFounderRole && founderTrialEndsAt
+        ? daysRemaining
         : null,
     founderExpiredNotice,
     founderTrialStatus,

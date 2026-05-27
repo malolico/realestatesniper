@@ -114,9 +114,16 @@ export const FOUNDER_PHASE_CHECKLIST = {
     'Founder full state: Founders Complete CTA + modal guard',
     'Production cleanup: FOUNDER_CODES + founderVisualMock.js removed',
     'founderFeedbackCopy.js — UI strings only',
-    'getFounderAccessState.js — metadata-driven founder flags (App.jsx)',
+    'getFounderAccessState.js — metadata-driven founder flags + expiration (read-only)',
+    'Founder Expiration V1: no client downgrade; isFounderTrialExpired / getFounderDaysRemaining',
     'Retire client-only activateFounderForCurrentUser when RPC is stable',
   ],
+  expirationEnforcement: {
+    frontend: 'Interprets access_role, founder_trial_status, founder_trial_ends_at only',
+    removed: 'processFounderExpiry updateUser downgrade in App.jsx',
+    pendingBackend:
+      'Server-side job or auth hook to set founder_trial_status expired and adjust access_role',
+  },
   legacyRemoved: [
     'App.jsx FOUNDER_CODES hardcoded list',
     'founderVisualMock.js (fake validation / mock cohort)',
