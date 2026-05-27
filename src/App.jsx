@@ -19,6 +19,7 @@ import SubscriberDashboard from './components/SubscriberDashboard'
 import { redeemAndActivateFounderCode } from './lib/founder/redeemAndActivateFounderCode'
 import { getFounderCodesStatus } from './lib/founder/getFounderCodesStatus'
 import { getFounderAccessState } from './lib/founder/getFounderAccessState'
+import { resolveAccess } from './lib/access/resolveAccess'
 import {
   FOUNDER_SESSION_REFRESH_FAILED_MESSAGE,
   refreshFounderSessionState,
@@ -161,6 +162,8 @@ function App() {
   )
 
   const subscriberPhoneVerified = currentUser?.user_metadata?.phone_verified === true
+
+  const dashboardAccess = resolveAccess(currentUser)
 
   function getDealTier(deal) {
     if (deal?.is_diamond === true) return 'diamond'
@@ -3949,6 +3952,7 @@ function App() {
                 getDealScore={getDealScore}
                 onViewDeal={openDealDetail}
                 onGoToAccess={() => scrollToSection('access')}
+                access={dashboardAccess}
               />
             </section>
           ) : null}

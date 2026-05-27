@@ -1,6 +1,7 @@
 /**
  * SubscriberDashboard — v1 personal zone (presentation only).
  * Data and gates come from App.jsx; no Stripe or new backend here.
+ * resolveAccess (via `access` prop) is display-only — does not affect app gates.
  */
  
  function StatusPill({ label, value, tone = 'neutral' }) {
@@ -142,14 +143,25 @@
    getDealTitle,
    getDealCity,
    getDealScore,
-   onViewDeal,
-   onGoToAccess,
- }) {
-   const email = user?.email || '—'
-   const accessRole = user?.user_metadata?.access_role || 'standard'
-   const accessLevel = formatAccessLevel(userMode)
- 
-   return (
+  onViewDeal,
+  onGoToAccess,
+  access = null,
+}) {
+  const email = user?.email || '—'
+  const accessRole = user?.user_metadata?.access_role || 'standard'
+  const accessLevel = formatAccessLevel(userMode)
+
+  const displayEmailVerified = access != null ? access.emailVerified : emailVerified
+  const displayPhoneVerified = access != null ? access.phoneVerified : phoneVerified
+  const displayIdentityVerified = access != null ? access.identityVerified : false
+  const displaySubscriptionActive =
+    access != null ? access.subscriptionActive : subscriberUnlocked
+  const displayRequiresPhone =
+    access != null ? access.requiresPhoneVerification : false
+  const displayRequiresIdentity =
+    access != null ? access.requiresIdentityVerificationForDiamond : false
+
+  return (
      <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
        {/* 1. Account Status */}
        <BlockShell
@@ -165,26 +177,26 @@
            }}
          >
            <StatusPill label="Email" value={email} />
-           <StatusPill
-             label="Subscriber active"
-             value={subscriberUnlocked ? 'Active' : 'Inactive'}
-             tone={subscriberUnlocked ? 'good' : 'muted'}
-           />
-           <StatusPill
-             label="Email verified"
-             value={emailVerified ? 'Verified' : 'Not verified'}
-             tone={emailVerified ? 'good' : 'warn'}
-           />
-           <StatusPill
-             label="Phone verified"
-             value={phoneVerified ? 'Verified' : 'Not verified'}
-             tone={phoneVerified ? 'good' : 'warn'}
-           />
+          <StatusPill
+            label="Subscriber active"
+            value={displaySubscriptionActive ? 'Active' : 'Inactive'}
+            tone={displaySubscriptionActive ? 'good' : 'muted'}
+          />
+          <StatusPill
+            label="Email verified"
+            value={displayEmailVerified ? 'Verified' : 'Not verified'}
+            tone={displayEmailVerified ? 'good' : 'warn'}
+          />
+          <StatusPill
+            label="Phone verified"
+            value={displayPhoneVerified ? 'Verified' : 'Not verified'}
+            tone={displayPhoneVerified ? 'good' : 'warn'}
+          />
            <StatusPill label="Access level" value={accessLevel} />
            <StatusPill label="Role metadata" value={accessRole} tone="neutral" />
          </div>
  
-         {!subscriberUnlocked ? (
+         {!displaySubscriptionActive ? (
            <div
              style={{
                padding: '14px 16px',
@@ -227,47 +239,72 @@
              <div style={{ fontWeight: 800, color: '#ffffff', marginBottom: '6px' }}>
                Email
              </div>
-             <div style={{ color: '#cbd5e1', lineHeight: 1.5 }}>
-               {emailVerified
-                 ? 'Your email address is verified.'
-                 : 'Email verification is pending. Check your inbox to confirm your address.'}
-             </div>
-           </div>
- 
-           <div
-             style={{
-               padding: '14px 16px',
-               borderRadius: '14px',
-               border: '1px solid rgba(255,255,255,0.1)',
-               background: 'rgba(255,255,255,0.03)',
-             }}
-           >
-             <div style={{ fontWeight: 800, color: '#ffffff', marginBottom: '6px' }}>
-               Phone
-             </div>
-             <div style={{ color: '#cbd5e1', lineHeight: 1.5 }}>
-               {phoneVerified
-                 ? 'Your phone number is verified on this account.'
-                 : 'Phone verification is not complete yet. A guided flow will be added in a future release.'}
-             </div>
-           </div>
- 
-           <div
-             style={{
-               padding: '14px 16px',
-               borderRadius: '14px',
-               border: '1px solid rgba(148, 163, 184, 0.25)',
-               background: 'rgba(148, 163, 184, 0.08)',
-             }}
-           >
-             <div style={{ fontWeight: 800, color: '#e2e8f0', marginBottom: '6px' }}>
-               Identity verification
-             </div>
-             <div style={{ color: '#94a3b8', lineHeight: 1.5 }}>
-               Coming later for Premium/Diamond. Identity checks will be required before
-               high-trust deal unlocks.
-             </div>
-           </div>
+            <div style={{ color: '#cbd5e1', lineHeight: 1.5 }}>
+              {displayEmailVerified
+                ? 'Your email address is verified.'
+                : 'Email verification is pending. Check your inbox to confirm your address.'}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: '14px 16px',
+              borderRadius: '14px',
+              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'rgba(255,255,255,0.03)',
+            }}
+          >
+            <div style={{ fontWeight: 800, color: '#ffffff', marginBottom: '6px' }}>
+              Phone
+            </div>
+            <div style={{ color: '#cbd5e1', lineHeight: 1.5 }}>
+              {displayPhoneVerified
+                ? 'Your phone number is verified on this account.'
+                : 'Phone verification is not complete yet. A guided flow will be added in a future release.'}
+              {displayRequiresPhone ? (
+                <div
+                  style={{
+                    marginTop: '8px',
+                    color: '#fde68a',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  Phone verification is recommended before Premium or Diamond purchases.
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: '14px 16px',
+              borderRadius: '14px',
+              border: '1px solid rgba(148, 163, 184, 0.25)',
+              background: 'rgba(148, 163, 184, 0.08)',
+            }}
+          >
+            <div style={{ fontWeight: 800, color: '#e2e8f0', marginBottom: '6px' }}>
+              Identity verification
+            </div>
+            <div style={{ color: '#94a3b8', lineHeight: 1.5 }}>
+              {displayIdentityVerified
+                ? 'Identity verified on this account.'
+                : 'Coming later for Premium/Diamond. Identity checks will be required before high-trust deal unlocks.'}
+              {displayRequiresIdentity ? (
+                <div
+                  style={{
+                    marginTop: '8px',
+                    color: '#fde68a',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  Identity verification will be required before Diamond checkout.
+                </div>
+              ) : null}
+            </div>
+          </div>
          </div>
        </BlockShell>
  
