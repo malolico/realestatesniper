@@ -149,4 +149,6 @@ export const FOUNDER_PHASE_CHECKLIST = {
     'Local approve-list check in handleFounderCodeSubmit',
     'activateFounderForCurrentUser (client-only metadata activation)',
   ],
+  /** Final read-only audit — see founderSystemAudit.md */
+  auditFile: 'src/lib/founder/founderSystemAudit.md',
 }
