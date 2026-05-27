@@ -124,6 +124,19 @@ export const FOUNDER_PHASE_CHECKLIST = {
     pendingBackend:
       'Server-side job or auth hook to set founder_trial_status expired and adjust access_role',
   },
+  backendEnforcementPrep: {
+    module: 'founderMetadataUtils.js',
+    helpers: [
+      'readFounderMetadata',
+      'parseFounderTrialEndDate',
+      'isFounderRole',
+      'isFounderTrialActive',
+      'hasFounderAccess',
+      'getFounderDaysRemaining',
+      'isFounderTrialExpired',
+    ],
+    note: 'Frontend defensive only; backend will own grants and expiration later',
+  },
   legacyRemoved: [
     'App.jsx FOUNDER_CODES hardcoded list',
     'founderVisualMock.js (fake validation / mock cohort)',
