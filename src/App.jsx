@@ -16,6 +16,7 @@ import FounderStatus from './components/FounderStatus'
 import ContactMenu from './components/ContactMenu'
 import AuthModal from './components/AuthModal'
 import SubscriberDashboard from './components/dashboards/SubscriberDashboard'
+import FounderDashboard from './components/dashboards/FounderDashboard'
 import { redeemAndActivateFounderCode } from './lib/founder/redeemAndActivateFounderCode'
 import { getFounderCodesStatus } from './lib/founder/getFounderCodesStatus'
 import { getFounderAccessState } from './lib/founder/getFounderAccessState'
@@ -164,6 +165,15 @@ function App() {
   const subscriberPhoneVerified = currentUser?.user_metadata?.phone_verified === true
 
   const dashboardAccess = resolveAccess(currentUser)
+
+  const founderDashboardTrialStatus = currentUser?.user_metadata?.founder_trial_status ?? null
+  const founderDashboardTrialEndsAt = currentUser?.user_metadata?.founder_trial_ends_at ?? null
+
+  let founderDashboardDaysRemaining = null
+  if (founderDashboardTrialEndsAt) {
+    const diff = new Date(founderDashboardTrialEndsAt).getTime() - Date.now()
+    founderDashboardDaysRemaining = diff <= 0 ? 0 : Math.ceil(diff / (1000 * 60 * 60 * 24))
+  }
 
   function getDealTier(deal) {
     if (deal?.is_diamond === true) return 'diamond'
@@ -3483,6 +3493,21 @@ function App() {
               Dashboard
             </a>
           ) : null}
+          {currentUser && founderUnlocked ? (
+            <a
+              href="#founder-dashboard"
+              onClick={(e) => {
+                e.preventDefault()
+                if (selectedDeal) {
+                  closeDealDetail()
+                  return
+                }
+                scrollToSection('founder-dashboard')
+              }}
+            >
+              Founder Dashboard
+            </a>
+          ) : null}
           <a
             href="#tiers"
             onClick={(e) => {
@@ -3926,6 +3951,27 @@ function App() {
               ))}
             </div>
           </section>
+
+          {currentUser && founderUnlocked ? (
+            <section id="founder-dashboard" className="section-block">
+              <div className="section-heading">
+                <div>
+                  <div className="eyebrow">Founder workspace</div>
+                  <h2 style={{ color: '#ffffff' }}>Founder Dashboard</h2>
+                </div>
+                <p>
+                  Your Founder trial window, visibility rules, benefits, and limits.
+                </p>
+              </div>
+
+              <FounderDashboard
+                founderTrialStatus={founderDashboardTrialStatus}
+                founderTrialEndsAt={founderDashboardTrialEndsAt}
+                founderAccessActive={founderUnlocked}
+                founderDaysRemaining={founderDashboardDaysRemaining}
+              />
+            </section>
+          ) : null}
 
           {currentUser ? (
             <section id="subscriber-dashboard" className="section-block">

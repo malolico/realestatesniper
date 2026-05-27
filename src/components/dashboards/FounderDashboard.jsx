@@ -1,4 +1,9 @@
-export default function FounderDashboard() {
+export default function FounderDashboard({
+  founderTrialStatus = null,
+  founderTrialEndsAt = null,
+  founderAccessActive = false,
+  founderDaysRemaining = null,
+}) {
   function BlockShell({ eyebrow, title, description, children }) {
     return (
       <div
@@ -139,12 +144,21 @@ export default function FounderDashboard() {
     )
   }
 
+  const trialEndLabel = founderTrialEndsAt
+    ? new Date(founderTrialEndsAt).toLocaleDateString()
+    : 'No expiration date available'
+
+  const daysRemainingLabel =
+    founderDaysRemaining != null
+      ? `${founderDaysRemaining} day${founderDaysRemaining === 1 ? '' : 's'}`
+      : '—'
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
       <BlockShell
         eyebrow="Founder"
         title="Founder Status"
-        description="Your Founder access window and what it unlocks. (Static preview — values are placeholders.)"
+        description="Your Founder access window and what it unlocks."
       >
         <div
           style={{
@@ -155,15 +169,15 @@ export default function FounderDashboard() {
         >
           <StatCard
             label="Founder access"
-            value="Active"
-            tone="good"
-            hint="Founder Access Active"
+            value={founderAccessActive ? 'Active' : 'Expired'}
+            tone={founderAccessActive ? 'good' : 'danger'}
+            hint={founderAccessActive ? 'Founder Access Active' : 'Founder access has expired'}
           />
           <StatCard
-            label="Trial window"
-            value="30-day free window"
+            label="Trial status"
+            value={founderTrialStatus || '—'}
             tone="warn"
-            hint="Founders get a time-limited unlock."
+            hint={`Trial ends: ${trialEndLabel}`}
           />
           <StatCard
             label="Private window"
@@ -173,9 +187,9 @@ export default function FounderDashboard() {
           />
           <StatCard
             label="Days remaining"
-            value="— days"
-            tone="muted"
-            hint="Placeholder; will be wired later."
+            value={daysRemainingLabel}
+            tone={founderDaysRemaining != null && founderDaysRemaining > 0 ? 'good' : 'muted'}
+            hint={founderTrialEndsAt ? `Trial end: ${trialEndLabel}` : 'No expiration date available'}
           />
         </div>
 
@@ -191,15 +205,20 @@ export default function FounderDashboard() {
           }}
         >
           During your Founder window, you can review deal intelligence early and purchase
-          Premium/Diamond unlocks. This dashboard will later show exact dates, remaining days,
-          and renewal options.
+          Premium/Diamond unlocks.
+          {founderTrialEndsAt
+            ? ` Your trial ends on ${trialEndLabel}.`
+            : ' No expiration date available.'}
+          {founderDaysRemaining != null
+            ? ` ${founderDaysRemaining} day${founderDaysRemaining === 1 ? '' : 's'} remaining.`
+            : ''}
         </div>
       </BlockShell>
 
       <BlockShell
         eyebrow="Visibility"
         title="Founder Visibility"
-        description="Founder mode shows a larger slice of the market to accelerate deal discovery. (Static preview.)"
+        description="Founder mode shows a larger slice of the market to accelerate deal discovery."
       >
         <div style={{ display: 'grid', gap: '12px' }}>
           <div
@@ -320,7 +339,7 @@ export default function FounderDashboard() {
       <BlockShell
         eyebrow="Benefits"
         title="Founder Benefits"
-        description="What Founder status unlocks during the trial window. (Static preview.)"
+        description="What Founder status unlocks during the trial window."
       >
         <BulletList
           items={[
@@ -334,7 +353,7 @@ export default function FounderDashboard() {
       <BlockShell
         eyebrow="Limits"
         title="Founder Limits"
-        description="Founder access is intentionally scarce and time-limited. (Static preview.)"
+        description="Founder access is intentionally scarce and time-limited."
       >
         <BulletList
           items={[
@@ -355,8 +374,9 @@ export default function FounderDashboard() {
             lineHeight: 1.55,
           }}
         >
-          This is a visual-only placeholder. Next step will be wiring real Founder dates and
-          remaining days without changing existing gates.
+          {founderTrialEndsAt
+            ? `Trial end date: ${trialEndLabel}. Subscribe after trial to continue full access.`
+            : 'No expiration date available. Subscribe after trial to continue full access.'}
         </div>
       </BlockShell>
     </div>

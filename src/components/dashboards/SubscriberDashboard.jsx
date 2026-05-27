@@ -4,7 +4,7 @@
  * resolveAccess (via `access` prop) is display-only — does not affect app gates.
  */
 
-function StatusPill({ label, value, tone = 'neutral' }) {
+function StatusPill({ label, value, tone = 'neutral', ellipsis = false }) {
   const tones = {
     neutral: {
       border: '1px solid rgba(255,255,255,0.12)',
@@ -41,6 +41,8 @@ function StatusPill({ label, value, tone = 'neutral' }) {
         flexDirection: 'column',
         gap: '6px',
         minHeight: '72px',
+        minWidth: 0,
+        overflow: 'hidden',
       }}
     >
       <span
@@ -58,8 +60,22 @@ function StatusPill({ label, value, tone = 'neutral' }) {
           fontSize: '0.98rem',
           fontWeight: 800,
           color: style.color,
-          lineHeight: 1.35,
+          lineHeight: 1.4,
+          minWidth: 0,
+          ...(ellipsis
+            ? {
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
+              }
+            : {
+                overflow: 'hidden',
+                wordBreak: 'break-word',
+                overflowWrap: 'anywhere',
+              }),
         }}
+        title={ellipsis ? String(value) : undefined}
       >
         {value}
       </span>
@@ -176,7 +192,7 @@ function SubscriberDashboard({
             gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
           }}
         >
-          <StatusPill label="Email" value={email} />
+          <StatusPill label="Email" value={email} ellipsis />
           <StatusPill
             label="Subscriber active"
             value={displaySubscriptionActive ? 'Active' : 'Inactive'}
