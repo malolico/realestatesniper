@@ -124,6 +124,12 @@ export const FOUNDER_PHASE_CHECKLIST = {
     pendingBackend:
       'Server-side job or auth hook to set founder_trial_status expired and adjust access_role',
   },
+  sessionConsistency: {
+    module: 'refreshFounderSessionState.js',
+    usage:
+      'After redeem_and_activate RPC and founder login/signup — refreshSession + getUser before UI',
+    note: 'Auth metadata propagation may lag; retry + founderSessionSyncRef avoids onAuthStateChange races',
+  },
   backendEnforcementPrep: {
     module: 'founderMetadataUtils.js',
     helpers: [

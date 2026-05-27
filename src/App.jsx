@@ -18,6 +18,10 @@ import AuthModal from './components/AuthModal'
 import { redeemAndActivateFounderCode } from './lib/founder/redeemAndActivateFounderCode'
 import { getFounderCodesStatus } from './lib/founder/getFounderCodesStatus'
 import { getFounderAccessState } from './lib/founder/getFounderAccessState'
+import {
+  FOUNDER_SESSION_REFRESH_FAILED_MESSAGE,
+  refreshFounderSessionState,
+} from './lib/founder/refreshFounderSessionState'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
 
@@ -124,6 +128,8 @@ function App() {
 
   const contactMenuRef = useRef(null)
   const subscriptionPollGuardRef = useRef(false)
+  /** While true, ignore onAuthStateChange user updates (avoid stale metadata overwriting post-RPC refresh). */
+  const founderSessionSyncRef = useRef(false)
 
   const isAdmin = currentUser?.email
     ? ADMIN_EMAILS.includes(currentUser.email.toLowerCase())
@@ -396,6 +402,7 @@ function App() {
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (subscriptionPollGuardRef.current) return
+      if (founderSessionSyncRef.current) return
       setCurrentUser(session?.user || null)
     })
 
@@ -555,7 +562,19 @@ function App() {
 
       const metadata = currentUser.user_metadata || {}
 
-      if (metadata.access_role === 'founder' && metadata.founder_trial_ends_at) {
+      if (metadata.access_role === 'founder' && metadata.founder_trial_status === 'active') {
+        founderSessionSyncRef.current = true
+        try {
+          const snapshot = await refreshFounderSessionState({
+            isAdmin,
+            remainingFounderSpots,
+            foundersCohortFull,
+            requireFounderAccess: true,
+          })
+          if (snapshot.user) setCurrentUser(snapshot.user)
+        } finally {
+          founderSessionSyncRef.current = false
+        }
         window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
         window.sessionStorage.removeItem(FOUNDER_PENDING_CODE_KEY)
         return
@@ -974,38 +993,40 @@ function App() {
     setFoundersCohortFull(status.foundersFull)
   }
 
-  async function applyFounderSessionAfterAtomicActivate(successMessage) {
-    await supabase.auth.refreshSession().catch(() => {})
-    const { data: userData } = await supabase.auth.getUser()
-    const refreshedUser = userData?.user
+  function applyFounderSessionRefreshFailure(message) {
+    const metadata = currentUser?.user_metadata ?? {}
+    setUserMode(metadata.subscription_active === true ? 'subscriber' : 'registered')
+    setFounderError(message || FOUNDER_SESSION_REFRESH_FAILED_MESSAGE)
+    openFounderGate()
+  }
 
-    if (!refreshedUser) {
-      setFounderError('Founder access was applied but the session could not be refreshed.')
-      openFounderGate()
-      return false
+  // Auth metadata may lag briefly after RPC — refresh session before reading founder flags.
+  async function applyFounderSessionAfterAtomicActivate(successMessage) {
+    founderSessionSyncRef.current = true
+
+    let snapshot
+
+    try {
+      snapshot = await refreshFounderSessionState({
+        isAdmin,
+        remainingFounderSpots,
+        foundersCohortFull,
+        requireFounderAccess: true,
+      })
+    } finally {
+      founderSessionSyncRef.current = false
     }
 
     window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
     window.sessionStorage.removeItem(FOUNDER_PENDING_CODE_KEY)
 
-    setCurrentUser(refreshedUser)
-
-    const refreshedAccess = getFounderAccessState({
-      user: refreshedUser,
-      isAdmin: refreshedUser.email
-        ? ADMIN_EMAILS.includes(refreshedUser.email.toLowerCase())
-        : false,
-      remainingFounderSpots,
-      foundersCohortFull,
-    })
-
-    if (!refreshedAccess.canEnterFounderMode) {
-      setFounderError(
-        'Founder access was applied but your account metadata is not in founder mode yet. Refresh and try again.',
-      )
-      openFounderGate()
+    if (!snapshot.success || !snapshot.user) {
+      if (snapshot.user) setCurrentUser(snapshot.user)
+      applyFounderSessionRefreshFailure(snapshot.message)
       return false
     }
+
+    setCurrentUser(snapshot.user)
 
     setUserMode('founder')
     setFounderError('')
@@ -1060,21 +1081,31 @@ function App() {
     }
 
     window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
-    setCurrentUser(data.user)
 
-    const activatedAccess = getFounderAccessState({
-      user: data.user,
-      isAdmin: data.user?.email
-        ? ADMIN_EMAILS.includes(data.user.email.toLowerCase())
-        : false,
-      remainingFounderSpots,
-      foundersCohortFull,
-    })
+    founderSessionSyncRef.current = true
+    let snapshot
 
-    if (activatedAccess.canEnterFounderMode) {
-      setUserMode('founder')
+    try {
+      snapshot = await refreshFounderSessionState({
+        isAdmin: data.user?.email
+          ? ADMIN_EMAILS.includes(data.user.email.toLowerCase())
+          : false,
+        remainingFounderSpots,
+        foundersCohortFull,
+        requireFounderAccess: true,
+      })
+    } finally {
+      founderSessionSyncRef.current = false
     }
 
+    if (!snapshot.success || !snapshot.user || !snapshot.founderAccess.canEnterFounderMode) {
+      if (snapshot.user) setCurrentUser(snapshot.user)
+      applyFounderSessionRefreshFailure(snapshot.message)
+      return
+    }
+
+    setCurrentUser(snapshot.user)
+    setUserMode('founder')
     setShowAuthModal(false)
     setShowFounderGate(false)
   }
