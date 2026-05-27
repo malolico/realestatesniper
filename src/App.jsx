@@ -17,6 +17,10 @@ import ContactMenu from './components/ContactMenu'
 import AuthModal from './components/AuthModal'
 import { redeemAndActivateFounderCode } from './lib/founder/redeemAndActivateFounderCode'
 import { getFounderCodesStatus } from './lib/founder/getFounderCodesStatus'
+import {
+  getDaysRemaining,
+  getFounderAccessState,
+} from './lib/founder/getFounderAccessState'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
 
@@ -88,7 +92,6 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [selectedCity, setSelectedCity] = useState('All')
   const [userMode, setUserMode] = useState('visitor')
-  const [founderUnlocked, setFounderUnlocked] = useState(false)
   const [subscriberUnlocked, setSubscriberUnlocked] = useState(false)
   const [premiumUnlocked, setPremiumUnlocked] = useState(false)
   const [diamondUnlocked, setDiamondUnlocked] = useState(false)
@@ -115,10 +118,6 @@ function App() {
   const [purchasedDealAccess, setPurchasedDealAccess] = useState({})
   const [purchasesLoaded, setPurchasesLoaded] = useState(false)
   const [unlockFeedbackMessage, setUnlockFeedbackMessage] = useState('')
-  const [founderTrialEndsAt, setFounderTrialEndsAt] = useState(null)
-  const [founderDaysRemaining, setFounderDaysRemaining] = useState(null)
-  const [founderExpiredNotice, setFounderExpiredNotice] = useState(false)
-
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [adminUsers, setAdminUsers] = useState([])
   const [adminLoading, setAdminLoading] = useState(false)
@@ -133,7 +132,22 @@ function App() {
     ? ADMIN_EMAILS.includes(currentUser.email.toLowerCase())
     : false
 
-  const founderAccessClosed = foundersCohortFull && !founderUnlocked
+  // Founder access is metadata-driven — see getFounderAccessState.js (UI is not source of truth).
+  const founderAccess = getFounderAccessState({
+    user: currentUser,
+    isAdmin,
+    remainingFounderSpots,
+    foundersCohortFull,
+  })
+
+  const {
+    founderUnlocked,
+    founderAccessClosed,
+    canEnterFounderMode,
+    founderTrialEndsAt,
+    founderDaysRemaining,
+    founderExpiredNotice,
+  } = founderAccess
 
   function getDealTier(deal) {
     if (deal?.is_diamond === true) return 'diamond'
@@ -469,13 +483,9 @@ function App() {
     setSelectedCategory(null)
 
     if (!currentUser) {
-      setFounderUnlocked(false)
       setSubscriberUnlocked(false)
       setPremiumUnlocked(false)
       setDiamondUnlocked(false)
-      setFounderTrialEndsAt(null)
-      setFounderDaysRemaining(null)
-      setFounderExpiredNotice(false)
       setShowAdminPanel(false)
       setAdminUsers([])
       setAdminError('')
@@ -485,10 +495,6 @@ function App() {
     }
 
     const metadata = currentUser.user_metadata || {}
-
-    const role = isAdmin ? 'admin' : metadata.access_role || 'standard'
-    const trialEndsAt = metadata.founder_trial_ends_at || null
-    const founderTrialStatus = metadata.founder_trial_status || null
 
     const hasActiveSubscription = metadata.subscription_active === true
 
@@ -500,38 +506,42 @@ function App() {
     setPremiumUnlocked(isAdmin || premiumAccess || diamondAccess)
     setDiamondUnlocked(isAdmin || diamondAccess)
 
-    setFounderExpiredNotice(founderTrialStatus === 'expired')
-
-    if (role === 'admin') {
-      setFounderUnlocked(false)
-      setFounderTrialEndsAt(trialEndsAt)
-      setFounderDaysRemaining(null)
+    if (isAdmin) {
       setUserMode('admin')
       return
     }
 
-    if (role === 'founder' && trialEndsAt) {
-      const remaining = getDaysRemaining(trialEndsAt)
+    const access = getFounderAccessState({
+      user: currentUser,
+      isAdmin,
+      remainingFounderSpots,
+      foundersCohortFull,
+    })
 
-      if (remaining > 0) {
-        setFounderUnlocked(true)
-        setUserMode('founder')
-        setFounderTrialEndsAt(trialEndsAt)
-        setFounderDaysRemaining(remaining)
-        return
-      }
-
-      setFounderUnlocked(false)
-      setFounderTrialEndsAt(trialEndsAt)
-      setFounderDaysRemaining(0)
-    } else {
-      setFounderUnlocked(false)
-      setFounderTrialEndsAt(trialEndsAt)
-      setFounderDaysRemaining(trialEndsAt ? 0 : null)
+    if (access.canEnterFounderMode) {
+      setUserMode('founder')
+      return
     }
 
     setUserMode(hasActiveSubscription ? 'subscriber' : 'registered')
-  }, [currentUser, isAdmin])
+  }, [currentUser, isAdmin, remainingFounderSpots, foundersCohortFull])
+
+  // Block manual founder mode unless metadata grants access_role === 'founder' (active trial).
+  useEffect(() => {
+    if (userMode !== 'founder') return
+
+    const access = getFounderAccessState({
+      user: currentUser,
+      isAdmin,
+      remainingFounderSpots,
+      foundersCohortFull,
+    })
+
+    if (access.canEnterFounderMode) return
+
+    const metadata = currentUser?.user_metadata ?? {}
+    setUserMode(metadata.subscription_active === true ? 'subscriber' : 'registered')
+  }, [userMode, currentUser, isAdmin, remainingFounderSpots, foundersCohortFull])
 
   useEffect(() => {
     async function processPendingFounderActivation() {
@@ -562,7 +572,6 @@ function App() {
 
       if (!pendingCode) {
         window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
-        setFounderUnlocked(false)
         setFounderError('Founder code missing after sign-in. Please enter your code again.')
         openFounderGate()
         return
@@ -768,9 +777,6 @@ function App() {
 
       if (!error && data?.user) {
         setCurrentUser(data.user)
-        setFounderUnlocked(false)
-        setFounderDaysRemaining(0)
-        setFounderExpiredNotice(true)
       }
     }
 
@@ -983,18 +989,6 @@ function App() {
     return visibleIds.has(deal.id) ? '100%' : score >= 80 ? '25%' : '50%'
   }
 
-  function getDaysRemaining(dateString) {
-    if (!dateString) return null
-
-    const now = new Date().getTime()
-    const ends = new Date(dateString).getTime()
-    const diff = ends - now
-
-    if (diff <= 0) return 0
-
-    return Math.ceil(diff / (1000 * 60 * 60 * 24))
-  }
-
   function addDaysToIso(days) {
     const date = new Date()
     date.setDate(date.getDate() + days)
@@ -1022,7 +1016,6 @@ function App() {
     const refreshedUser = userData?.user
 
     if (!refreshedUser) {
-      setFounderUnlocked(false)
       setFounderError('Founder access was applied but the session could not be refreshed.')
       openFounderGate()
       return false
@@ -1031,13 +1024,25 @@ function App() {
     window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
     window.sessionStorage.removeItem(FOUNDER_PENDING_CODE_KEY)
 
-    const trialEndsAt = refreshedUser.user_metadata?.founder_trial_ends_at || null
-
     setCurrentUser(refreshedUser)
-    setFounderUnlocked(true)
-    setFounderExpiredNotice(false)
-    setFounderTrialEndsAt(trialEndsAt)
-    setFounderDaysRemaining(trialEndsAt ? getDaysRemaining(trialEndsAt) : null)
+
+    const refreshedAccess = getFounderAccessState({
+      user: refreshedUser,
+      isAdmin: refreshedUser.email
+        ? ADMIN_EMAILS.includes(refreshedUser.email.toLowerCase())
+        : false,
+      remainingFounderSpots,
+      foundersCohortFull,
+    })
+
+    if (!refreshedAccess.canEnterFounderMode) {
+      setFounderError(
+        'Founder access was applied but your account metadata is not in founder mode yet. Refresh and try again.',
+      )
+      openFounderGate()
+      return false
+    }
+
     setUserMode('founder')
     setFounderError('')
     setFounderCodeInput('')
@@ -1057,7 +1062,6 @@ function App() {
     if (!result.success) {
       window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
       window.sessionStorage.removeItem(FOUNDER_PENDING_CODE_KEY)
-      setFounderUnlocked(false)
       setFounderError(result.message || 'Unable to activate founder access.')
       openFounderGate()
       return false
@@ -1093,11 +1097,20 @@ function App() {
 
     window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
     setCurrentUser(data.user)
-    setFounderUnlocked(true)
-    setFounderExpiredNotice(false)
-    setUserMode('founder')
-    setFounderTrialEndsAt(founderTrialEndsAtValue)
-    setFounderDaysRemaining(getDaysRemaining(founderTrialEndsAtValue))
+
+    const activatedAccess = getFounderAccessState({
+      user: data.user,
+      isAdmin: data.user?.email
+        ? ADMIN_EMAILS.includes(data.user.email.toLowerCase())
+        : false,
+      remainingFounderSpots,
+      foundersCohortFull,
+    })
+
+    if (activatedAccess.canEnterFounderMode) {
+      setUserMode('founder')
+    }
+
     setShowAuthModal(false)
     setShowFounderGate(false)
   }
@@ -1219,7 +1232,7 @@ function App() {
   }
 
   function handleFounderAccessRequest() {
-    if (founderUnlocked) {
+    if (canEnterFounderMode) {
       setUserMode('founder')
       return
     }
@@ -1279,14 +1292,10 @@ function App() {
     await supabase.auth.signOut()
     setSelectedDeal(null)
     setSelectedCategory(null)
-    setFounderUnlocked(false)
     setSubscriberUnlocked(false)
     setPremiumUnlocked(false)
     setDiamondUnlocked(false)
     setPurchasedDealAccess({})
-    setFounderTrialEndsAt(null)
-    setFounderDaysRemaining(null)
-    setFounderExpiredNotice(false)
     setShowAdminPanel(false)
     setAdminUsers([])
     setAdminError('')

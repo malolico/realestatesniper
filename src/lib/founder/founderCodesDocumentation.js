@@ -114,6 +114,7 @@ export const FOUNDER_PHASE_CHECKLIST = {
     'Founder full state: Founders Complete CTA + modal guard',
     'Production cleanup: FOUNDER_CODES + founderVisualMock.js removed',
     'founderFeedbackCopy.js — UI strings only',
+    'getFounderAccessState.js — metadata-driven founder flags (App.jsx)',
     'Retire client-only activateFounderForCurrentUser when RPC is stable',
   ],
   legacyRemoved: [
