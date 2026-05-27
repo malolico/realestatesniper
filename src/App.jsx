@@ -972,12 +972,6 @@ function App() {
     return visibleIds.has(deal.id) ? '100%' : score >= 80 ? '25%' : '50%'
   }
 
-  function addDaysToIso(days) {
-    const date = new Date()
-    date.setDate(date.getDate() + days)
-    return date.toISOString()
-  }
-
   async function refreshFounderCodesStatus() {
     const status = await getFounderCodesStatus()
 
@@ -1040,7 +1034,7 @@ function App() {
     return true
   }
 
-  // Atomic founder path: redeem_and_activate_founder_code only (never redeemFounderCode alone).
+  // Official founder activation: redeemAndActivateFounderCode (RPC) + refreshFounderSessionState.
   async function redeemAndActivateFounderForUser(code, userId) {
     const result = await redeemAndActivateFounderCode({ code, userId })
 
@@ -1053,61 +1047,6 @@ function App() {
     }
 
     return applyFounderSessionAfterAtomicActivate(result.message)
-  }
-
-  async function activateFounderForCurrentUser(userToActivate = currentUser) {
-    if (!userToActivate) return
-
-    const metadata = userToActivate.user_metadata || {}
-    const existingTrialEndsAt = metadata.founder_trial_ends_at
-    const existingTrialStartedAt = metadata.founder_trial_started_at
-
-    const founderTrialStartedAt = existingTrialStartedAt || new Date().toISOString()
-    const founderTrialEndsAtValue = existingTrialEndsAt || addDaysToIso(30)
-
-    const { data, error } = await supabase.auth.updateUser({
-      data: {
-        ...metadata,
-        access_role: 'founder',
-        founder_trial_started_at: founderTrialStartedAt,
-        founder_trial_ends_at: founderTrialEndsAtValue,
-        founder_trial_status: 'active',
-      },
-    })
-
-    if (error) {
-      setFounderError(error.message || 'Founder activation failed.')
-      return
-    }
-
-    window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
-
-    founderSessionSyncRef.current = true
-    let snapshot
-
-    try {
-      snapshot = await refreshFounderSessionState({
-        isAdmin: data.user?.email
-          ? ADMIN_EMAILS.includes(data.user.email.toLowerCase())
-          : false,
-        remainingFounderSpots,
-        foundersCohortFull,
-        requireFounderAccess: true,
-      })
-    } finally {
-      founderSessionSyncRef.current = false
-    }
-
-    if (!snapshot.success || !snapshot.user || !snapshot.founderAccess.canEnterFounderMode) {
-      if (snapshot.user) setCurrentUser(snapshot.user)
-      applyFounderSessionRefreshFailure(snapshot.message)
-      return
-    }
-
-    setCurrentUser(snapshot.user)
-    setUserMode('founder')
-    setShowAuthModal(false)
-    setShowFounderGate(false)
   }
 
   async function activateSubscriberForCurrentUser() {

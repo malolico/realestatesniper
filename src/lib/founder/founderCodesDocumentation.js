@@ -116,7 +116,7 @@ export const FOUNDER_PHASE_CHECKLIST = {
     'founderFeedbackCopy.js — UI strings only',
     'getFounderAccessState.js — metadata-driven founder flags + expiration (read-only)',
     'Founder Expiration V1: no client downgrade; isFounderTrialExpired / getFounderDaysRemaining',
-    'Retire client-only activateFounderForCurrentUser when RPC is stable',
+    'Removed App.jsx activateFounderForCurrentUser (client updateUser path)',
   ],
   expirationEnforcement: {
     frontend: 'Interprets access_role, founder_trial_status, founder_trial_ends_at only',
@@ -147,5 +147,6 @@ export const FOUNDER_PHASE_CHECKLIST = {
     'App.jsx FOUNDER_CODES hardcoded list',
     'founderVisualMock.js (fake validation / mock cohort)',
     'Local approve-list check in handleFounderCodeSubmit',
+    'activateFounderForCurrentUser (client-only metadata activation)',
   ],
 }
