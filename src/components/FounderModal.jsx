@@ -288,7 +288,7 @@ function FounderModal({
             lineHeight: 1.5,
           }}
         >
-          Validation reads from Supabase. Codes are not redeemed in this phase.
+          Validation reads from Supabase. Redeem and founder activation run atomically after sign-in.
         </p>
       </div>
     </div>

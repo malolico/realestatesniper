@@ -111,7 +111,7 @@ export const FOUNDER_PHASE_CHECKLIST = {
     'App.jsx wired to redeemAndActivateFounderCode helper',
   ],
   phase1c: [
-    'Sync FounderStatus remaining count from DB',
+    'getFounderCodesStatus.js wired in App (FounderStatus count from DB)',
     'Hide Founder button when cohort full',
     'Retire client-only activateFounderForCurrentUser when RPC is stable',
   ],

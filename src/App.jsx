@@ -16,6 +16,7 @@ import FounderStatus from './components/FounderStatus'
 import ContactMenu from './components/ContactMenu'
 import AuthModal from './components/AuthModal'
 import { redeemAndActivateFounderCode } from './lib/founder/redeemAndActivateFounderCode'
+import { getFounderCodesStatus } from './lib/founder/getFounderCodesStatus'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
 
@@ -84,8 +85,6 @@ const ACCESS_SIGNAL_FEED = [
   'Early applicants receive priority consideration during this window.',
 ]
 
-const FOUNDER_SPOT_FEED = [7, 7, 6, 6, 5]
-
 const FOUNDER_PENDING_KEY = 'realestatesniper_founder_pending_activation'
 const FOUNDER_PENDING_CODE_KEY = 'realestatesniper_founder_pending_code'
 const SUBSCRIPTION_SYNC_PENDING_KEY = 'realestatesniper_subscription_sync_pending'
@@ -112,10 +111,10 @@ function App() {
   const [showContactMenu, setShowContactMenu] = useState(false)
   const [activityIndex, setActivityIndex] = useState(0)
   const [accessSignalIndex, setAccessSignalIndex] = useState(0)
-  const [founderSpotIndex, setFounderSpotIndex] = useState(0)
   const [remainingFounderSpots, setRemainingFounderSpots] = useState(
     REMAINING_FOUNDER_SPOTS,
   )
+  const [totalFounderSpots, setTotalFounderSpots] = useState(TOTAL_FOUNDER_SPOTS)
   const [selectedDeal, setSelectedDeal] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [showPlatformInfo, setShowPlatformInfo] = useState(false)
@@ -442,18 +441,27 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setFounderSpotIndex((prev) => {
-        const next = prev + 1
-        if (next >= FOUNDER_SPOT_FEED.length) {
-          return prev
-        }
-        setRemainingFounderSpots(FOUNDER_SPOT_FEED[next])
-        return next
-      })
-    }, 15000)
+    let cancelled = false
 
-    return () => clearInterval(interval)
+    async function loadFounderCodesStatus() {
+      const status = await getFounderCodesStatus()
+      if (cancelled) return
+
+      if (status.error) {
+        setRemainingFounderSpots(REMAINING_FOUNDER_SPOTS)
+        setTotalFounderSpots(TOTAL_FOUNDER_SPOTS)
+        return
+      }
+
+      setRemainingFounderSpots(status.remaining)
+      setTotalFounderSpots(status.total)
+    }
+
+    loadFounderCodesStatus()
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   useEffect(() => {
@@ -987,6 +995,19 @@ function App() {
     return date.toISOString()
   }
 
+  async function refreshFounderCodesStatus() {
+    const status = await getFounderCodesStatus()
+
+    if (status.error) {
+      setRemainingFounderSpots(REMAINING_FOUNDER_SPOTS)
+      setTotalFounderSpots(TOTAL_FOUNDER_SPOTS)
+      return
+    }
+
+    setRemainingFounderSpots(status.remaining)
+    setTotalFounderSpots(status.total)
+  }
+
   async function applyFounderSessionAfterAtomicActivate(successMessage) {
     await supabase.auth.refreshSession().catch(() => {})
     const { data: userData } = await supabase.auth.getUser()
@@ -1017,6 +1038,7 @@ function App() {
     setUnlockFeedbackMessage(
       successMessage || 'Founder access activated successfully.',
     )
+    await refreshFounderCodesStatus()
     return true
   }
 
@@ -3655,7 +3677,7 @@ function App() {
 
               <FounderStatus
                 remainingSpots={remainingFounderSpots}
-                totalSpots={TOTAL_FOUNDER_SPOTS}
+                totalSpots={totalFounderSpots}
                 foundersFull={remainingFounderSpots <= 0}
               />
 
@@ -4444,7 +4466,7 @@ function App() {
 
               <FounderStatus
                 remainingSpots={remainingFounderSpots}
-                totalSpots={TOTAL_FOUNDER_SPOTS}
+                totalSpots={totalFounderSpots}
                 foundersFull={remainingFounderSpots <= 0}
               />
 
@@ -4565,7 +4587,7 @@ function App() {
         handleFounderCodeSubmit={handleFounderCodeSubmit}
         handleFounderGateClose={handleFounderGateClose}
         remainingSpots={remainingFounderSpots}
-        totalSpots={TOTAL_FOUNDER_SPOTS}
+        totalSpots={totalFounderSpots}
         foundersFullMock={remainingFounderSpots <= 0}
       />
 
