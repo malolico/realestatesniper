@@ -137,8 +137,6 @@ function App() {
 
   const SHOW_SUBSCRIBER_DASHBOARD = Boolean(currentUser)
 
-  const ownerUnlocked = currentUser?.user_metadata?.access_role === 'owner'
-
   const isAdmin = currentUser?.email
     ? ADMIN_EMAILS.includes(currentUser.email.toLowerCase())
     : false
@@ -3511,7 +3509,7 @@ function App() {
               Founder Dashboard
             </a>
           ) : null}
-          {currentUser && ownerUnlocked ? (
+          {currentUser?.user_metadata?.access_role === 'owner' ? (
             <a
               href="#owner-dashboard"
               onClick={(e) => {
@@ -3523,7 +3521,7 @@ function App() {
                 scrollToSection('owner-dashboard')
               }}
             >
-              Owner Dashboard
+              Owner Portal
             </a>
           ) : null}
           <a
@@ -3991,22 +3989,6 @@ function App() {
             </section>
           ) : null}
 
-          {currentUser && ownerUnlocked ? (
-            <section id="owner-dashboard" className="section-block">
-              <div className="section-heading">
-                <div>
-                  <div className="eyebrow">Owner workspace</div>
-                  <h2 style={{ color: '#ffffff' }}>Owner Dashboard</h2>
-                </div>
-                <p>
-                  Manage properties, authorization, contact preferences, and Diamond controls.
-                </p>
-              </div>
-
-              <OwnerDashboard />
-            </section>
-          ) : null}
-
           {currentUser ? (
             <section id="subscriber-dashboard" className="section-block">
               <div className="section-heading">
@@ -4034,6 +4016,22 @@ function App() {
                 onGoToAccess={() => scrollToSection('access')}
                 access={dashboardAccess}
               />
+            </section>
+          ) : null}
+
+          {currentUser?.user_metadata?.access_role === 'owner' ? (
+            <section id="owner-dashboard" className="section-block">
+              <div className="section-heading">
+                <div>
+                  <div className="eyebrow">Owner workspace</div>
+                  <h2 style={{ color: '#ffffff' }}>Owner Portal</h2>
+                </div>
+                <p>
+                  Manage properties, authorization, contact preferences, and Diamond controls.
+                </p>
+              </div>
+
+              <OwnerDashboard />
             </section>
           ) : null}
 
