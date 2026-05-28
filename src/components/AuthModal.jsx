@@ -11,6 +11,7 @@ function AuthModal({
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [authError, setAuthError] = useState('')
   const [authInfo, setAuthInfo] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -20,11 +21,23 @@ function AuthModal({
       setFullName('')
       setEmail('')
       setPassword('')
+      setShowPassword(false)
       setAuthError('')
       setAuthInfo('')
       setSubmitting(false)
     }
   }, [showAuthModal])
+
+  function handleForgotPassword() {
+    setAuthError('')
+    if (!email.trim()) {
+      setAuthError('Enter your email first to prepare password reset.')
+      return
+    }
+    setAuthInfo(
+      'Password reset flow is being prepared. You will be able to request a reset link for this email shortly.',
+    )
+  }
 
   async function handleSubmit() {
     setAuthError('')
@@ -233,44 +246,94 @@ function AuthModal({
           }}
         />
 
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => {
-            setPassword(e.target.value)
-            if (authError) setAuthError('')
-            if (authInfo) setAuthInfo('')
-          }}
-          placeholder="Password"
-          style={{
-            width: '100%',
-            marginTop: '14px',
-            padding: '16px 18px',
-            borderRadius: '14px',
-            border: '1px solid rgba(255,255,255,0.12)',
-            background: 'rgba(255,255,255,0.04)',
-            color: '#ffffff',
-            fontSize: '1rem',
-            outline: 'none',
-            boxSizing: 'border-box',
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSubmit()
-            if (e.key === 'Escape') handleAuthModalClose()
-          }}
-        />
+        <div style={{ position: 'relative', marginTop: '14px' }}>
+          <input
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value)
+              if (authError) setAuthError('')
+              if (authInfo) setAuthInfo('')
+            }}
+            placeholder="Password"
+            style={{
+              width: '100%',
+              marginTop: 0,
+              padding: '16px 88px 16px 18px',
+              borderRadius: '14px',
+              border: '1px solid rgba(255,255,255,0.12)',
+              background: 'rgba(255,255,255,0.04)',
+              color: '#ffffff',
+              fontSize: '1rem',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSubmit()
+              if (e.key === 'Escape') handleAuthModalClose()
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((value) => !value)}
+            style={{
+              position: 'absolute',
+              right: '10px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              border: '1px solid rgba(148, 163, 184, 0.32)',
+              background: 'rgba(15, 23, 42, 0.55)',
+              color: '#cbd5e1',
+              borderRadius: '999px',
+              padding: '5px 10px',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              cursor: 'pointer',
+            }}
+          >
+            {showPassword ? 'Hide' : 'Show'}
+          </button>
+        </div>
 
-        {authError && (
-          <p style={{ marginTop: '12px', color: '#ff6b6b', fontWeight: 600 }}>
-            {authError}
-          </p>
-        )}
+        {authMode === 'signin' ? (
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            style={{
+              marginTop: '10px',
+              background: 'transparent',
+              border: 'none',
+              color: '#94a3b8',
+              fontWeight: 700,
+              cursor: 'pointer',
+              padding: 0,
+              fontSize: '0.9rem',
+            }}
+          >
+            Forgot your password?
+          </button>
+        ) : null}
 
-        {authInfo && (
-          <p style={{ marginTop: '12px', color: '#4ade80', fontWeight: 600, lineHeight: 1.6 }}>
-            {authInfo}
-          </p>
-        )}
+        {authError || authInfo ? (
+          <div
+            style={{
+              marginTop: '12px',
+              padding: '10px 12px',
+              borderRadius: '12px',
+              border: authError
+                ? '1px solid rgba(239, 68, 68, 0.35)'
+                : '1px solid rgba(34, 197, 94, 0.35)',
+              background: authError ? 'rgba(239, 68, 68, 0.10)' : 'rgba(34, 197, 94, 0.10)',
+              color: authError ? '#fecaca' : '#bbf7d0',
+              fontWeight: 600,
+              lineHeight: 1.55,
+              fontSize: '0.95rem',
+            }}
+          >
+            {authError || authInfo}
+          </div>
+        ) : null}
 
         <div style={{ display: 'flex', gap: '12px', marginTop: '22px', flexWrap: 'wrap' }}>
           <button
