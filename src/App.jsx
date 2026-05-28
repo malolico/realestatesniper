@@ -119,6 +119,13 @@ function App() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authMode, setAuthMode] = useState('signup')
   const [authContext, setAuthContext] = useState('subscriber')
+  const [showPasswordResetFlow, setShowPasswordResetFlow] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
+  const [showResetPassword, setShowResetPassword] = useState(false)
+  const [passwordResetSubmitting, setPasswordResetSubmitting] = useState(false)
+  const [passwordResetError, setPasswordResetError] = useState('')
+  const [passwordResetInfo, setPasswordResetInfo] = useState('')
   const [currentUser, setCurrentUser] = useState(null)
   const [dealPurchaseCounts, setDealPurchaseCounts] = useState({})
   const [purchasedDealAccess, setPurchasedDealAccess] = useState({})
@@ -754,7 +761,15 @@ function App() {
 
     async function loadUser() {
       const searchParams = new URLSearchParams(window.location.search)
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
       const stripeSuccess = searchParams.get('success') === 'true'
+      const recoveryRequested =
+        searchParams.get('type') === 'recovery' || hashParams.get('type') === 'recovery'
+
+      if (recoveryRequested && !cancelled) {
+        setShowPasswordResetFlow(true)
+        setShowAuthModal(false)
+      }
 
       if (stripeSuccess) {
         sessionStorage.setItem(SUBSCRIPTION_SYNC_PENDING_KEY, '1')
@@ -841,7 +856,11 @@ function App() {
 
     loadUser()
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setShowPasswordResetFlow(true)
+        setShowAuthModal(false)
+      }
       if (subscriptionPollGuardRef.current) return
       if (founderSessionSyncRef.current) return
       setCurrentUser(session?.user || null)
@@ -1661,6 +1680,66 @@ function App() {
 
   function handleAuthModalClose() {
     setShowAuthModal(false)
+  }
+
+  function clearPasswordResetState() {
+    setNewPassword('')
+    setConfirmNewPassword('')
+    setShowResetPassword(false)
+    setPasswordResetSubmitting(false)
+    setPasswordResetError('')
+    setPasswordResetInfo('')
+  }
+
+  function closePasswordResetFlow() {
+    setShowPasswordResetFlow(false)
+    clearPasswordResetState()
+    const cleanUrl = `${window.location.origin}${window.location.pathname}`
+    window.history.replaceState({}, '', cleanUrl)
+  }
+
+  async function handlePasswordResetSubmit() {
+    setPasswordResetError('')
+    setPasswordResetInfo('')
+
+    if (!newPassword.trim()) {
+      setPasswordResetError('Please enter your new password.')
+      return
+    }
+    if (!confirmNewPassword.trim()) {
+      setPasswordResetError('Please confirm your new password.')
+      return
+    }
+    if (newPassword.length < 6) {
+      setPasswordResetError('Password must be at least 6 characters.')
+      return
+    }
+    if (newPassword !== confirmNewPassword) {
+      setPasswordResetError('Passwords do not match.')
+      return
+    }
+
+    setPasswordResetSubmitting(true)
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      })
+
+      if (error) {
+        setPasswordResetError(error.message)
+        setPasswordResetSubmitting(false)
+        return
+      }
+
+      setPasswordResetInfo('Password updated successfully. You can continue using your account.')
+      setPasswordResetSubmitting(false)
+      setTimeout(() => {
+        closePasswordResetFlow()
+      }, 1200)
+    } catch (_error) {
+      setPasswordResetError('Unexpected error while updating password. Please try again.')
+      setPasswordResetSubmitting(false)
+    }
   }
 
   async function handleSignOut() {
@@ -5309,6 +5388,174 @@ function App() {
           totalSpots={totalFounderSpots}
           foundersFullMock={foundersCohortFull}
         />
+      ) : null}
+
+      {showPasswordResetFlow ? (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.72)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            zIndex: 10002,
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              background: '#0b1120',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '22px',
+              padding: '28px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
+            }}
+          >
+            <div style={{ marginBottom: '16px' }}>
+              <div
+                style={{
+                  display: 'inline-block',
+                  padding: '8px 14px',
+                  borderRadius: '999px',
+                  fontSize: '0.8rem',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: '#dbeafe',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(255,255,255,0.04)',
+                }}
+              >
+                Password Recovery
+              </div>
+            </div>
+
+            <h3 style={{ margin: 0, fontSize: '1.8rem', color: '#ffffff' }}>Set new password</h3>
+            <p style={{ marginTop: '12px', color: '#cbd5e1', lineHeight: 1.6 }}>
+              Enter your new password to complete account recovery.
+            </p>
+
+            <div style={{ position: 'relative', marginTop: '18px' }}>
+              <input
+                type={showResetPassword ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => {
+                  setNewPassword(e.target.value)
+                  if (passwordResetError) setPasswordResetError('')
+                  if (passwordResetInfo) setPasswordResetInfo('')
+                }}
+                placeholder="New password"
+                style={{
+                  width: '100%',
+                  marginTop: 0,
+                  padding: '16px 88px 16px 18px',
+                  borderRadius: '14px',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: 'rgba(255,255,255,0.04)',
+                  color: '#ffffff',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handlePasswordResetSubmit()
+                  if (e.key === 'Escape') closePasswordResetFlow()
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowResetPassword((value) => !value)}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  border: '1px solid rgba(148, 163, 184, 0.32)',
+                  background: 'rgba(15, 23, 42, 0.55)',
+                  color: '#cbd5e1',
+                  borderRadius: '999px',
+                  padding: '5px 10px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  cursor: 'pointer',
+                }}
+              >
+                {showResetPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+
+            <input
+              type={showResetPassword ? 'text' : 'password'}
+              value={confirmNewPassword}
+              onChange={(e) => {
+                setConfirmNewPassword(e.target.value)
+                if (passwordResetError) setPasswordResetError('')
+                if (passwordResetInfo) setPasswordResetInfo('')
+              }}
+              placeholder="Confirm new password"
+              style={{
+                width: '100%',
+                marginTop: '14px',
+                padding: '16px 18px',
+                borderRadius: '14px',
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(255,255,255,0.04)',
+                color: '#ffffff',
+                fontSize: '1rem',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handlePasswordResetSubmit()
+                if (e.key === 'Escape') closePasswordResetFlow()
+              }}
+            />
+
+            {passwordResetError || passwordResetInfo ? (
+              <div
+                style={{
+                  marginTop: '12px',
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  border: passwordResetError
+                    ? '1px solid rgba(239, 68, 68, 0.35)'
+                    : '1px solid rgba(34, 197, 94, 0.35)',
+                  background: passwordResetError
+                    ? 'rgba(239, 68, 68, 0.10)'
+                    : 'rgba(34, 197, 94, 0.10)',
+                  color: passwordResetError ? '#fecaca' : '#bbf7d0',
+                  fontWeight: 600,
+                  lineHeight: 1.55,
+                  fontSize: '0.95rem',
+                }}
+              >
+                {passwordResetError || passwordResetInfo}
+              </div>
+            ) : null}
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '22px', flexWrap: 'wrap' }}>
+              <button
+                onClick={handlePasswordResetSubmit}
+                className="primary-button"
+                disabled={passwordResetSubmitting}
+                style={{ opacity: passwordResetSubmitting ? 0.7 : 1 }}
+              >
+                {passwordResetSubmitting ? 'Updating...' : 'Update password'}
+              </button>
+
+              <button
+                onClick={closePasswordResetFlow}
+                className="secondary-button"
+                disabled={passwordResetSubmitting}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       <AuthModal
