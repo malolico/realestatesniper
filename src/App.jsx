@@ -294,6 +294,41 @@ function App() {
     gap: '10px',
     flexWrap: 'wrap',
   }
+  const sectionDividerWrapStyle = {
+    margin: '6px 0 8px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  }
+  const sectionDividerLabelStyle = {
+    color: '#94a3b8',
+    fontSize: '0.69rem',
+    fontWeight: 700,
+    letterSpacing: '0.1em',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
+  }
+  const sectionDividerLineStyle = {
+    flex: 1,
+    height: '1px',
+    background: 'rgba(148, 163, 184, 0.22)',
+  }
+  const showWorkspaceModulesDivider =
+    currentUser &&
+    (primaryVisualWorkspace === 'founder' ||
+      showInvestorAccount ||
+      primaryVisualWorkspace === 'owner' ||
+      primaryVisualWorkspace === 'admin')
+
+  function renderOperationalDivider(label) {
+    if (!currentUser) return null
+    return (
+      <div style={sectionDividerWrapStyle}>
+        <span style={sectionDividerLabelStyle}>{label}</span>
+        <div style={sectionDividerLineStyle}></div>
+      </div>
+    )
+  }
 
   const subscriberEmailVerified = Boolean(
     currentUser?.email_confirmed_at ||
@@ -4135,6 +4170,7 @@ function App() {
           ) : null}
 
           {renderAdminPanel()}
+          {renderOperationalDivider('MARKET ACCESS')}
 
           <section id="markets" className="section-block">
             <div className="section-heading">
@@ -4179,6 +4215,7 @@ function App() {
             </div>
           </section>
 
+          {showWorkspaceModulesDivider ? renderOperationalDivider('WORKSPACE MODULES') : null}
           {primaryVisualWorkspace === 'founder' ? (
             <section id="founder-dashboard" className="section-block">
               <div className="section-heading">
@@ -4437,6 +4474,7 @@ function App() {
             )
           ) : null}
 
+          {renderOperationalDivider('INTELLIGENCE FEED')}
           <section id="deals" className="section-block" style={dealsSectionStyle}>
             <div className="section-heading" style={dealsHeadingStyle}>
               <div>
