@@ -3697,7 +3697,9 @@ function App() {
             </>
           )}
 
-          {currentUser && !subscriberUnlocked && !founderUnlocked ? (
+          {currentUser &&
+          !subscriberUnlocked &&
+          (primaryVisualWorkspace === 'investor' || primaryVisualWorkspace === 'founder') ? (
             <button
               onClick={handleSubscriptionCheckout}
               className="secondary-button"
