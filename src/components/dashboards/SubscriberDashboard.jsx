@@ -176,9 +176,91 @@ function SubscriberDashboard({
     access != null ? access.requiresPhoneVerification : false
   const displayRequiresIdentity =
     access != null ? access.requiresIdentityVerificationForDiamond : false
+  const subscriberOperationalModules = [
+    {
+      title: 'Subscriber Workspace Status',
+      items: [
+        'Subscription state tracked',
+        'Verification state monitored',
+        'Purchase access synchronized',
+      ],
+    },
+    {
+      title: 'Access Scope',
+      items: [
+        'Yellow / Green / Red deals available',
+        'Premium unlocks tracked',
+        'Diamond unlocks tracked',
+      ],
+    },
+    {
+      title: 'Action Queue',
+      items: [
+        'Complete phone verification',
+        'Review unlocked purchases',
+        'Configure alerts later',
+      ],
+    },
+  ]
+  const subscriberOperationalGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: '10px',
+  }
+  const subscriberOperationalCardStyle = {
+    padding: '10px 12px',
+    borderRadius: '12px',
+    border: '1px solid rgba(148, 163, 184, 0.2)',
+    background: 'rgba(8, 12, 20, 0.68)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  }
+  const subscriberOperationalTitleStyle = {
+    fontSize: '0.78rem',
+    fontWeight: 800,
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase',
+    color: '#cbd5e1',
+  }
+  const subscriberOperationalListStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  }
+  const subscriberOperationalItemStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '0.78rem',
+    color: '#94a3b8',
+  }
+  const subscriberOperationalDotStyle = {
+    width: '5px',
+    height: '5px',
+    borderRadius: '999px',
+    background: '#22c55e',
+    flexShrink: 0,
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+      <div style={subscriberOperationalGridStyle}>
+        {subscriberOperationalModules.map((module) => (
+          <div key={module.title} style={subscriberOperationalCardStyle}>
+            <div style={subscriberOperationalTitleStyle}>{module.title}</div>
+            <div style={subscriberOperationalListStyle}>
+              {module.items.map((item) => (
+                <span key={item} style={subscriberOperationalItemStyle}>
+                  <span style={subscriberOperationalDotStyle}></span>
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* 1. Account Status */}
       <BlockShell
         eyebrow="Account"
