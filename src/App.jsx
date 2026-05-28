@@ -3465,21 +3465,6 @@ function App() {
           >
             Live Deals
           </a>
-          {currentUser && !SHOW_SUBSCRIBER_DASHBOARD ? (
-            <a
-              href="#my-purchases"
-              onClick={(e) => {
-                e.preventDefault()
-                if (selectedDeal) {
-                  closeDealDetail()
-                  return
-                }
-                scrollToSection('my-purchases')
-              }}
-            >
-              My Purchases
-            </a>
-          ) : null}
           {currentUser ? (
             <a
               href="#subscriber-dashboard"
