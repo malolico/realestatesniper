@@ -229,6 +229,21 @@ function App() {
   const heroNoticeSpacing = compactHero
     ? { marginTop: '10px', padding: '10px 14px' }
     : { marginTop: '18px', padding: '12px 16px' }
+  const compactDeals = Boolean(currentUser)
+  const dealsSectionStyle = compactDeals ? { padding: '20px 0 4px' } : undefined
+  const dealsHeadingStyle = compactDeals
+    ? { marginBottom: '10px', gap: '12px', alignItems: 'center' }
+    : undefined
+  const dealsEyebrowStyle = compactDeals
+    ? { marginBottom: '6px', padding: '5px 10px', fontSize: '11px', letterSpacing: '0.1em' }
+    : undefined
+  const dealsH2Style = compactDeals
+    ? { color: '#ffffff', fontSize: '24px', lineHeight: 1.2, letterSpacing: '-0.02em' }
+    : { color: '#ffffff' }
+  const dealsSubcopyStyle = compactDeals
+    ? { margin: 0, fontSize: '14px', lineHeight: 1.5, color: '#94a3b8', maxWidth: '520px' }
+    : undefined
+  const dealsFilterRowStyle = compactDeals ? { marginBottom: '12px' } : undefined
 
   const subscriberEmailVerified = Boolean(
     currentUser?.email_confirmed_at ||
@@ -4297,18 +4312,26 @@ function App() {
             )
           ) : null}
 
-          <section id="deals" className="section-block">
-            <div className="section-heading">
+          <section id="deals" className="section-block" style={dealsSectionStyle}>
+            <div className="section-heading" style={dealsHeadingStyle}>
               <div>
-                <div className="eyebrow">Live investment opportunities</div>
-                <h2 style={{ color: '#ffffff' }}>Current deal flow</h2>
+                <div className="eyebrow" style={dealsEyebrowStyle}>
+                  {compactDeals ? 'Live Deals' : 'Live investment opportunities'}
+                </div>
+                <h2 style={dealsH2Style}>{compactDeals ? 'Active deal pipeline' : 'Current deal flow'}</h2>
               </div>
-              <p>
-                One preview card per category keeps the home clean while still showing what exists inside each layer.
-              </p>
+              {compactDeals ? (
+                <p style={dealsSubcopyStyle}>
+                  Filter by market and open a category to work scored opportunities.
+                </p>
+              ) : (
+                <p>
+                  One preview card per category keeps the home clean while still showing what exists inside each layer.
+                </p>
+              )}
             </div>
 
-            <div className="filter-row">
+            <div className="filter-row" style={dealsFilterRowStyle}>
               {cities.map((city) => (
                 <button
                   key={city}
