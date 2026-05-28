@@ -176,6 +176,23 @@ function App() {
   const showInvestorAccount =
     primaryVisualWorkspace === 'investor' || primaryVisualWorkspace === 'founder'
 
+  const isOwnerRole = currentUser?.user_metadata?.access_role === 'owner'
+
+  let headerPrimaryStatusLabel = 'Registered'
+  if (isAdmin) {
+    headerPrimaryStatusLabel = 'Admin'
+  } else if (isOwnerRole) {
+    headerPrimaryStatusLabel = 'Owner'
+  } else if (founderUnlocked) {
+    headerPrimaryStatusLabel = 'Founder Active'
+  } else if (diamondUnlocked) {
+    headerPrimaryStatusLabel = 'Diamond Active'
+  } else if (premiumUnlocked) {
+    headerPrimaryStatusLabel = 'Premium Active'
+  } else if (subscriberUnlocked) {
+    headerPrimaryStatusLabel = 'Subscriber Active'
+  }
+
   let heroTitle = 'Private off-market deals before everyone else'
   let heroDescription = 'Limited early access to live deal flow before full public release.'
 
@@ -3659,15 +3676,7 @@ function App() {
                   fontWeight: 700,
                 }}
               >
-                {diamondUnlocked
-                  ? 'Diamond Active'
-                  : premiumUnlocked
-                    ? 'Premium Active'
-                    : founderUnlocked
-                      ? 'Founder Active'
-                      : subscriberUnlocked
-                        ? 'Subscriber Active'
-                        : 'Registered'}
+                {headerPrimaryStatusLabel}
               </div>
 
               {isAdmin ? (
