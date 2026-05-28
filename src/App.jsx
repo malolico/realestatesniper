@@ -244,6 +244,37 @@ function App() {
     ? { margin: 0, fontSize: '14px', lineHeight: 1.5, color: '#94a3b8', maxWidth: '520px' }
     : undefined
   const dealsFilterRowStyle = compactDeals ? { marginBottom: '12px' } : undefined
+  const workspaceContextBarStyle = {
+    marginTop: '8px',
+    marginBottom: '10px',
+    padding: '10px 14px',
+    borderRadius: '12px',
+    border: '1px solid rgba(255,255,255,0.12)',
+    background: 'rgba(10, 14, 22, 0.72)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '12px',
+    flexWrap: 'wrap',
+  }
+
+  let workspaceContextTitle = 'Investor Workspace'
+  let workspaceContextStatus = 'Live opportunity flow'
+  let workspaceContextNote = 'Filter markets and open active categories'
+
+  if (primaryVisualWorkspace === 'founder') {
+    workspaceContextTitle = 'Founder Workspace'
+    workspaceContextStatus = 'Early access active'
+    workspaceContextNote = 'Trial window and deal visibility in focus'
+  } else if (primaryVisualWorkspace === 'owner') {
+    workspaceContextTitle = 'Owner Portal'
+    workspaceContextStatus = 'Property authorization active'
+    workspaceContextNote = 'Manage visibility and contact permissions'
+  } else if (primaryVisualWorkspace === 'admin') {
+    workspaceContextTitle = 'Admin Workspace'
+    workspaceContextStatus = 'Operational monitoring active'
+    workspaceContextNote = 'Platform health and access oversight'
+  }
 
   const subscriberEmailVerified = Boolean(
     currentUser?.email_confirmed_at ||
@@ -4008,6 +4039,32 @@ function App() {
               </div>
             </div>
           </section>
+
+          {currentUser ? (
+            <div style={workspaceContextBarStyle}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                <span
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '999px',
+                    background: '#22c55e',
+                    boxShadow: '0 0 8px rgba(34,197,94,0.6)',
+                    flexShrink: 0,
+                  }}
+                />
+                <strong style={{ color: '#e5e7eb', fontSize: '0.9rem', letterSpacing: '0.02em' }}>
+                  {workspaceContextTitle}
+                </strong>
+                <span style={{ color: '#64748b' }}>·</span>
+                <span style={{ color: '#cbd5e1', fontSize: '0.88rem' }}>{workspaceContextStatus}</span>
+              </div>
+
+              <span style={{ color: '#94a3b8', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+                {workspaceContextNote}
+              </span>
+            </div>
+          ) : null}
 
           {renderAdminPanel()}
 
