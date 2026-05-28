@@ -394,6 +394,51 @@ function App() {
     textTransform: 'uppercase',
     lineHeight: 1.2,
   }
+  const workspaceCommandItems = [
+    { label: 'Review Premium', active: true },
+    { label: 'Monitor Distress' },
+    { label: 'Owner Queue' },
+    { label: 'Market Pulse' },
+    { label: 'AI Signals' },
+  ]
+  const workspaceCommandStripStyle = {
+    marginTop: '0',
+    marginBottom: '10px',
+    padding: '7px 9px',
+    borderRadius: '10px',
+    border: '1px solid rgba(148, 163, 184, 0.18)',
+    background: 'rgba(6, 10, 16, 0.68)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '9px',
+    flexWrap: 'wrap',
+  }
+  const workspaceCommandLabelStyle = {
+    color: '#94a3b8',
+    fontSize: '0.68rem',
+    fontWeight: 700,
+    letterSpacing: '0.09em',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
+  }
+  const workspaceCommandPillStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '3px 8px',
+    borderRadius: '999px',
+    border: '1px solid rgba(148, 163, 184, 0.22)',
+    background: 'rgba(15, 23, 42, 0.38)',
+    color: '#cbd5e1',
+    fontSize: '0.72rem',
+    lineHeight: 1.15,
+    whiteSpace: 'nowrap',
+  }
+  const workspaceCommandPillActiveStyle = {
+    border: '1px solid rgba(34, 197, 94, 0.36)',
+    background: 'rgba(34, 197, 94, 0.16)',
+    color: '#dcfce7',
+    boxShadow: '0 0 0 1px rgba(34, 197, 94, 0.14) inset',
+  }
   const showWorkspaceModulesDivider =
     currentUser &&
     (primaryVisualWorkspace === 'founder' ||
@@ -4585,6 +4630,27 @@ function App() {
                   <span style={intelligenceMetricLabelStyle}>{metric.label}</span>
                 </div>
               ))}
+            </div>
+          ) : null}
+          {currentUser ? (
+            <div style={workspaceCommandStripStyle}>
+              <span style={workspaceCommandLabelStyle}>Command Strip</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap' }}>
+                {workspaceCommandItems.map((item) => {
+                  const isActive = item.active === true
+                  return (
+                    <span
+                      key={item.label}
+                      style={{
+                        ...workspaceCommandPillStyle,
+                        ...(isActive ? workspaceCommandPillActiveStyle : null),
+                      }}
+                    >
+                      {item.label}
+                    </span>
+                  )
+                })}
+              </div>
             </div>
           ) : null}
           <section id="deals" className="section-block" style={dealsSectionStyle}>
