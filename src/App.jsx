@@ -486,6 +486,78 @@ function App() {
     boxShadow: '0 0 6px rgba(34, 197, 94, 0.55)',
     flexShrink: 0,
   }
+  const founderWorkspaceModules = [
+    {
+      title: 'Founder Status',
+      items: ['Founder Access Active', 'Trial Window Active', 'Access Scope Enabled'],
+    },
+    {
+      title: 'Founder Access Scope',
+      items: [
+        'Yellow Deals: Full',
+        'Green Deals: Partial',
+        'Red Deals: Limited',
+        'Premium/Diamond Purchases Enabled',
+      ],
+    },
+    {
+      title: 'Founder Activity',
+      items: [
+        'Premium reviews monitored',
+        'Founder visibility active',
+        'Early access flow enabled',
+      ],
+    },
+    {
+      title: 'Founder Upgrade Path',
+      items: [
+        'Upgrade to Subscriber',
+        'Preserve Premium/Diamond history',
+        'Maintain workspace continuity',
+      ],
+    },
+  ]
+  const founderWorkspaceGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: '10px',
+    marginBottom: '14px',
+  }
+  const founderWorkspaceCardStyle = {
+    padding: '10px 12px',
+    borderRadius: '12px',
+    border: '1px solid rgba(148, 163, 184, 0.2)',
+    background: 'rgba(8, 12, 20, 0.68)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  }
+  const founderWorkspaceTitleStyle = {
+    fontSize: '0.78rem',
+    fontWeight: 800,
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase',
+    color: '#cbd5e1',
+  }
+  const founderWorkspaceListStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  }
+  const founderWorkspaceItemStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '0.78rem',
+    color: '#94a3b8',
+  }
+  const founderWorkspaceDotStyle = {
+    width: '5px',
+    height: '5px',
+    borderRadius: '999px',
+    background: '#22c55e',
+    flexShrink: 0,
+  }
   const showWorkspaceModulesDivider =
     currentUser &&
     (primaryVisualWorkspace === 'founder' ||
@@ -4399,6 +4471,22 @@ function App() {
                 <p>
                   Your Founder trial window, visibility rules, benefits, and limits.
                 </p>
+              </div>
+
+              <div style={founderWorkspaceGridStyle}>
+                {founderWorkspaceModules.map((module) => (
+                  <div key={module.title} style={founderWorkspaceCardStyle}>
+                    <div style={founderWorkspaceTitleStyle}>{module.title}</div>
+                    <div style={founderWorkspaceListStyle}>
+                      {module.items.map((item) => (
+                        <span key={item} style={founderWorkspaceItemStyle}>
+                          <span style={founderWorkspaceDotStyle}></span>
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <FounderDashboard
