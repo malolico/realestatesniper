@@ -313,6 +313,50 @@ function App() {
     height: '1px',
     background: 'rgba(148, 163, 184, 0.22)',
   }
+  const intelligenceRailChips = [
+    { label: 'Phoenix Metro', active: true },
+    { label: 'Distress Signals' },
+    { label: 'Premium Watch' },
+    { label: 'Off-Market' },
+    { label: 'High Activity' },
+  ]
+  const intelligenceRailStyle = {
+    marginTop: '2px',
+    marginBottom: '10px',
+    padding: '8px 10px',
+    borderRadius: '10px',
+    border: '1px solid rgba(148, 163, 184, 0.18)',
+    background: 'rgba(6, 10, 16, 0.72)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    flexWrap: 'wrap',
+  }
+  const intelligenceRailLabelStyle = {
+    color: '#94a3b8',
+    fontSize: '0.72rem',
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+  }
+  const intelligenceRailChipStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '4px 9px',
+    borderRadius: '999px',
+    border: '1px solid rgba(148, 163, 184, 0.24)',
+    background: 'rgba(15, 23, 42, 0.45)',
+    color: '#cbd5e1',
+    fontSize: '0.76rem',
+    lineHeight: 1.2,
+    whiteSpace: 'nowrap',
+  }
+  const intelligenceRailChipActiveStyle = {
+    border: '1px solid rgba(96, 165, 250, 0.42)',
+    background: 'rgba(96, 165, 250, 0.18)',
+    color: '#dbeafe',
+    boxShadow: '0 0 0 1px rgba(96, 165, 250, 0.16) inset',
+  }
   const showWorkspaceModulesDivider =
     currentUser &&
     (primaryVisualWorkspace === 'founder' ||
@@ -4475,6 +4519,27 @@ function App() {
           ) : null}
 
           {renderOperationalDivider('INTELLIGENCE FEED')}
+          {currentUser ? (
+            <div style={intelligenceRailStyle}>
+              <span style={intelligenceRailLabelStyle}>Control Rail</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                {intelligenceRailChips.map((chip) => {
+                  const isActive = chip.active === true
+                  return (
+                    <span
+                      key={chip.label}
+                      style={{
+                        ...intelligenceRailChipStyle,
+                        ...(isActive ? intelligenceRailChipActiveStyle : null),
+                      }}
+                    >
+                      {chip.label}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          ) : null}
           <section id="deals" className="section-block" style={dealsSectionStyle}>
             <div className="section-heading" style={dealsHeadingStyle}>
               <div>
