@@ -3555,19 +3555,21 @@ function App() {
           >
             Tiers
           </a>
-          <a
-            href="#access"
-            onClick={(e) => {
-              e.preventDefault()
-              if (selectedDeal) {
-                closeDealDetail()
-                return
-              }
-              scrollToSection('access')
-            }}
-          >
-            Access
-          </a>
+          {!currentUser ? (
+            <a
+              href="#access"
+              onClick={(e) => {
+                e.preventDefault()
+                if (selectedDeal) {
+                  closeDealDetail()
+                  return
+                }
+                scrollToSection('access')
+              }}
+            >
+              Access
+            </a>
+          ) : null}
         </nav>
 
         <div
