@@ -439,6 +439,53 @@ function App() {
     color: '#dcfce7',
     boxShadow: '0 0 0 1px rgba(34, 197, 94, 0.14) inset',
   }
+  const liveTopbarIndicators = [
+    'Pipeline Stable',
+    'Signal Flow Active',
+    'Phoenix Feed Live',
+    'Premium Queue Monitored',
+  ]
+  const liveIntelTopbarStyle = {
+    marginTop: '0',
+    marginBottom: '10px',
+    padding: '6px 9px',
+    borderRadius: '10px',
+    border: '1px solid rgba(148, 163, 184, 0.18)',
+    background: 'rgba(6, 10, 16, 0.64)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '9px',
+    flexWrap: 'wrap',
+  }
+  const liveIntelTopbarLabelStyle = {
+    color: '#94a3b8',
+    fontSize: '0.66rem',
+    fontWeight: 700,
+    letterSpacing: '0.09em',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
+  }
+  const liveIntelIndicatorStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '3px 8px',
+    borderRadius: '999px',
+    border: '1px solid rgba(148, 163, 184, 0.2)',
+    background: 'rgba(15, 23, 42, 0.34)',
+    color: '#cbd5e1',
+    fontSize: '0.71rem',
+    lineHeight: 1.15,
+    whiteSpace: 'nowrap',
+  }
+  const liveIntelDotStyle = {
+    width: '6px',
+    height: '6px',
+    borderRadius: '999px',
+    background: '#22c55e',
+    boxShadow: '0 0 6px rgba(34, 197, 94, 0.55)',
+    flexShrink: 0,
+  }
   const showWorkspaceModulesDivider =
     currentUser &&
     (primaryVisualWorkspace === 'founder' ||
@@ -4650,6 +4697,19 @@ function App() {
                     </span>
                   )
                 })}
+              </div>
+            </div>
+          ) : null}
+          {currentUser ? (
+            <div style={liveIntelTopbarStyle}>
+              <span style={liveIntelTopbarLabelStyle}>Live Intelligence</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap' }}>
+                {liveTopbarIndicators.map((item) => (
+                  <span key={item} style={liveIntelIndicatorStyle}>
+                    <span style={liveIntelDotStyle}></span>
+                    {item}
+                  </span>
+                ))}
               </div>
             </div>
           ) : null}
