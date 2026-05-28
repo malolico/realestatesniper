@@ -18,6 +18,7 @@ import AuthModal from './components/AuthModal'
 import SubscriberDashboard from './components/dashboards/SubscriberDashboard'
 import FounderDashboard from './components/dashboards/FounderDashboard'
 import OwnerDashboard from './components/dashboards/OwnerDashboard'
+import AdminDashboard from './components/dashboards/AdminDashboard'
 import { redeemAndActivateFounderCode } from './lib/founder/redeemAndActivateFounderCode'
 import { getFounderCodesStatus } from './lib/founder/getFounderCodesStatus'
 import { getFounderAccessState } from './lib/founder/getFounderAccessState'
@@ -3524,6 +3525,21 @@ function App() {
               Owner Portal
             </a>
           ) : null}
+          {isAdmin ? (
+            <a
+              href="#admin-dashboard"
+              onClick={(e) => {
+                e.preventDefault()
+                if (selectedDeal) {
+                  closeDealDetail()
+                  return
+                }
+                scrollToSection('admin-dashboard')
+              }}
+            >
+              Admin Dashboard
+            </a>
+          ) : null}
           <a
             href="#tiers"
             onClick={(e) => {
@@ -4032,6 +4048,22 @@ function App() {
               </div>
 
               <OwnerDashboard />
+            </section>
+          ) : null}
+
+          {isAdmin ? (
+            <section id="admin-dashboard" className="section-block">
+              <div className="section-heading">
+                <div>
+                  <div className="eyebrow">Admin workspace</div>
+                  <h2 style={{ color: '#ffffff' }}>Admin Dashboard</h2>
+                </div>
+                <p>
+                  System overview, user management, deal access, owner review, audit, and health.
+                </p>
+              </div>
+
+              <AdminDashboard />
             </section>
           ) : null}
 
