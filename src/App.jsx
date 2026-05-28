@@ -3697,15 +3697,17 @@ function App() {
             </button>
           ) : null}
 
-          <button
-            onClick={() => {
-              setPlatformInfoAccessNotice(null)
-              setShowPlatformInfo(true)
-            }}
-            className="secondary-button"
-          >
-            Platform Info
-          </button>
+          {!currentUser ? (
+            <button
+              onClick={() => {
+                setPlatformInfoAccessNotice(null)
+                setShowPlatformInfo(true)
+              }}
+              className="secondary-button"
+            >
+              Platform Info
+            </button>
+          ) : null}
 
           <ContactMenu
             showContactMenu={showContactMenu}
