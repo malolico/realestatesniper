@@ -214,6 +214,22 @@ function App() {
       'Monitor users, deal access, owner review, audit readiness, and platform health.'
   }
 
+  const compactHero = Boolean(currentUser)
+  const heroSectionStyle = compactHero
+    ? { padding: '24px 0 12px', gap: '20px' }
+    : undefined
+  const heroH1Style = compactHero
+    ? { color: '#ffffff', fontSize: '40px', lineHeight: 1.12 }
+    : { color: '#ffffff' }
+  const heroDescStyle = compactHero
+    ? { marginTop: '10px', fontSize: '16px', lineHeight: 1.55 }
+    : undefined
+  const heroActionsStyle = compactHero ? { marginTop: '14px' } : undefined
+  const heroStatsStyle = compactHero ? { marginTop: '18px' } : undefined
+  const heroNoticeSpacing = compactHero
+    ? { marginTop: '10px', padding: '10px 14px' }
+    : { marginTop: '18px', padding: '12px 16px' }
+
   const subscriberEmailVerified = Boolean(
     currentUser?.email_confirmed_at ||
       currentUser?.user_metadata?.email_verified === true,
@@ -3755,11 +3771,13 @@ function App() {
         renderCategoryPage()
       ) : (
         <main className="main-content">
-          <section className="hero">
+          <section className="hero" style={heroSectionStyle}>
             <div className="hero-copy">
-              <div className="eyebrow">FOUNDERS ACCESS: 15-DAY PRIVATE WINDOW</div>
-              <h1 style={{ color: '#ffffff' }}>{heroTitle}</h1>
-              <p>{heroDescription}</p>
+              {!compactHero ? (
+                <div className="eyebrow">FOUNDERS ACCESS: 15-DAY PRIVATE WINDOW</div>
+              ) : null}
+              <h1 style={heroH1Style}>{heroTitle}</h1>
+              <p style={heroDescStyle}>{heroDescription}</p>
 
               {!currentUser ? (
                 <FounderStatus
@@ -3769,7 +3787,7 @@ function App() {
                 />
               ) : null}
 
-              <div className="hero-actions">
+              <div className="hero-actions" style={heroActionsStyle}>
                 <button
                   onClick={() => {
                     setPlatformInfoAccessNotice(null)
@@ -3809,11 +3827,10 @@ function App() {
               {founderExpiredNotice ? (
                 <div
                   style={{
-                    marginTop: '18px',
+                    ...heroNoticeSpacing,
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '10px',
-                    padding: '12px 16px',
                     borderRadius: '14px',
                     border: '1px solid rgba(239, 68, 68, 0.28)',
                     background: 'rgba(239, 68, 68, 0.12)',
@@ -3828,11 +3845,10 @@ function App() {
               {subscriberUnlocked && !founderUnlocked ? (
                 <div
                   style={{
-                    marginTop: '18px',
+                    ...heroNoticeSpacing,
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '10px',
-                    padding: '12px 16px',
                     borderRadius: '14px',
                     border: '1px solid rgba(34, 197, 94, 0.28)',
                     background: 'rgba(34, 197, 94, 0.12)',
@@ -3847,11 +3863,10 @@ function App() {
               {founderUnlocked && founderDaysRemaining != null ? (
                 <div
                   style={{
-                    marginTop: '18px',
+                    ...heroNoticeSpacing,
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '10px',
-                    padding: '12px 16px',
                     borderRadius: '14px',
                     border: '1px solid rgba(34, 197, 94, 0.28)',
                     background: 'rgba(34, 197, 94, 0.12)',
@@ -3866,11 +3881,10 @@ function App() {
               {premiumUnlocked && !diamondUnlocked ? (
                 <div
                   style={{
-                    marginTop: '18px',
+                    ...heroNoticeSpacing,
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '10px',
-                    padding: '12px 16px',
                     borderRadius: '14px',
                     border: '1px solid rgba(96, 165, 250, 0.28)',
                     background: 'rgba(96, 165, 250, 0.12)',
@@ -3885,11 +3899,10 @@ function App() {
               {diamondUnlocked ? (
                 <div
                   style={{
-                    marginTop: '18px',
+                    ...heroNoticeSpacing,
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '10px',
-                    padding: '12px 16px',
                     borderRadius: '14px',
                     border: '1px solid rgba(250, 204, 21, 0.28)',
                     background: 'rgba(250, 204, 21, 0.12)',
@@ -3901,7 +3914,7 @@ function App() {
                 </div>
               ) : null}
 
-              <div className="hero-stats">
+              <div className="hero-stats" style={heroStatsStyle}>
                 <div className="stat-card">
                   <strong>{markets.filter((m) => m.status === 'active').length}</strong>
                   <span>Active Markets</span>
