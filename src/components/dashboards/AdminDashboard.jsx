@@ -193,8 +193,99 @@ export default function AdminDashboard() {
     gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
   }
 
+  const adminOperationalModules = [
+    {
+      title: 'Platform Oversight',
+      items: [
+        'Workspace monitoring active',
+        'Platform visibility synchronized',
+        'Access layers operational',
+      ],
+    },
+    {
+      title: 'Investor Access Review',
+      items: [
+        'Premium access monitored',
+        'Diamond access reviewed',
+        'Subscriber activity tracked',
+      ],
+    },
+    {
+      title: 'Owner Operations',
+      items: [
+        'Owner workflows visible',
+        'Property authorization monitored',
+        'Diamond visibility controlled',
+      ],
+    },
+    {
+      title: 'Audit & Security',
+      items: [
+        'Audit preparation enabled',
+        'Access logs planned',
+        'Security review active',
+      ],
+    },
+  ]
+  const adminOperationalGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: '10px',
+  }
+  const adminOperationalCardStyle = {
+    padding: '10px 12px',
+    borderRadius: '12px',
+    border: '1px solid rgba(148, 163, 184, 0.2)',
+    background: 'rgba(8, 12, 20, 0.68)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  }
+  const adminOperationalTitleStyle = {
+    fontSize: '0.78rem',
+    fontWeight: 800,
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase',
+    color: '#cbd5e1',
+  }
+  const adminOperationalListStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  }
+  const adminOperationalItemStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '0.78rem',
+    color: '#94a3b8',
+  }
+  const adminOperationalDotStyle = {
+    width: '5px',
+    height: '5px',
+    borderRadius: '999px',
+    background: '#22c55e',
+    flexShrink: 0,
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+      <div style={adminOperationalGridStyle}>
+        {adminOperationalModules.map((module) => (
+          <div key={module.title} style={adminOperationalCardStyle}>
+            <div style={adminOperationalTitleStyle}>{module.title}</div>
+            <div style={adminOperationalListStyle}>
+              {module.items.map((item) => (
+                <span key={item} style={adminOperationalItemStyle}>
+                  <span style={adminOperationalDotStyle}></span>
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* 1. System Overview */}
       <BlockShell
         eyebrow="System"
