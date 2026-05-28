@@ -176,6 +176,27 @@ function App() {
   const showInvestorAccount =
     primaryVisualWorkspace === 'investor' || primaryVisualWorkspace === 'founder'
 
+  let heroTitle = 'Private off-market deals before everyone else'
+  let heroDescription = 'Limited early access to live deal flow before full public release.'
+
+  if (primaryVisualWorkspace === 'founder') {
+    heroTitle = 'Founder workspace for early deal intelligence'
+    heroDescription =
+      'Track your Founder window, review early opportunities, and manage Premium/Diamond unlocks.'
+  } else if (primaryVisualWorkspace === 'investor') {
+    heroTitle = 'Your investor account workspace'
+    heroDescription =
+      'Review live opportunities, track purchases, and manage verification before high-trust unlocks.'
+  } else if (primaryVisualWorkspace === 'owner') {
+    heroTitle = 'Owner portal for property authorization'
+    heroDescription =
+      'Manage property review, contact permissions, Diamond slots, and investor visibility.'
+  } else if (primaryVisualWorkspace === 'admin') {
+    heroTitle = 'Operations command center'
+    heroDescription =
+      'Monitor users, deal access, owner review, audit readiness, and platform health.'
+  }
+
   const subscriberEmailVerified = Boolean(
     currentUser?.email_confirmed_at ||
       currentUser?.user_metadata?.email_verified === true,
@@ -3724,10 +3745,8 @@ function App() {
           <section className="hero">
             <div className="hero-copy">
               <div className="eyebrow">FOUNDERS ACCESS: 15-DAY PRIVATE WINDOW</div>
-              <h1 style={{ color: '#ffffff' }}>Private off-market deals before everyone else</h1>
-              <p>
-                Limited early access to live deal flow before full public release.
-              </p>
+              <h1 style={{ color: '#ffffff' }}>{heroTitle}</h1>
+              <p>{heroDescription}</p>
 
               {!currentUser ? (
                 <FounderStatus
