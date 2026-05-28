@@ -275,6 +275,25 @@ function App() {
     workspaceContextStatus = 'Operational monitoring active'
     workspaceContextNote = 'Platform health and access oversight'
   }
+  const activityPulseItems = [
+    'Premium activity detected',
+    'Phoenix pipeline updated',
+    'New distress signal processed',
+    'Diamond visibility active',
+    'Owner authorization pending',
+  ]
+  const activityPulseStripStyle = {
+    marginTop: '0',
+    marginBottom: '12px',
+    padding: '8px 10px',
+    borderRadius: '10px',
+    border: '1px solid rgba(148, 163, 184, 0.18)',
+    background: 'rgba(6, 10, 16, 0.72)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    flexWrap: 'wrap',
+  }
 
   const subscriberEmailVerified = Boolean(
     currentUser?.email_confirmed_at ||
@@ -4063,6 +4082,55 @@ function App() {
               <span style={{ color: '#94a3b8', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
                 {workspaceContextNote}
               </span>
+            </div>
+          ) : null}
+
+          {currentUser ? (
+            <div style={activityPulseStripStyle}>
+              <span
+                style={{
+                  color: '#94a3b8',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Activity Pulse
+              </span>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                {activityPulseItems.map((item) => (
+                  <span
+                    key={item}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '4px 8px',
+                      borderRadius: '999px',
+                      border: '1px solid rgba(148, 163, 184, 0.24)',
+                      background: 'rgba(15, 23, 42, 0.45)',
+                      color: '#cbd5e1',
+                      fontSize: '0.76rem',
+                      lineHeight: 1.2,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '999px',
+                        background: '#22c55e',
+                        boxShadow: '0 0 6px rgba(34,197,94,0.6)',
+                        flexShrink: 0,
+                      }}
+                    />
+                    {item}
+                  </span>
+                ))}
+              </div>
             </div>
           ) : null}
 
