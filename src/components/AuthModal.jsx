@@ -28,15 +28,32 @@ function AuthModal({
     }
   }, [showAuthModal])
 
-  function handleForgotPassword() {
+  async function handleForgotPassword() {
     setAuthError('')
+    setAuthInfo('')
     if (!email.trim()) {
-      setAuthError('Enter your email first to prepare password reset.')
+      setAuthError('Please enter your email first.')
       return
     }
-    setAuthInfo(
-      'Password reset flow is being prepared. You will be able to request a reset link for this email shortly.',
-    )
+
+    setSubmitting(true)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: window.location.origin,
+      })
+
+      if (error) {
+        setAuthError(error.message)
+        setSubmitting(false)
+        return
+      }
+
+      setAuthInfo('Password reset email sent. Check your inbox and spam folder.')
+      setSubmitting(false)
+    } catch (_error) {
+      setAuthError('Unexpected error while sending reset email. Please try again.')
+      setSubmitting(false)
+    }
   }
 
   async function handleSubmit() {
@@ -300,13 +317,15 @@ function AuthModal({
           <button
             type="button"
             onClick={handleForgotPassword}
+            disabled={submitting}
             style={{
               marginTop: '10px',
               background: 'transparent',
               border: 'none',
               color: '#94a3b8',
               fontWeight: 700,
-              cursor: 'pointer',
+              cursor: submitting ? 'not-allowed' : 'pointer',
+              opacity: submitting ? 0.7 : 1,
               padding: 0,
               fontSize: '0.9rem',
             }}
