@@ -3492,7 +3492,7 @@ function App() {
                 scrollToSection('subscriber-dashboard')
               }}
             >
-              Dashboard
+              Account
             </a>
           ) : null}
           {currentUser && founderUnlocked ? (
@@ -3507,7 +3507,7 @@ function App() {
                 scrollToSection('founder-dashboard')
               }}
             >
-              Founder Dashboard
+              Founder
             </a>
           ) : null}
           {currentUser?.user_metadata?.access_role === 'owner' ? (
@@ -3537,7 +3537,7 @@ function App() {
                 scrollToSection('admin-dashboard')
               }}
             >
-              Admin Dashboard
+              Admin
             </a>
           ) : null}
           <a
