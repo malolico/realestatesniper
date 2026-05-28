@@ -3727,11 +3727,13 @@ function App() {
                 Limited early access to live deal flow before full public release.
               </p>
 
-              <FounderStatus
-                remainingSpots={remainingFounderSpots}
-                totalSpots={totalFounderSpots}
-                foundersFull={foundersCohortFull}
-              />
+              {!currentUser ? (
+                <FounderStatus
+                  remainingSpots={remainingFounderSpots}
+                  totalSpots={totalFounderSpots}
+                  foundersFull={foundersCohortFull}
+                />
+              ) : null}
 
               <div className="hero-actions">
                 <button
@@ -3753,19 +3755,21 @@ function App() {
                   </button>
                 ) : null}
 
-                <button
-                  type="button"
-                  onClick={handleFounderAccessRequest}
-                  disabled={founderAccessClosed}
-                  className="primary-button"
-                  style={
-                    founderAccessClosed
-                      ? { opacity: 0.55, cursor: 'not-allowed' }
-                      : undefined
-                  }
-                >
-                  {founderAccessClosed ? 'Founders Complete' : 'Founder Access'}
-                </button>
+                {!currentUser ? (
+                  <button
+                    type="button"
+                    onClick={handleFounderAccessRequest}
+                    disabled={founderAccessClosed}
+                    className="primary-button"
+                    style={
+                      founderAccessClosed
+                        ? { opacity: 0.55, cursor: 'not-allowed' }
+                        : undefined
+                    }
+                  >
+                    {founderAccessClosed ? 'Founders Complete' : 'Founder Access'}
+                  </button>
+                ) : null}
               </div>
 
               {founderExpiredNotice ? (
@@ -4409,7 +4413,8 @@ function App() {
             </div>
           </section>
 
-          <section id="access" className="section-block cta-block">
+          {!currentUser ? (
+            <section id="access" className="section-block cta-block">
             <div>
               <div className="eyebrow">Private window</div>
               <h2 style={{ color: '#ffffff' }}>Only 10 Investors Will Get Access</h2>
@@ -4720,7 +4725,8 @@ function App() {
                 <span>LinkedIn</span>
               </a>
             </div>
-          </section>
+            </section>
+          ) : null}
         </main>
       )}
 
