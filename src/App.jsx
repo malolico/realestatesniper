@@ -159,6 +159,23 @@ function App() {
     founderExpiredNotice,
   } = founderAccess
 
+  // Display-only workspace hierarchy — does not affect userMode or gates.
+  let primaryVisualWorkspace = 'visitor'
+  if (currentUser) {
+    if (isAdmin) {
+      primaryVisualWorkspace = 'admin'
+    } else if (currentUser.user_metadata?.access_role === 'owner') {
+      primaryVisualWorkspace = 'owner'
+    } else if (founderUnlocked) {
+      primaryVisualWorkspace = 'founder'
+    } else {
+      primaryVisualWorkspace = 'investor'
+    }
+  }
+
+  const showInvestorAccount =
+    primaryVisualWorkspace === 'investor' || primaryVisualWorkspace === 'founder'
+
   const subscriberEmailVerified = Boolean(
     currentUser?.email_confirmed_at ||
       currentUser?.user_metadata?.email_verified === true,
@@ -3465,7 +3482,7 @@ function App() {
           >
             Live Deals
           </a>
-          {currentUser ? (
+          {showInvestorAccount ? (
             <a
               href="#subscriber-dashboard"
               onClick={(e) => {
@@ -3480,7 +3497,7 @@ function App() {
               Account
             </a>
           ) : null}
-          {currentUser && founderUnlocked ? (
+          {primaryVisualWorkspace === 'founder' ? (
             <a
               href="#founder-dashboard"
               onClick={(e) => {
@@ -3495,7 +3512,7 @@ function App() {
               Founder
             </a>
           ) : null}
-          {currentUser?.user_metadata?.access_role === 'owner' ? (
+          {primaryVisualWorkspace === 'owner' ? (
             <a
               href="#owner-dashboard"
               onClick={(e) => {
@@ -3510,7 +3527,7 @@ function App() {
               Owner Portal
             </a>
           ) : null}
-          {isAdmin ? (
+          {primaryVisualWorkspace === 'admin' ? (
             <a
               href="#admin-dashboard"
               onClick={(e) => {
@@ -3561,19 +3578,21 @@ function App() {
             flexWrap: 'wrap',
           }}
         >
-          <button
-            type="button"
-            onClick={handleFounderAccessRequest}
-            disabled={founderAccessClosed}
-            className={userMode === 'founder' ? 'primary-button' : 'secondary-button'}
-            style={
-              founderAccessClosed
-                ? { opacity: 0.55, cursor: 'not-allowed' }
-                : undefined
-            }
-          >
-            {founderAccessClosed ? 'Founders Complete' : 'Founder'}
-          </button>
+          {!currentUser ? (
+            <button
+              type="button"
+              onClick={handleFounderAccessRequest}
+              disabled={founderAccessClosed}
+              className={userMode === 'founder' ? 'primary-button' : 'secondary-button'}
+              style={
+                founderAccessClosed
+                  ? { opacity: 0.55, cursor: 'not-allowed' }
+                  : undefined
+              }
+            >
+              {founderAccessClosed ? 'Founders Complete' : 'Founder'}
+            </button>
+          ) : null}
 
           {!currentUser ? (
             <button
@@ -3969,7 +3988,7 @@ function App() {
             </div>
           </section>
 
-          {currentUser && founderUnlocked ? (
+          {primaryVisualWorkspace === 'founder' ? (
             <section id="founder-dashboard" className="section-block">
               <div className="section-heading">
                 <div>
@@ -3990,7 +4009,7 @@ function App() {
             </section>
           ) : null}
 
-          {currentUser ? (
+          {showInvestorAccount ? (
             <section id="subscriber-dashboard" className="section-block">
               <div className="section-heading">
                 <div>
@@ -4020,7 +4039,7 @@ function App() {
             </section>
           ) : null}
 
-          {currentUser?.user_metadata?.access_role === 'owner' ? (
+          {primaryVisualWorkspace === 'owner' ? (
             <section id="owner-dashboard" className="section-block">
               <div className="section-heading">
                 <div>
@@ -4036,7 +4055,7 @@ function App() {
             </section>
           ) : null}
 
-          {isAdmin ? (
+          {primaryVisualWorkspace === 'admin' ? (
             <section id="admin-dashboard" className="section-block">
               <div className="section-heading">
                 <div>
