@@ -357,6 +357,43 @@ function App() {
     color: '#dbeafe',
     boxShadow: '0 0 0 1px rgba(96, 165, 250, 0.16) inset',
   }
+  const intelligenceMetricsItems = [
+    { value: '41', label: 'Active Signals' },
+    { value: '12', label: 'Premium Watch' },
+    { value: '8', label: 'Distress Flow' },
+    { value: '5', label: 'Diamond Visibility' },
+    { value: 'Stable', label: 'Pipeline Status' },
+  ]
+  const intelligenceMetricsStripStyle = {
+    marginTop: '0',
+    marginBottom: '10px',
+    display: 'flex',
+    gap: '8px',
+    flexWrap: 'wrap',
+  }
+  const intelligenceMetricCardStyle = {
+    minWidth: '112px',
+    padding: '7px 9px',
+    borderRadius: '10px',
+    border: '1px solid rgba(148, 163, 184, 0.2)',
+    background: 'rgba(7, 12, 20, 0.72)',
+    display: 'inline-flex',
+    flexDirection: 'column',
+    gap: '3px',
+  }
+  const intelligenceMetricValueStyle = {
+    color: '#e2e8f0',
+    fontSize: '0.95rem',
+    lineHeight: 1.1,
+    fontWeight: 800,
+  }
+  const intelligenceMetricLabelStyle = {
+    color: '#94a3b8',
+    fontSize: '0.66rem',
+    letterSpacing: '0.07em',
+    textTransform: 'uppercase',
+    lineHeight: 1.2,
+  }
   const showWorkspaceModulesDivider =
     currentUser &&
     (primaryVisualWorkspace === 'founder' ||
@@ -4538,6 +4575,16 @@ function App() {
                   )
                 })}
               </div>
+            </div>
+          ) : null}
+          {currentUser ? (
+            <div style={intelligenceMetricsStripStyle}>
+              {intelligenceMetricsItems.map((metric) => (
+                <div key={metric.label} style={intelligenceMetricCardStyle}>
+                  <strong style={intelligenceMetricValueStyle}>{metric.value}</strong>
+                  <span style={intelligenceMetricLabelStyle}>{metric.label}</span>
+                </div>
+              ))}
             </div>
           ) : null}
           <section id="deals" className="section-block" style={dealsSectionStyle}>
