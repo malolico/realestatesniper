@@ -4,8 +4,10 @@ import { supabase } from '../supabase'
  * @typedef {'valid' | 'invalid' | 'used' | 'expired' | 'error'} FounderCodeValidationStatus
  */
 
+const KNOWN_STATUSES = new Set(['valid', 'invalid', 'used', 'expired', 'error'])
+
 /**
- * Read-only founder code validation against public.founder_codes.
+ * Read-only founder code validation via public RPC.
  * Does NOT set used, used_at, or used_by_user_id (redemption is a later phase).
  *
  * @param {string} rawCode
@@ -26,11 +28,9 @@ export async function validateFounderCode(rawCode) {
     }
   }
 
-  const { data, error } = await supabase
-    .from('founder_codes')
-    .select('id, code, used, expires_at, assigned_email')
-    .eq('code', code)
-    .maybeSingle()
+  const { data, error } = await supabase.rpc('validate_founder_code_public', {
+    p_code: code,
+  })
 
   if (error) {
     return {
@@ -40,36 +40,20 @@ export async function validateFounderCode(rawCode) {
     }
   }
 
-  if (!data) {
+  const payload = data && typeof data === 'object' ? data : null
+  const status = payload?.status
+
+  if (!KNOWN_STATUSES.has(status)) {
     return {
-      status: 'invalid',
-      message: null,
+      status: 'error',
+      message: 'Unable to validate founder code.',
       row: null,
     }
   }
 
-  if (data.used === true) {
-    return {
-      status: 'used',
-      message: null,
-      row: data,
-    }
-  }
-
-  if (data.expires_at) {
-    const expiresAtMs = new Date(data.expires_at).getTime()
-    if (!Number.isNaN(expiresAtMs) && expiresAtMs < Date.now()) {
-      return {
-        status: 'expired',
-        message: null,
-        row: data,
-      }
-    }
-  }
-
   return {
-    status: 'valid',
-    message: null,
-    row: data,
+    status,
+    message: typeof payload.message === 'string' ? payload.message : null,
+    row: null,
   }
 }
