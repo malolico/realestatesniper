@@ -106,6 +106,10 @@ function canonicalCity(value) {
     .join(' ')
 }
 
+function isOwnerAccessRole(user) {
+  return user?.user_metadata?.access_role === 'owner'
+}
+
 function App() {
   const [markets, setMarkets] = useState([])
   const [deals, setDeals] = useState([])
@@ -756,7 +760,26 @@ function App() {
   }
 
   useEffect(() => {
-    async function loadData() {
+    let cancelled = false
+
+    async function loadMarketplaceData() {
+      const { data: userData } = await supabase.auth.getUser()
+      const user = userData?.user
+
+      if (isOwnerAccessRole(user) || isOwnerRole) {
+        if (!cancelled) {
+          setMarkets([])
+          setDeals([])
+          setDealPurchaseCounts({})
+          setLoading(false)
+        }
+        return
+      }
+
+      if (!cancelled) {
+        setLoading(true)
+      }
+
       const { data: marketsData } = await supabase
         .from('markets')
         .select('*')
@@ -767,18 +790,24 @@ function App() {
         .select('*')
         .order('score', { ascending: false })
 
-      setMarkets(marketsData || [])
-      setDeals(
-        (dealsData || []).map((deal) => ({
-          ...deal,
-          access_tier: getDealTier(deal),
-        })),
-      )
-      setLoading(false)
+      if (!cancelled) {
+        setMarkets(marketsData || [])
+        setDeals(
+          (dealsData || []).map((deal) => ({
+            ...deal,
+            access_tier: getDealTier(deal),
+          })),
+        )
+        setLoading(false)
+      }
     }
 
-    loadData()
-  }, [])
+    loadMarketplaceData()
+
+    return () => {
+      cancelled = true
+    }
+  }, [isOwnerRole])
 
   useEffect(() => {
     function handleWorkspacePopState() {
@@ -1166,7 +1195,7 @@ function App() {
 
   useEffect(() => {
     async function loadPurchases() {
-      if (!currentUser) {
+      if (!currentUser || isOwnerRole) {
         await loadUserPurchases(null)
         return
       }
@@ -1175,7 +1204,7 @@ function App() {
     }
 
     loadPurchases()
-  }, [currentUser])
+  }, [currentUser, isOwnerRole])
 
   useEffect(() => {
     if (!unlockFeedbackMessage) return
@@ -1193,6 +1222,7 @@ function App() {
 
     async function syncDealCheckoutPurchases() {
       if (!currentUser?.id) return
+      if (isOwnerRole) return
 
       const pending =
         sessionStorage.getItem(DEAL_CHECKOUT_SYNC_PENDING_KEY) === '1'
@@ -1264,7 +1294,7 @@ function App() {
       cancelled = true
       if (intervalId) clearInterval(intervalId)
     }
-  }, [currentUser])
+  }, [currentUser, isOwnerRole])
 
   function userHasPurchasedDeal(deal, tier) {
     if (!deal?.id) return false
@@ -1279,10 +1309,11 @@ function App() {
   }
 
   useEffect(() => {
+    if (isOwnerRole) return
     if (!deals.length) return
 
     loadDealPurchaseCounts()
-  }, [currentUser, deals])
+  }, [currentUser, deals, isOwnerRole])
 
   // Founder expiration: read-only via getFounderAccessState (no client updateUser / downgrade).
 
