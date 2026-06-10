@@ -1350,6 +1350,14 @@ function App() {
     }
   }
 
+  function handleOwnerDiscoveryRequest() {
+    if (selectedDeal) {
+      closeDealDetail()
+      return
+    }
+    scrollToSection('owners')
+  }
+
   function openExternalLink(url) {
     window.open(url, '_blank', 'noopener,noreferrer')
   }
@@ -4122,6 +4130,19 @@ function App() {
           >
             Tiers
           </a>
+          <a
+            href="#owners"
+            onClick={(e) => {
+              e.preventDefault()
+              if (selectedDeal) {
+                closeDealDetail()
+                return
+              }
+              scrollToSection('owners')
+            }}
+          >
+            Property Owners
+          </a>
           {!currentUser ? (
             <a
               href="#access"
@@ -4164,12 +4185,22 @@ function App() {
           ) : null}
 
           {!currentUser ? (
-            <button
-              onClick={handleSubscriberAccessRequest}
-              className="secondary-button"
-            >
-              Subscriber
-            </button>
+            <>
+              <button
+                onClick={handleSubscriberAccessRequest}
+                className="secondary-button"
+              >
+                Subscriber
+              </button>
+
+              <button
+                type="button"
+                onClick={handleOwnerDiscoveryRequest}
+                className="secondary-button"
+              >
+                Property Owners
+              </button>
+            </>
           ) : (
             <>
               <div
@@ -4317,6 +4348,16 @@ function App() {
                     className="secondary-button"
                   >
                     Subscriber Access
+                  </button>
+                ) : null}
+
+                {!currentUser ? (
+                  <button
+                    type="button"
+                    onClick={handleOwnerDiscoveryRequest}
+                    className="secondary-button"
+                  >
+                    Create Free Owner Account
                   </button>
                 ) : null}
 
@@ -5137,6 +5178,48 @@ function App() {
                   {diamondUnlocked ? 'Diamond Active' : 'View Diamond Deals'}
                 </button>
               </div>
+            </div>
+          </section>
+
+          <section id="owners" className="section-block">
+            <div className="section-heading">
+              <div>
+                <div className="eyebrow">Property owners</div>
+                <h2 style={{ color: '#ffffff' }}>Property Owners</h2>
+              </div>
+              <p>
+                List privately, stay in control, and share contact details only when you choose.
+              </p>
+            </div>
+
+            <ul
+              style={{
+                margin: 0,
+                paddingLeft: '22px',
+                color: '#cbd5e1',
+                lineHeight: 1.85,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                maxWidth: '640px',
+              }}
+            >
+              <li>Owners pay nothing.</li>
+              <li>Submit properties privately.</li>
+              <li>Control what investors can see.</li>
+              <li>Authorize contact sharing only if you choose.</li>
+              <li>Potential Diamond opportunities.</li>
+              <li>No obligation to sell.</li>
+            </ul>
+
+            <div style={{ marginTop: '24px' }}>
+              <button
+                type="button"
+                onClick={handleOwnerDiscoveryRequest}
+                className="secondary-button"
+              >
+                Create Free Owner Account
+              </button>
             </div>
           </section>
 
