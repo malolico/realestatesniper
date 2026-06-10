@@ -142,6 +142,15 @@ function App() {
   const subscriptionPollGuardRef = useRef(false)
   /** While true, ignore onAuthStateChange user updates (avoid stale metadata overwriting post-RPC refresh). */
   const founderSessionSyncRef = useRef(false)
+  const selectedDealRef = useRef(null)
+  const dealDetailHistoryActiveRef = useRef(false)
+  const skipDealDetailPopStateRef = useRef(false)
+  const selectedCategoryRef = useRef(null)
+  const categoryHistoryActiveRef = useRef(false)
+  const skipCategoryPopStateRef = useRef(false)
+
+  selectedDealRef.current = selectedDeal
+  selectedCategoryRef.current = selectedCategory
 
   const SHOW_SUBSCRIBER_DASHBOARD = Boolean(currentUser)
 
@@ -754,6 +763,36 @@ function App() {
     }
 
     loadData()
+  }, [])
+
+  useEffect(() => {
+    function handleWorkspacePopState() {
+      if (skipDealDetailPopStateRef.current) {
+        skipDealDetailPopStateRef.current = false
+        return
+      }
+
+      if (skipCategoryPopStateRef.current) {
+        skipCategoryPopStateRef.current = false
+        return
+      }
+
+      if (selectedDealRef.current) {
+        dealDetailHistoryActiveRef.current = false
+        setSelectedDeal(null)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+
+      if (selectedCategoryRef.current) {
+        categoryHistoryActiveRef.current = false
+        setSelectedCategory(null)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+
+    window.addEventListener('popstate', handleWorkspacePopState)
+    return () => window.removeEventListener('popstate', handleWorkspacePopState)
   }, [])
 
   useEffect(() => {
@@ -1757,11 +1796,37 @@ function App() {
     setUserMode('visitor')
   }
 
+  function pushDealDetailHistory(dealId) {
+    if (dealDetailHistoryActiveRef.current) {
+      window.history.replaceState({ rsDealDetail: dealId }, '')
+      return
+    }
+
+    window.history.pushState({ rsDealDetail: dealId }, '')
+    dealDetailHistoryActiveRef.current = true
+  }
+
+  function pushCategoryHistory(category) {
+    if (categoryHistoryActiveRef.current) {
+      window.history.replaceState({ rsDealCategory: category }, '')
+      return
+    }
+
+    window.history.pushState({ rsDealCategory: category }, '')
+    categoryHistoryActiveRef.current = true
+  }
+
   function openDealDetail(deal) {
     if (!deal) return
 
     if (isAdmin) {
+      if (selectedDeal?.id === deal.id) {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+
       setSelectedDeal(deal)
+      pushDealDetailHistory(deal.id)
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
@@ -1786,13 +1851,25 @@ function App() {
       return
     }
 
+    if (selectedDeal?.id === deal.id) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+
     setSelectedDeal(deal)
+    pushDealDetailHistory(deal.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function closeDealDetail() {
     setSelectedDeal(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+
+    if (dealDetailHistoryActiveRef.current) {
+      dealDetailHistoryActiveRef.current = false
+      skipDealDetailPopStateRef.current = true
+      window.history.back()
+    }
   }
 
   function openCategory(category) {
@@ -1817,8 +1894,14 @@ function App() {
       return
     }
 
+    if (selectedCategory === category) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+
     setSelectedCategory(category)
     setSelectedDeal(null)
+    pushCategoryHistory(category)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -1826,6 +1909,12 @@ function App() {
     setSelectedCategory(null)
     setSelectedDeal(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+
+    if (categoryHistoryActiveRef.current) {
+      categoryHistoryActiveRef.current = false
+      skipCategoryPopStateRef.current = true
+      window.history.back()
+    }
   }
 
   function renderDealForTier(deal, allDeals) {
