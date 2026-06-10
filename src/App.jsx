@@ -92,6 +92,20 @@ const DEAL_CHECKOUT_TIER_KEY = 'realestatesniper_deal_checkout_tier'
 const PREMIUM_MAX_SLOTS = 15
 const DIAMOND_DEFAULT_MAX_SLOTS = 10
 
+function canonicalCity(value) {
+  if (value == null || value === '') return ''
+
+  const trimmed = String(value).trim()
+  if (!trimmed) return ''
+
+  return trimmed
+    .toLowerCase()
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
 function App() {
   const [markets, setMarkets] = useState([])
   const [deals, setDeals] = useState([])
@@ -1272,12 +1286,21 @@ function App() {
   // Founder expiration: read-only via getFounderAccessState (no client updateUser / downgrade).
 
   const cities = useMemo(() => {
-    return ['All', ...new Set(deals.map((d) => d.city).filter(Boolean))]
+    const canonicalSet = new Set()
+
+    deals.forEach((d) => {
+      const city = canonicalCity(d.city)
+      if (city) canonicalSet.add(city)
+    })
+
+    return ['All', ...Array.from(canonicalSet).sort()]
   }, [deals])
 
   const filteredDeals = useMemo(() => {
     if (selectedCity === 'All') return deals
-    return deals.filter((d) => d.city === selectedCity)
+
+    const selectedCanonical = canonicalCity(selectedCity)
+    return deals.filter((d) => canonicalCity(d.city) === selectedCanonical)
   }, [deals, selectedCity])
 
   const myPurchasedEntries = useMemo(() => {
