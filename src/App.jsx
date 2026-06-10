@@ -1053,13 +1053,19 @@ function App() {
 
       if (!pendingFounderActivation || !currentUser) return
 
-      if (foundersCohortFull) {
+      const metadata = currentUser.user_metadata || {}
+
+      if (metadata.access_role === 'owner') {
         window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
         window.sessionStorage.removeItem(FOUNDER_PENDING_CODE_KEY)
         return
       }
 
-      const metadata = currentUser.user_metadata || {}
+      if (foundersCohortFull) {
+        window.sessionStorage.removeItem(FOUNDER_PENDING_KEY)
+        window.sessionStorage.removeItem(FOUNDER_PENDING_CODE_KEY)
+        return
+      }
 
       if (metadata.access_role === 'founder' && metadata.founder_trial_status === 'active') {
         founderSessionSyncRef.current = true
@@ -1561,7 +1567,7 @@ function App() {
 
     const metadata = currentUser.user_metadata || {}
 
-    if (metadata.access_role === 'subscriber' || metadata.access_role === 'founder') {
+    if (metadata.access_role === 'subscriber' || metadata.access_role === 'founder' || metadata.access_role === 'owner') {
       return
     }
 
@@ -1690,6 +1696,19 @@ function App() {
     }
 
     setAuthContext('subscriber')
+    setAuthMode('signup')
+    setShowAuthModal(true)
+  }
+
+  function handleOwnerAccessRequest() {
+    if (currentUser) {
+      if (currentUser.user_metadata?.access_role === 'owner') {
+        scrollToSection('owner-dashboard')
+      }
+      return
+    }
+
+    setAuthContext('owner')
     setAuthMode('signup')
     setShowAuthModal(true)
   }
@@ -4354,7 +4373,7 @@ function App() {
                 {!currentUser ? (
                   <button
                     type="button"
-                    onClick={handleOwnerDiscoveryRequest}
+                    onClick={handleOwnerAccessRequest}
                     className="secondary-button"
                   >
                     Create Free Owner Account
@@ -5215,7 +5234,7 @@ function App() {
             <div style={{ marginTop: '24px' }}>
               <button
                 type="button"
-                onClick={handleOwnerDiscoveryRequest}
+                onClick={handleOwnerAccessRequest}
                 className="secondary-button"
               >
                 Create Free Owner Account

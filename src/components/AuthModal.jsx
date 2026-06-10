@@ -84,16 +84,21 @@ function AuthModal({
 
     try {
       if (authMode === 'signup') {
-        const metadata =
-          authContext === 'subscriber'
-            ? {
-                full_name: fullName.trim(),
-                access_role: 'subscriber',
-                subscriber_started_at: new Date().toISOString(),
-              }
-            : {
-                full_name: fullName.trim(),
-              }
+        let metadata = { full_name: fullName.trim() }
+
+        if (authContext === 'subscriber') {
+          metadata = {
+            ...metadata,
+            access_role: 'subscriber',
+            subscriber_started_at: new Date().toISOString(),
+          }
+        } else if (authContext === 'owner') {
+          metadata = {
+            ...metadata,
+            access_role: 'owner',
+            owner_registered_at: new Date().toISOString(),
+          }
+        }
 
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
@@ -146,24 +151,37 @@ function AuthModal({
   if (!showAuthModal) return null
 
   const isFounderFlow = authContext === 'founder'
+  const isOwnerFlow = authContext === 'owner'
 
-  const eyebrowText = isFounderFlow ? 'Founder Access' : 'Subscriber Access'
+  const eyebrowText = isFounderFlow
+    ? 'Founder Access'
+    : isOwnerFlow
+      ? 'Property Owners'
+      : 'Subscriber Access'
   const titleText =
     authMode === 'signup'
       ? isFounderFlow
         ? 'Create your founder account'
-        : 'Create your subscriber account'
+        : isOwnerFlow
+          ? 'Create your free owner account'
+          : 'Create your subscriber account'
       : isFounderFlow
         ? 'Sign in to continue founder access'
-        : 'Sign in to continue subscriber access'
+        : isOwnerFlow
+          ? 'Sign in to continue owner access'
+          : 'Sign in to continue subscriber access'
   const descriptionText =
     authMode === 'signup'
       ? isFounderFlow
         ? 'Complete your real founder account setup to access the private window and activate your 30-day founder trial.'
-        : 'Create your real subscriber account. This will become the base account for future paid access.'
+        : isOwnerFlow
+          ? 'Create your free owner account to manage property authorization, contact preferences, and Diamond controls.'
+          : 'Create your real subscriber account. This will become the base account for future paid access.'
       : isFounderFlow
         ? 'Sign in with your real founder account to continue.'
-        : 'Sign in with your existing subscriber account.'
+        : isOwnerFlow
+          ? 'Sign in with your owner account to access the Owner Portal.'
+          : 'Sign in with your existing subscriber account.'
 
   return (
     <div
