@@ -207,6 +207,7 @@ function App() {
     primaryVisualWorkspace === 'investor' || primaryVisualWorkspace === 'founder'
 
   const isOwnerRole = currentUser?.user_metadata?.access_role === 'owner'
+  const showInvestorMarketplace = primaryVisualWorkspace !== 'owner'
 
   let headerPrimaryStatusLabel = 'Registered'
   if (isAdmin) {
@@ -4073,32 +4074,36 @@ function App() {
         </div>
 
         <nav className="nav">
-          <a
-            href="#markets"
-            onClick={(e) => {
-              e.preventDefault()
-              if (selectedDeal) {
-                closeDealDetail()
-                return
-              }
-              scrollToSection('markets')
-            }}
-          >
-            Markets
-          </a>
-          <a
-            href="#deals"
-            onClick={(e) => {
-              e.preventDefault()
-              if (selectedDeal) {
-                closeDealDetail()
-                return
-              }
-              scrollToSection('deals')
-            }}
-          >
-            Live Deals
-          </a>
+          {showInvestorMarketplace ? (
+            <a
+              href="#markets"
+              onClick={(e) => {
+                e.preventDefault()
+                if (selectedDeal) {
+                  closeDealDetail()
+                  return
+                }
+                scrollToSection('markets')
+              }}
+            >
+              Markets
+            </a>
+          ) : null}
+          {showInvestorMarketplace ? (
+            <a
+              href="#deals"
+              onClick={(e) => {
+                e.preventDefault()
+                if (selectedDeal) {
+                  closeDealDetail()
+                  return
+                }
+                scrollToSection('deals')
+              }}
+            >
+              Live Deals
+            </a>
+          ) : null}
           {showInvestorAccount ? (
             <a
               href="#subscriber-dashboard"
@@ -4159,32 +4164,36 @@ function App() {
               Admin
             </a>
           ) : null}
-          <a
-            href="#tiers"
-            onClick={(e) => {
-              e.preventDefault()
-              if (selectedDeal) {
-                closeDealDetail()
-                return
-              }
-              scrollToSection('tiers')
-            }}
-          >
-            Tiers
-          </a>
-          <a
-            href="#owners"
-            onClick={(e) => {
-              e.preventDefault()
-              if (selectedDeal) {
-                closeDealDetail()
-                return
-              }
-              scrollToSection('owners')
-            }}
-          >
-            Property Owners
-          </a>
+          {showInvestorMarketplace ? (
+            <a
+              href="#tiers"
+              onClick={(e) => {
+                e.preventDefault()
+                if (selectedDeal) {
+                  closeDealDetail()
+                  return
+                }
+                scrollToSection('tiers')
+              }}
+            >
+              Tiers
+            </a>
+          ) : null}
+          {showInvestorMarketplace ? (
+            <a
+              href="#owners"
+              onClick={(e) => {
+                e.preventDefault()
+                if (selectedDeal) {
+                  closeDealDetail()
+                  return
+                }
+                scrollToSection('owners')
+              }}
+            >
+              Property Owners
+            </a>
+          ) : null}
           {!currentUser ? (
             <a
               href="#access"
@@ -4510,26 +4519,29 @@ function App() {
                 </div>
               ) : null}
 
-              <div className="hero-stats" style={heroStatsStyle}>
-                <div className="stat-card">
-                  <strong>{markets.filter((m) => m.status === 'active').length}</strong>
-                  <span>Active Markets</span>
+              {showInvestorMarketplace ? (
+                <div className="hero-stats" style={heroStatsStyle}>
+                  <div className="stat-card">
+                    <strong>{markets.filter((m) => m.status === 'active').length}</strong>
+                    <span>Active Markets</span>
+                  </div>
+                  <div className="stat-card">
+                    <strong>{markets.reduce((sum, m) => sum + (m.opportunities_count || 0), 0)}</strong>
+                    <span>Tracked Opportunities</span>
+                  </div>
+                  <div className="stat-card">
+                    <strong>{markets.reduce((sum, m) => sum + (m.sniper_deals_count || 0), 0)}</strong>
+                    <span>Sniper Deals</span>
+                  </div>
+                  <div className="stat-card">
+                    <strong>{deals.filter((d) => d.access_tier === 'premium' || d.access_tier === 'diamond').length}</strong>
+                    <span>Premium Deals</span>
+                  </div>
                 </div>
-                <div className="stat-card">
-                  <strong>{markets.reduce((sum, m) => sum + (m.opportunities_count || 0), 0)}</strong>
-                  <span>Tracked Opportunities</span>
-                </div>
-                <div className="stat-card">
-                  <strong>{markets.reduce((sum, m) => sum + (m.sniper_deals_count || 0), 0)}</strong>
-                  <span>Sniper Deals</span>
-                </div>
-                <div className="stat-card">
-                  <strong>{deals.filter((d) => d.access_tier === 'premium' || d.access_tier === 'diamond').length}</strong>
-                  <span>Premium Deals</span>
-                </div>
-              </div>
+              ) : null}
             </div>
 
+            {showInvestorMarketplace ? (
             <div className="hero-panel">
               <div className="panel-card">
                 <div className="panel-header">
@@ -4588,6 +4600,7 @@ function App() {
                 </div>
               </div>
             </div>
+            ) : null}
           </section>
 
           {currentUser ? (
@@ -4616,7 +4629,7 @@ function App() {
             </div>
           ) : null}
 
-          {currentUser ? (
+          {currentUser && showInvestorMarketplace ? (
             <div style={activityPulseStripStyle}>
               <span
                 style={{
@@ -4666,8 +4679,9 @@ function App() {
           ) : null}
 
           {renderAdminPanel()}
-          {renderOperationalDivider('MARKET ACCESS')}
+          {showInvestorMarketplace ? renderOperationalDivider('MARKET ACCESS') : null}
 
+          {showInvestorMarketplace ? (
           <section id="markets" className="section-block">
             <div className="section-heading">
               <div>
@@ -4710,6 +4724,7 @@ function App() {
               ))}
             </div>
           </section>
+          ) : null}
 
           {showWorkspaceModulesDivider ? renderOperationalDivider('WORKSPACE MODULES') : null}
           {primaryVisualWorkspace === 'founder' ? (
@@ -4986,8 +5001,8 @@ function App() {
             )
           ) : null}
 
-          {renderOperationalDivider('INTELLIGENCE FEED')}
-          {currentUser ? (
+          {showInvestorMarketplace ? renderOperationalDivider('INTELLIGENCE FEED') : null}
+          {currentUser && showInvestorMarketplace ? (
             <div style={intelligenceRailStyle}>
               <span style={intelligenceRailLabelStyle}>Control Rail</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -5008,7 +5023,7 @@ function App() {
               </div>
             </div>
           ) : null}
-          {currentUser ? (
+          {currentUser && showInvestorMarketplace ? (
             <div style={intelligenceMetricsStripStyle}>
               {intelligenceMetricsItems.map((metric) => (
                 <div key={metric.label} style={intelligenceMetricCardStyle}>
@@ -5018,7 +5033,7 @@ function App() {
               ))}
             </div>
           ) : null}
-          {currentUser ? (
+          {currentUser && showInvestorMarketplace ? (
             <div style={workspaceCommandStripStyle}>
               <span style={workspaceCommandLabelStyle}>Command Strip</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap' }}>
@@ -5039,7 +5054,7 @@ function App() {
               </div>
             </div>
           ) : null}
-          {currentUser ? (
+          {currentUser && showInvestorMarketplace ? (
             <div style={liveIntelTopbarStyle}>
               <span style={liveIntelTopbarLabelStyle}>Live Intelligence</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap' }}>
@@ -5052,6 +5067,8 @@ function App() {
               </div>
             </div>
           ) : null}
+          {showInvestorMarketplace ? (
+          <>
           <section id="deals" className="section-block" style={dealsSectionStyle}>
             <div className="section-heading" style={dealsHeadingStyle}>
               <div>
@@ -5264,6 +5281,8 @@ function App() {
               </button>
             </div>
           </section>
+          </>
+          ) : null}
 
           {!currentUser ? (
             <section id="access" className="section-block cta-block">
@@ -5584,10 +5603,12 @@ function App() {
 
       {renderPlatformInfoModal()}
 
-      <FloatingActivity
-        activityFeed={ACTIVITY_FEED}
-        activityIndex={activityIndex}
-      />
+      {showInvestorMarketplace ? (
+        <FloatingActivity
+          activityFeed={ACTIVITY_FEED}
+          activityIndex={activityIndex}
+        />
+      ) : null}
 
       {!foundersCohortFull ? (
         <FounderModal
