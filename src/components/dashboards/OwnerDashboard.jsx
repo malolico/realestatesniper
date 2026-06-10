@@ -380,6 +380,82 @@ export default function OwnerDashboard() {
         ))}
       </div>
 
+      <div
+        style={{
+          display: 'grid',
+          gap: '18px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        }}
+      >
+        <BlockShell
+          eyebrow="Invited owner"
+          title="Review Detected Property"
+          description="RealEstateSniper may invite you to review a property our intelligence engine detected. Verify the information, correct anything inaccurate, and decide what can be shared with investors."
+        >
+          <StatusPill
+            label="Status"
+            value="No detected property linked yet"
+            tone="muted"
+            hint="A linked property will appear here when our team or engines match one to your account."
+          />
+          <button
+            type="button"
+            disabled
+            style={{
+              alignSelf: 'flex-start',
+              padding: '12px 18px',
+              borderRadius: '14px',
+              border: '1px solid rgba(148, 163, 184, 0.28)',
+              background: 'rgba(148, 163, 184, 0.10)',
+              color: '#94a3b8',
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              cursor: 'not-allowed',
+              opacity: 0.85,
+            }}
+          >
+            Review detected property
+          </button>
+          <span style={{ color: '#94a3b8', fontSize: '0.78rem', fontWeight: 700 }}>
+            Coming soon — owner review workflow not wired yet.
+          </span>
+        </BlockShell>
+
+        <BlockShell
+          eyebrow="Organic owner"
+          title="Submit New Property"
+          description="Add a property you may want to sell. We will review it privately and determine whether it qualifies for investor matching or Diamond visibility."
+        >
+          <StatusPill
+            label="Status"
+            value="Ready for owner submission"
+            tone="good"
+            hint="Submit from scratch when you are ready to list privately with RealEstateSniper."
+          />
+          <button
+            type="button"
+            disabled
+            style={{
+              alignSelf: 'flex-start',
+              padding: '12px 18px',
+              borderRadius: '14px',
+              border: '1px solid rgba(148, 163, 184, 0.28)',
+              background: 'rgba(148, 163, 184, 0.10)',
+              color: '#94a3b8',
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              cursor: 'not-allowed',
+              opacity: 0.85,
+            }}
+          >
+            Submit property for review
+          </button>
+          <span style={{ color: '#94a3b8', fontSize: '0.78rem', fontWeight: 700 }}>
+            Coming soon — submission form not wired yet.
+          </span>
+        </BlockShell>
+      </div>
+
       {/* 1. Owner Status */}
       <BlockShell
         eyebrow="Owner"
