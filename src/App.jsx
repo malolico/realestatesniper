@@ -92,6 +92,14 @@ const DEAL_CHECKOUT_TIER_KEY = 'realestatesniper_deal_checkout_tier'
 const PREMIUM_MAX_SLOTS = 15
 const DIAMOND_DEFAULT_MAX_SLOTS = 10
 
+const ENGINE_SIGNAL_LABELS = {
+  active_distress_enforcement_engine: 'Distress',
+  probate_csv_engine: 'Probate',
+  tax_delinquency_csv_engine: 'Tax delinquency',
+  pre_foreclosure_csv_engine: 'Pre-foreclosure',
+  repricing_csv_engine: 'Repricing',
+}
+
 function canonicalCity(value) {
   if (value == null || value === '') return ''
 
@@ -1347,24 +1355,32 @@ function App() {
       .filter((row) => row.deal)
   }, [currentUser, purchasedDealAccess, deals])
 
+  const unpricedLeads = useMemo(
+    () => filteredDeals.filter((deal) => isUnpricedLead(deal)),
+    [filteredDeals],
+  )
+
   const yellowDeals = useMemo(() => {
     return filteredDeals.filter((deal) => {
-    const score = getDealScore(deal)
-    return deal.access_tier === 'standard' && score < 60
+      if (!isPricedOpportunity(deal)) return false
+      const score = getDealScore(deal)
+      return deal.access_tier === 'standard' && score < 60
     })
   }, [filteredDeals])
 
   const greenDeals = useMemo(() => {
     return filteredDeals.filter((deal) => {
-    const score = deal.score || 0
-    return deal.access_tier === 'standard' && score >= 60 && score < 80
+      if (!isPricedOpportunity(deal)) return false
+      const score = deal.score || 0
+      return deal.access_tier === 'standard' && score >= 60 && score < 80
     })
   }, [filteredDeals])
 
   const redDeals = useMemo(() => {
     return filteredDeals.filter((deal) => {
-    const score = deal.score || 0
-    return deal.access_tier === 'standard' && score >= 80
+      if (!isPricedOpportunity(deal)) return false
+      const score = deal.score || 0
+      return deal.access_tier === 'standard' && score >= 80
     })
   }, [filteredDeals])
 
@@ -1487,14 +1503,6 @@ function App() {
     }).format(value)
   }
 
-  const ENGINE_SIGNAL_LABELS = {
-    active_distress_enforcement_engine: 'Distress',
-    probate_csv_engine: 'Probate',
-    tax_delinquency_csv_engine: 'Tax delinquency',
-    pre_foreclosure_csv_engine: 'Pre-foreclosure',
-    repricing_csv_engine: 'Repricing',
-  }
-
   function parseDealShortNote(deal) {
     const raw = deal?.short_note
     if (!raw || typeof raw !== 'string') return null
@@ -1615,6 +1623,129 @@ function App() {
     return items.length > 0
       ? items
       : getDealSignalLabels(deal).map((label) => `${label} signal`)
+  }
+
+  function toPositiveNumber(value) {
+    const n = Number(value)
+    return Number.isFinite(n) ? n : null
+  }
+
+  function getRepricingSpread(parsedNote) {
+    if (!parsedNote) return null
+    const prev = toPositiveNumber(parsedNote.previous_price)
+    const curr = toPositiveNumber(parsedNote.current_price)
+    if (prev > 1 && curr > 1 && curr < prev) {
+      return {
+        estimatedValue: prev,
+        purchasePrice: curr,
+        discountPct: Math.round(((prev - curr) / prev) * 100),
+      }
+    }
+    return null
+  }
+
+  function isPricedOpportunity(deal, parsedNote = null) {
+    const note = parsedNote ?? parseDealShortNote(deal)
+    if (getRepricingSpread(note)) return true
+
+    const ev = toPositiveNumber(getDealEstimatedValue(deal))
+    const pp = toPositiveNumber(getDealPurchasePrice(deal))
+    return ev > 1 && pp > 1 && pp < ev
+  }
+
+  function hasLeadContext(deal, parsedNote = null) {
+    const note = parsedNote ?? parseDealShortNote(deal)
+    return Boolean(
+      getDealSignalLabel(deal) ||
+        deal?.engine_name ||
+        deal?.city ||
+        deal?.full_address ||
+        deal?.address ||
+        note?.source ||
+        note?.source_type,
+    )
+  }
+
+  function isUnpricedLead(deal, parsedNote = null) {
+    if (isPricedOpportunity(deal, parsedNote)) return false
+
+    const note = parsedNote ?? parseDealShortNote(deal)
+    const ev = toPositiveNumber(getDealEstimatedValue(deal))
+    const pp = toPositiveNumber(getDealPurchasePrice(deal))
+
+    const placeholderPrice =
+      (ev !== null && ev <= 1) || (pp !== null && pp <= 1)
+    const equalNoSpread = ev > 1 && pp > 1 && pp >= ev
+
+    return (placeholderPrice || equalNoSpread) && hasLeadContext(deal, note)
+  }
+
+  function getVerifiedDiscountDisplay(deal, parsedNote = null) {
+    const note = parsedNote ?? parseDealShortNote(deal)
+    const repricing = getRepricingSpread(note)
+    if (repricing) return `${repricing.discountPct}%`
+
+    const ev = toPositiveNumber(getDealEstimatedValue(deal))
+    const pp = toPositiveNumber(getDealPurchasePrice(deal))
+    if (ev > 1 && pp > 1 && pp < ev) {
+      return `${Math.round(((ev - pp) / ev) * 100)}%`
+    }
+    return '—'
+  }
+
+  function getVerifiedFinancialDisplay(deal, parsedNote = null) {
+    const note = parsedNote ?? parseDealShortNote(deal)
+    const repricing = getRepricingSpread(note)
+    if (repricing) {
+      return {
+        priced: true,
+        estValue: formatCurrency(repricing.estimatedValue),
+        purchase: formatCurrency(repricing.purchasePrice),
+        discount: `${repricing.discountPct}%`,
+      }
+    }
+    if (!isPricedOpportunity(deal, note)) {
+      return {
+        priced: false,
+        estValue: 'Pricing not verified yet',
+        purchase: 'Pricing not verified yet',
+        discount: '—',
+      }
+    }
+    const ev = toPositiveNumber(getDealEstimatedValue(deal))
+    const pp = toPositiveNumber(getDealPurchasePrice(deal))
+    return {
+      priced: true,
+      estValue: formatCurrency(ev),
+      purchase: formatCurrency(pp),
+      discount: getVerifiedDiscountDisplay(deal, note),
+    }
+  }
+
+  function getDealProductLabel(deal, parsedNote = null) {
+    if (isPricedOpportunity(deal, parsedNote)) {
+      if (deal?.status === 'sniper_deal') return 'SNIPER DEAL'
+      if (deal?.status === 'opportunity') return 'OPPORTUNITY'
+      return 'PRICED LEAD'
+    }
+    if (isUnpricedLead(deal, parsedNote)) {
+      const signal = getDealSignalLabel(deal)
+      if (signal === 'Distress' || signal === 'Pre-foreclosure') {
+        return 'UNPRICED LEAD'
+      }
+      return 'LEAD'
+    }
+    return 'PARTIAL LEAD'
+  }
+
+  function getDealProductBadgeClass(deal, parsedNote = null) {
+    if (isPricedOpportunity(deal, parsedNote)) {
+      if (deal?.status === 'sniper_deal') return 'badge-sniper-deal'
+      if (deal?.status === 'opportunity') return 'badge-opportunity'
+      return 'badge-watchlist'
+    }
+    if (isUnpricedLead(deal, parsedNote)) return 'badge-unpriced-lead'
+    return 'badge-watchlist'
   }
 
   function getDealBadge(status) {
@@ -2335,6 +2466,10 @@ function App() {
       actionLabel = 'View Diamond Deals'
     }
 
+    if (type === 'unpriced') {
+      actionLabel = 'View Unpriced Leads'
+    }
+
     if (userMode === 'visitor' && (type === 'yellow' || type === 'green' || type === 'red')) {
       actionLabel = 'View Detail'
     }
@@ -2423,12 +2558,26 @@ function App() {
                   marginBottom: '8px',
                 }}
               >
-                <span
-                  className={`deal-badge ${getDealBadge(previewDeal.status)}`}
-                  style={{ alignSelf: 'flex-start' }}
-                >
-                  {getDealLabel(previewDeal.status)}
-                </span>
+                {(() => {
+                  const previewNote = parseDealShortNote(previewDeal)
+                  const previewBadge = getDealProductBadgeClass(previewDeal, previewNote)
+                  return (
+                    <span
+                      className={`deal-badge ${previewBadge}`}
+                      style={{
+                        alignSelf: 'flex-start',
+                        ...(previewBadge === 'badge-unpriced-lead'
+                          ? {
+                              background: 'rgba(251, 146, 60, 0.18)',
+                              color: '#fed7aa',
+                            }
+                          : {}),
+                      }}
+                    >
+                      {getDealProductLabel(previewDeal, previewNote)}
+                    </span>
+                  )
+                })()}
 
                 <div
                   style={{
@@ -2465,8 +2614,13 @@ function App() {
                   lineHeight: 1.5,
                 }}
               >
-                {formatCurrency(previewDeal.purchase_price)} ·{' '}
-                {previewDeal.discount_percentage ?? 0}% discount
+                {(() => {
+                  const previewNote = parseDealShortNote(previewDeal)
+                  const previewPricing = getVerifiedFinancialDisplay(previewDeal, previewNote)
+                  return previewPricing.priced
+                    ? `${previewPricing.purchase} · ${previewPricing.discount} discount`
+                    : 'Pricing not verified yet'
+                })()}
               </div>
             </>
           ) : (
@@ -2598,6 +2752,22 @@ function App() {
       accentColor = '#facc15'
     }
 
+    if (selectedCategory === 'unpriced') {
+      dealsToShow = unpricedLeads
+      categoryTitle = '🟠 Unpriced Leads'
+      categoryDescription = 'Early distress and enforcement signals without verified pricing. Review the signal and source before treating this as a priced opportunity.'
+      accentColor = '#fb923c'
+    }
+
+    const categoryCountLabel =
+      selectedCategory === 'unpriced'
+        ? `${dealsToShow.length} unpriced leads`
+        : selectedCategory === 'red' ||
+            selectedCategory === 'green' ||
+            selectedCategory === 'yellow'
+          ? `${dealsToShow.length} priced opportunities`
+          : `${dealsToShow.length} deals`
+
     return (
       <main className="main-content">
         <section className="section-block" style={{ paddingTop: '24px' }}>
@@ -2628,7 +2798,7 @@ function App() {
                 fontWeight: 800,
               }}
             >
-              {dealsToShow.length} deals
+              {categoryCountLabel}
             </div>
           </div>
 
@@ -2664,6 +2834,8 @@ function App() {
             {dealsToShow.map((deal) => {
               const view = renderDealForTier(deal, filteredDeals)
               const parsedNote = parseDealShortNote(deal)
+              const pricing = getVerifiedFinancialDisplay(deal, parsedNote)
+              const productBadge = getDealProductBadgeClass(deal, parsedNote)
               const intelSummary = getDealIntelSummary(deal, view, parsedNote)
               const signalLabel = getDealSignalLabel(deal)
               const classificationLabel = getDealClassificationDisplay(deal)
@@ -2744,8 +2916,18 @@ function App() {
                       marginBottom: '12px',
                     }}
                   >
-                    <span className={`deal-badge ${getDealBadge(deal.status)}`}>
-                      {getDealLabel(deal.status)}
+                    <span
+                      className={`deal-badge ${productBadge}`}
+                      style={
+                        productBadge === 'badge-unpriced-lead'
+                          ? {
+                              background: 'rgba(251, 146, 60, 0.18)',
+                              color: '#fed7aa',
+                            }
+                          : undefined
+                      }
+                    >
+                      {getDealProductLabel(deal, parsedNote)}
                     </span>
 
                     <div
@@ -2879,9 +3061,11 @@ function App() {
                         border: '1px solid rgba(255,255,255,0.06)',
                       }}
                     >
-                      <div style={{ color: '#94a3b8', fontSize: '12px' }}>Purchase</div>
+                      <div style={{ color: '#94a3b8', fontSize: '12px' }}>
+                        {pricing.priced ? 'Purchase' : 'Pricing status'}
+                      </div>
                       <div style={{ color: '#ffffff', fontWeight: 800, marginTop: '6px' }}>
-                        {view.purchase}
+                        {pricing.purchase}
                       </div>
                     </div>
 
@@ -2893,9 +3077,11 @@ function App() {
                         border: '1px solid rgba(255,255,255,0.06)',
                       }}
                     >
-                      <div style={{ color: '#94a3b8', fontSize: '12px' }}>Discount</div>
+                      <div style={{ color: '#94a3b8', fontSize: '12px' }}>
+                        {pricing.priced ? 'Discount' : 'Verified discount'}
+                      </div>
                       <div style={{ color: '#ffffff', fontWeight: 800, marginTop: '6px' }}>
-                        {view.discount}
+                        {pricing.discount}
                       </div>
                     </div>
                   </div>
@@ -3028,6 +3214,8 @@ function App() {
 
     const detailView = renderDealForTier(selectedDeal, filteredDeals)
     const parsedNote = parseDealShortNote(selectedDeal)
+    const pricing = getVerifiedFinancialDisplay(selectedDeal, parsedNote)
+    const productBadge = getDealProductBadgeClass(selectedDeal, parsedNote)
     const intelSummary = getDealIntelSummary(selectedDeal, detailView, parsedNote)
     const signalItems = getDealSignalDetailItems(selectedDeal, detailView, parsedNote)
     const addressLine = getDealAddressLine(selectedDeal, detailView.showLocationData)
@@ -3046,8 +3234,13 @@ function App() {
     const scoreColor =
       score >= 80 ? '#ef4444' : score >= 60 ? '#22c55e' : '#facc15'
 
-    const scoreBand =
-      score >= 80 ? 'High-priority sniper signal' : score >= 60 ? 'Qualified opportunity signal' : 'Watchlist opportunity'
+    const scoreBand = !pricing.priced
+      ? 'Signal detected — pricing not verified'
+      : score >= 80
+        ? 'High-priority sniper signal'
+        : score >= 60
+          ? 'Qualified opportunity signal'
+          : 'Watchlist opportunity'
 
     return (
       <main className="main-content">
@@ -3077,8 +3270,18 @@ function App() {
                 alignItems: 'center',
               }}
             >
-              <span className={`deal-badge ${getDealBadge(selectedDeal.status)}`}>
-                {getDealLabel(selectedDeal.status)}
+              <span
+                className={`deal-badge ${productBadge}`}
+                style={
+                  productBadge === 'badge-unpriced-lead'
+                    ? {
+                        background: 'rgba(251, 146, 60, 0.18)',
+                        color: '#fed7aa',
+                      }
+                    : undefined
+                }
+              >
+                {getDealProductLabel(selectedDeal, parsedNote)}
               </span>
 
               <span className={`access-tier-badge ${getAccessTierClass(selectedDeal.access_tier)}`}>
@@ -3520,9 +3723,11 @@ function App() {
                     border: '1px solid rgba(255,255,255,0.08)',
                   }}
                 >
-                  <div style={{ color: '#94a3b8', fontSize: '13px' }}>Estimated Value</div>
+                  <div style={{ color: '#94a3b8', fontSize: '13px' }}>
+                    {pricing.priced ? 'Estimated Value' : 'Pricing status'}
+                  </div>
                   <div style={{ marginTop: '8px', color: '#ffffff', fontWeight: 800, fontSize: '22px' }}>
-                    {detailView.estValue}
+                    {pricing.estValue}
                   </div>
                 </div>
 
@@ -3534,9 +3739,11 @@ function App() {
                     border: '1px solid rgba(255,255,255,0.08)',
                   }}
                 >
-                  <div style={{ color: '#94a3b8', fontSize: '13px' }}>Purchase Price</div>
+                  <div style={{ color: '#94a3b8', fontSize: '13px' }}>
+                    {pricing.priced ? 'Purchase Price' : 'Verified purchase'}
+                  </div>
                   <div style={{ marginTop: '8px', color: '#ffffff', fontWeight: 800, fontSize: '22px' }}>
-                    {detailView.purchase}
+                    {pricing.purchase}
                   </div>
                 </div>
 
@@ -3548,9 +3755,11 @@ function App() {
                     border: '1px solid rgba(255,255,255,0.08)',
                   }}
                 >
-                  <div style={{ color: '#94a3b8', fontSize: '13px' }}>Discount</div>
+                  <div style={{ color: '#94a3b8', fontSize: '13px' }}>
+                    {pricing.priced ? 'Discount' : 'Verified discount'}
+                  </div>
                   <div style={{ marginTop: '8px', color: '#ffffff', fontWeight: 800, fontSize: '22px' }}>
-                    {detailView.discount}
+                    {pricing.discount}
                   </div>
                 </div>
               </div>
@@ -3572,7 +3781,7 @@ function App() {
                     marginBottom: '10px',
                   }}
                 >
-                  Deal Summary
+                  {pricing.priced ? 'Deal Summary' : 'Lead Summary'}
                 </div>
 
                 <div
@@ -3613,7 +3822,9 @@ function App() {
                     fontSize: '0.96rem',
                   }}
                 >
-                  This opportunity stands out because the spread between estimated value and entry price suggests pricing inefficiency relative to the current market. For investors looking for off-market or under-recognized value, this kind of signal can indicate a higher probability of margin, repositioning potential or faster decision advantage before broader visibility appears.
+                  {pricing.priced
+                    ? 'This opportunity stands out because the spread between estimated value and entry price suggests pricing inefficiency relative to the current market. For investors looking for off-market or under-recognized value, this kind of signal can indicate a higher probability of margin, repositioning potential or faster decision advantage before broader visibility appears.'
+                    : 'This is an early signal. Pricing and execution terms are not verified yet. Review the source, location context, and enforcement or distress indicators before treating this as a priced investment opportunity.'}
                 </div>
               </div>
 
@@ -3964,7 +4175,7 @@ function App() {
                   >
                     <div style={{ color: '#94a3b8', fontSize: '13px' }}>Status</div>
                     <div style={{ marginTop: '8px', color: '#ffffff', fontWeight: 800 }}>
-                      {getDealLabel(selectedDeal.status)}
+                      {getDealProductLabel(selectedDeal, parsedNote)}
                     </div>
                   </div>
 
@@ -5419,13 +5630,13 @@ function App() {
               className="grid"
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
                 gap: '16px',
               }}
             >
               {renderSummaryCard(
                 '🟡 Watchlist',
-                'Lower-priority discoveries and weaker signals.',
+                'Lower-priority priced discoveries and weaker signals.',
                 yellowDeals,
                 '#facc15',
                 'yellow',
@@ -5433,7 +5644,7 @@ function App() {
 
               {renderSummaryCard(
                 '🟢 Opportunities',
-                'Filtered opportunities with stronger commercial interest.',
+                'Priced opportunities with verified spread and stronger commercial interest.',
                 greenDeals,
                 '#22c55e',
                 'green',
@@ -5441,10 +5652,18 @@ function App() {
 
               {renderSummaryCard(
                 '🔴 Sniper Deals',
-                'Highest-priority standard-access opportunities.',
+                'Highest-priority priced standard-access opportunities.',
                 redDeals,
                 '#ef4444',
                 'red',
+              )}
+
+              {renderSummaryCard(
+                '🟠 Unpriced Leads',
+                'Early distress and enforcement signals without verified pricing.',
+                unpricedLeads,
+                '#fb923c',
+                'unpriced',
               )}
 
               {renderSummaryCard(
