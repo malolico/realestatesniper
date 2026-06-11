@@ -10,7 +10,6 @@ import { loadStripe } from '@stripe/stripe-js'
 import './App.css'
 import { supabase } from './lib/supabase'
 import logo from './assets/logo.png'
-import FloatingActivity from './components/FloatingActivity'
 import FounderModal from './components/FounderModal'
 import FounderStatus from './components/FounderStatus'
 import ContactMenu from './components/ContactMenu'
@@ -46,34 +45,7 @@ const DIAMOND_LAUNCH_PRICE = 7500
 const PREMIUM_TOTAL_SLOTS = 15
 const PREMIUM_REMAINING_SLOTS = 12
 
-const DIAMOND_TOTAL_POSITIONS = 7
-const DIAMOND_REMAINING_POSITIONS = 5
-
 const PREMIUM_RECENT_ACTIVITY = '2 investors unlocked this in the last hour'
-const DIAMOND_RECENT_ACTIVITY = '1 investor secured access recently'
-
-const ACTIVITY_FEED = [
-  {
-    label: 'Live activity',
-    text: 'Premium interest detected in Phoenix',
-  },
-  {
-    label: 'Live activity',
-    text: 'Diamond deal opened in Tucson',
-  },
-  {
-    label: 'Live activity',
-    text: 'Founder access activated',
-  },
-  {
-    label: 'Live activity',
-    text: 'Premium deal page viewed in Phoenix',
-  },
-  {
-    label: 'Live activity',
-    text: 'Diamond investor position checked',
-  },
-]
 
 const ACCESS_SIGNAL_FEED = [
   'Founder access window is active.',
@@ -131,7 +103,6 @@ function App() {
   const [founderCodeInput, setFounderCodeInput] = useState('')
   const [founderError, setFounderError] = useState('')
   const [showContactMenu, setShowContactMenu] = useState(false)
-  const [activityIndex, setActivityIndex] = useState(0)
   const [accessSignalIndex, setAccessSignalIndex] = useState(0)
   const [remainingFounderSpots, setRemainingFounderSpots] = useState(
     REMAINING_FOUNDER_SPOTS,
@@ -399,43 +370,6 @@ function App() {
     background: 'rgba(96, 165, 250, 0.18)',
     color: '#dbeafe',
     boxShadow: '0 0 0 1px rgba(96, 165, 250, 0.16) inset',
-  }
-  const intelligenceMetricsItems = [
-    { value: '41', label: 'Active Signals' },
-    { value: '12', label: 'Premium Watch' },
-    { value: '8', label: 'Distress Flow' },
-    { value: '5', label: 'Diamond Visibility' },
-    { value: 'Stable', label: 'Pipeline Status' },
-  ]
-  const intelligenceMetricsStripStyle = {
-    marginTop: '0',
-    marginBottom: '10px',
-    display: 'flex',
-    gap: '8px',
-    flexWrap: 'wrap',
-  }
-  const intelligenceMetricCardStyle = {
-    minWidth: '112px',
-    padding: '7px 9px',
-    borderRadius: '10px',
-    border: '1px solid rgba(148, 163, 184, 0.2)',
-    background: 'rgba(7, 12, 20, 0.72)',
-    display: 'inline-flex',
-    flexDirection: 'column',
-    gap: '3px',
-  }
-  const intelligenceMetricValueStyle = {
-    color: '#e2e8f0',
-    fontSize: '0.95rem',
-    lineHeight: 1.1,
-    fontWeight: 800,
-  }
-  const intelligenceMetricLabelStyle = {
-    color: '#94a3b8',
-    fontSize: '0.66rem',
-    letterSpacing: '0.07em',
-    textTransform: 'uppercase',
-    lineHeight: 1.2,
   }
   const workspaceCommandItems = [
     { label: 'Review Premium', active: true },
@@ -975,17 +909,6 @@ function App() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActivityIndex((prev) => {
-        const next = prev + 1
-        return next >= ACTIVITY_FEED.length ? 0 : next
-      })
-    }, 12000)
-
-    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -1577,30 +1500,65 @@ function App() {
     return parts.length ? parts.join(' · ') : null
   }
 
-  function buildSignalDetailItems(deal, parsedNote = null) {
-    const items = []
-    const labels = getDealSignalLabels(deal)
-    labels.forEach((label) => items.push(`${label} signal detected`))
+  function extractSourceFromDescription(description) {
+    if (!description?.trim()) return null
+    const match = description.match(/Source:\s*([^|]+)/)
+    return match ? match[1].trim() : null
+  }
 
+  function buildDealFactsItems(deal, parsedNote, pricing, signalLabel) {
+    const items = []
     const note = parsedNote ?? parseDealShortNote(deal)
+
+    if (pricing?.priced) {
+      if (pricing.discount && pricing.discount !== '—') {
+        items.push({ label: 'Verified discount', value: pricing.discount })
+      }
+      if (pricing.estValue && pricing.estValue !== 'Pricing not verified yet') {
+        items.push({ label: 'Estimated value', value: pricing.estValue })
+      }
+      if (pricing.purchase && pricing.purchase !== 'Pricing not verified yet') {
+        items.push({ label: 'Purchase price', value: pricing.purchase })
+      }
+    }
+
+    if (deal?.city) items.push({ label: 'City', value: deal.city })
+
+    const propertyType = deal?.property_type?.trim()
+    if (propertyType) items.push({ label: 'Property type', value: propertyType })
+
+    const source = note?.source || extractSourceFromDescription(deal?.description)
+    if (source) items.push({ label: 'Source', value: source })
+
+    if (note?.source_type) items.push({ label: 'Source type', value: note.source_type })
+
+    if (signalLabel) items.push({ label: 'Signal', value: signalLabel })
+
+    return items
+  }
+
+  function buildStructuredSourceSignalItems(deal, parsedNote = null) {
+    const items = []
+    const note = parsedNote ?? parseDealShortNote(deal)
+    const engine = deal?.engine_name
+
+    if (engine) {
+      items.push(`Engine: ${ENGINE_SIGNAL_LABELS[engine] || engine}`)
+    }
     if (note?.csm_status) items.push(`Enforcement status: ${note.csm_status}`)
-    if (note?.notes_excerpt) items.push(note.notes_excerpt)
+    if (note?.notes_excerpt) items.push(`Notes: ${note.notes_excerpt}`)
     if (note?.previous_price != null && note?.current_price != null) {
       items.push(
         `Price change: ${formatCurrency(note.previous_price)} → ${formatCurrency(note.current_price)}`,
       )
     }
-    if (note?.days_on_market != null) items.push(`${note.days_on_market} days on market`)
-    if (note?.as_of_date) items.push(`Data as of ${note.as_of_date}`)
-    if (note?.source_type && note?.source) {
-      items.push(`Source: ${note.source} (${note.source_type})`)
-    }
+    if (note?.days_on_market != null) items.push(`Days on market: ${note.days_on_market}`)
+    if (note?.as_of_date) items.push(`Data as of: ${note.as_of_date}`)
+    if (note?.source) items.push(`Source: ${note.source}`)
+    if (note?.source_type) items.push(`Source type: ${note.source_type}`)
     if (note?.tax_year) items.push(`Tax year: ${note.tax_year}`)
 
-    if (items.length === 0 && deal?.description?.trim()) {
-      items.push(deal.description.trim())
-    }
-    return items.slice(0, 6)
+    return items
   }
 
   function getDealAddressLine(deal, showLocationData) {
@@ -1616,13 +1574,7 @@ function App() {
   }
 
   function getDealSignalDetailItems(deal, view, parsedNote = null) {
-    if (!view?.showLocationData) {
-      return getDealSignalLabels(deal).map((label) => `${label} signal`)
-    }
-    const items = buildSignalDetailItems(deal, parsedNote)
-    return items.length > 0
-      ? items
-      : getDealSignalLabels(deal).map((label) => `${label} signal`)
+    return buildStructuredSourceSignalItems(deal, parsedNote)
   }
 
   function toPositiveNumber(value) {
@@ -3217,9 +3169,15 @@ function App() {
     const pricing = getVerifiedFinancialDisplay(selectedDeal, parsedNote)
     const productBadge = getDealProductBadgeClass(selectedDeal, parsedNote)
     const intelSummary = getDealIntelSummary(selectedDeal, detailView, parsedNote)
+    const signalLabel = getDealSignalLabel(selectedDeal)
+    const dealFactsItems = buildDealFactsItems(
+      selectedDeal,
+      parsedNote,
+      pricing,
+      signalLabel,
+    )
     const signalItems = getDealSignalDetailItems(selectedDeal, detailView, parsedNote)
     const addressLine = getDealAddressLine(selectedDeal, detailView.showLocationData)
-    const signalLabel = getDealSignalLabel(selectedDeal)
     const classificationLabel = getDealClassificationDisplay(selectedDeal)
     const candidateChips =
       userMode !== 'visitor' ? getDealCandidateChips(selectedDeal) : []
@@ -3237,7 +3195,7 @@ function App() {
     const scoreBand = !pricing.priced
       ? 'Signal detected — pricing not verified'
       : score >= 80
-        ? 'High-priority sniper signal'
+        ? 'Internal ranking score'
         : score >= 60
           ? 'Qualified opportunity signal'
           : 'Watchlist opportunity'
@@ -3336,10 +3294,6 @@ function App() {
                     }}
                   >
                     DIAMOND OPPORTUNITY
-                  </div>
-
-                  <div style={{ color: '#f1f5f9', marginBottom: '12px', fontWeight: 600 }}>
-                    Owner-verified opportunity with direct execution advantage.
                   </div>
 
                   <div style={{ color: '#ffffff', lineHeight: 1.85 }}>
@@ -3540,42 +3494,6 @@ function App() {
               >
                 {selectedDeal.title}
               </h1>
-
-              {getDealTier(selectedDeal) === 'diamond' && selectedDealDiamondUnlocked ? (
-                <div
-                  style={{
-                    marginBottom: '14px',
-                    padding: '14px',
-                    borderRadius: '14px',
-                    border: '1px solid rgba(250, 204, 21, 0.32)',
-                    background: 'rgba(250, 204, 21, 0.08)',
-                  }}
-                >
-                  <div
-                    style={{
-                      color: '#fde68a',
-                      fontWeight: 800,
-                      marginBottom: '8px',
-                    }}
-                  >
-                    Owner Access
-                  </div>
-
-                  <div style={{ color: '#ffffff', marginBottom: '8px' }}>
-                    <strong>Name:</strong> Owner Verified
-                  </div>
-
-                  <div style={{ color: '#e5e7eb', marginBottom: '6px' }}>
-                    <strong>Contact Methods:</strong>
-                  </div>
-
-                  <div style={{ color: '#e5e7eb', lineHeight: 1.8 }}>
-                    <div>- Phone: +1 XXX</div>
-                    <div>- WhatsApp: Available</div>
-                    <div>- Email: owner@email.com</div>
-                  </div>
-                </div>
-              ) : null}
 
               <p
                 style={{
@@ -3812,20 +3730,39 @@ function App() {
                     marginBottom: '12px',
                   }}
                 >
-                  Why This Deal Matters
+                  Deal Facts
                 </div>
 
-                <div
-                  style={{
-                    color: '#cbd5e1',
-                    lineHeight: 1.8,
-                    fontSize: '0.96rem',
-                  }}
-                >
-                  {pricing.priced
-                    ? 'This opportunity stands out because the spread between estimated value and entry price suggests pricing inefficiency relative to the current market. For investors looking for off-market or under-recognized value, this kind of signal can indicate a higher probability of margin, repositioning potential or faster decision advantage before broader visibility appears.'
-                    : 'This is an early signal. Pricing and execution terms are not verified yet. Review the source, location context, and enforcement or distress indicators before treating this as a priced investment opportunity.'}
-                </div>
+                {dealFactsItems.length === 0 ? (
+                  <div style={{ color: '#94a3b8', lineHeight: 1.8, fontSize: '0.96rem' }}>
+                    No verified deal facts available yet.
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                      gap: '12px',
+                    }}
+                  >
+                    {dealFactsItems.map((fact) => (
+                      <div key={fact.label}>
+                        <div style={{ color: '#94a3b8', fontSize: '13px' }}>{fact.label}</div>
+                        <div
+                          style={{
+                            marginTop: '6px',
+                            color: '#cbd5e1',
+                            lineHeight: 1.6,
+                            fontSize: '0.96rem',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {fact.value}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div
@@ -3845,7 +3782,7 @@ function App() {
                     marginBottom: '12px',
                   }}
                 >
-                  AI Signals Detected
+                  Source Signals
                 </div>
 
                 <div
@@ -3857,7 +3794,7 @@ function App() {
                 >
                   {signalItems.length === 0 ? (
                     <div style={{ color: '#94a3b8', lineHeight: 1.6 }}>
-                      No structured signals available for this deal.
+                      No structured source signals available yet.
                     </div>
                   ) : (
                     signalItems.map((signal) => (
@@ -3876,37 +3813,6 @@ function App() {
                       </div>
                     ))
                   )}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  marginTop: '20px',
-                  padding: '20px',
-                  borderRadius: '20px',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  background: 'rgba(255,255,255,0.03)',
-                }}
-              >
-                <div
-                  style={{
-                    color: '#ffffff',
-                    fontWeight: 800,
-                    fontSize: '1rem',
-                    marginBottom: '12px',
-                  }}
-                >
-                  Execution Angle
-                </div>
-
-                <div
-                  style={{
-                    color: '#cbd5e1',
-                    lineHeight: 1.8,
-                    fontSize: '0.96rem',
-                  }}
-                >
-                  Depending on investor profile, this deal may fit a short-to-mid term repositioning thesis, a discounted acquisition strategy, or a rental optimization angle. The goal here is not only to identify a cheap asset, but to identify a deal where timing, visibility and execution quality can create a stronger outcome than the public market typically offers.
                 </div>
               </div>
 
@@ -3980,146 +3886,20 @@ function App() {
                   </div>
                 )}
 
-                {tier === 'diamond' && selectedDealDiamondUnlocked ? (
-                  <div
-                    style={{
-                      marginTop: '20px',
-                      height: '220px',
-                      borderRadius: '16px',
-                      background: `
-                        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.05) 1px, transparent 1px),
-                        radial-gradient(circle at 70% 70%, rgba(255,255,255,0.05) 1px, transparent 1px),
-                        #0f172a
-                      `,
-                      backgroundSize: '40px 40px',
-                      position: 'relative',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '12px',
-                        height: '12px',
-                        borderRadius: '50%',
-                        background: '#22c55e',
-                      }}
-                    />
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        width: '100%',
-                        textAlign: 'center',
-                        color: '#22c55e',
-                        fontWeight: 700,
-                      }}
-                    >
-                      Exact property location unlocked
-                    </div>
-                  </div>
-                ) : tier === 'premium' && selectedDealPremiumUnlocked ? (
-                  <div
-                    style={{
-                      marginTop: '20px',
-                      height: '220px',
-                      borderRadius: '16px',
-                      background: `
-                        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.05) 1px, transparent 1px),
-                        radial-gradient(circle at 70% 70%, rgba(255,255,255,0.05) 1px, transparent 1px),
-                        #0f172a
-                      `,
-                      backgroundSize: '40px 40px',
-                      position: 'relative',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '120px',
-                        height: '120px',
-                        borderRadius: '50%',
-                        background: 'rgba(234, 179, 8, 0.25)',
-                        border: '2px solid #eab308',
-                      }}
-                    />
-
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '6px',
-                        height: '6px',
-                        borderRadius: '50%',
-                        background: '#eab308',
-                      }}
-                    />
-
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        width: '100%',
-                        textAlign: 'center',
-                        color: '#eab308',
-                        fontWeight: 700,
-                      }}
-                    >
-                      Approximate investment area (~5 km radius)
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      marginTop: '20px',
-                      height: '220px',
-                      borderRadius: '16px',
-                      background: `
-                        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.05) 1px, transparent 1px),
-                        radial-gradient(circle at 70% 70%, rgba(255,255,255,0.05) 1px, transparent 1px),
-                        #0f172a
-                      `,
-                      backgroundSize: '40px 40px',
-                      position: 'relative',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '140px',
-                        height: '140px',
-                        borderRadius: '50%',
-                        background: 'rgba(239, 68, 68, 0.25)',
-                        border: '2px solid #ef4444',
-                      }}
-                    />
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        width: '100%',
-                        textAlign: 'center',
-                        color: '#ef4444',
-                        fontWeight: 700,
-                      }}
-                    >
-                      General area only — exact location locked
-                    </div>
-                  </div>
-                )}
+                <div
+                  style={{
+                    marginTop: '20px',
+                    padding: '18px',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(0,0,0,0.16)',
+                    color: '#94a3b8',
+                    lineHeight: 1.6,
+                    fontSize: '0.95rem',
+                  }}
+                >
+                  Location data not available yet
+                </div>
               </div>
             </div>
 
@@ -4239,10 +4019,6 @@ function App() {
                       Diamond access required
                     </strong>
                     <div>{detailView.accessPriceLabel}</div>
-                    <div>{DIAMOND_RECENT_ACTIVITY}</div>
-                    <div>
-                      {DIAMOND_REMAINING_POSITIONS} / {DIAMOND_TOTAL_POSITIONS} positions remaining
-                    </div>
                   </div>
                 ) : null}
 
@@ -4262,7 +4038,6 @@ function App() {
                 {selectedDeal.access_tier === 'diamond' && selectedDealDiamondUnlocked ? (
                   <div className="diamond-box">
                     <strong style={{ display: 'block' }}>Diamond access unlocked</strong>
-                    <div>Owner layer is visible in this preview state.</div>
                   </div>
                 ) : null}
 
@@ -5550,16 +5325,6 @@ function App() {
             </div>
           ) : null}
           {currentUser && showInvestorMarketplace ? (
-            <div style={intelligenceMetricsStripStyle}>
-              {intelligenceMetricsItems.map((metric) => (
-                <div key={metric.label} style={intelligenceMetricCardStyle}>
-                  <strong style={intelligenceMetricValueStyle}>{metric.value}</strong>
-                  <span style={intelligenceMetricLabelStyle}>{metric.label}</span>
-                </div>
-              ))}
-            </div>
-          ) : null}
-          {currentUser && showInvestorMarketplace ? (
             <div style={workspaceCommandStripStyle}>
               <span style={workspaceCommandLabelStyle}>Command Strip</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap' }}>
@@ -6136,13 +5901,6 @@ function App() {
       )}
 
       {renderPlatformInfoModal()}
-
-      {showInvestorMarketplace ? (
-        <FloatingActivity
-          activityFeed={ACTIVITY_FEED}
-          activityIndex={activityIndex}
-        />
-      ) : null}
 
       {!foundersCohortFull ? (
         <FounderModal
