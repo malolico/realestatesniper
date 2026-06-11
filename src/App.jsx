@@ -1461,6 +1461,8 @@ function App() {
   function getDealDiscount(deal) {
     const possibleDiscount =
       deal?.discount_percentage ??
+      deal?.discount_pct ??
+      deal?.descuento_pct ??
       deal?.discount_percent ??
       deal?.discount ??
       null
@@ -1483,6 +1485,136 @@ function App() {
       currency: 'USD',
       maximumFractionDigits: 0,
     }).format(value)
+  }
+
+  const ENGINE_SIGNAL_LABELS = {
+    active_distress_enforcement_engine: 'Distress',
+    probate_csv_engine: 'Probate',
+    tax_delinquency_csv_engine: 'Tax delinquency',
+    pre_foreclosure_csv_engine: 'Pre-foreclosure',
+    repricing_csv_engine: 'Repricing',
+  }
+
+  function parseDealShortNote(deal) {
+    const raw = deal?.short_note
+    if (!raw || typeof raw !== 'string') return null
+    try {
+      const parsed = JSON.parse(raw)
+      return parsed && typeof parsed === 'object' ? parsed : null
+    } catch {
+      return null
+    }
+  }
+
+  function getDealSignalLabel(deal) {
+    const engine = deal?.engine_name
+    if (engine && ENGINE_SIGNAL_LABELS[engine]) {
+      return ENGINE_SIGNAL_LABELS[engine]
+    }
+    return null
+  }
+
+  function getDealSignalLabels(deal) {
+    const labels = []
+    const primary = getDealSignalLabel(deal)
+    if (primary) labels.push(primary)
+
+    const note = parseDealShortNote(deal)
+    const overlapHint = [note?.factory_key, note?.account_number, deal?.factory_key]
+      .filter(Boolean)
+      .join(' ')
+      .toUpperCase()
+      .includes('OVERLAP')
+
+    if (overlapHint && !labels.includes('Overlap')) {
+      labels.push('Overlap')
+    }
+    return labels
+  }
+
+  function getDealClassificationDisplay(deal) {
+    const c = (deal?.classification || '').toLowerCase()
+    if (c === 'red') return 'High conviction'
+    if (c === 'green') return 'Qualified'
+    if (c === 'yellow') return 'Watchlist band'
+    return null
+  }
+
+  function getDealCandidateChips(deal) {
+    const chips = []
+    if (deal?.is_premium_candidate === true) chips.push('Premium candidate')
+    if (deal?.is_diamond_candidate === true) chips.push('Diamond candidate')
+    return chips
+  }
+
+  function buildDealSummaryText(deal, parsedNote = null) {
+    const parts = []
+    if (deal?.description?.trim()) parts.push(deal.description.trim())
+
+    const note = parsedNote ?? parseDealShortNote(deal)
+    if (note?.notes_excerpt) parts.push(note.notes_excerpt)
+    if (note?.source_type && note?.source) {
+      parts.push(`Source: ${note.source} (${note.source_type})`)
+    }
+    if (note?.previous_price != null && note?.current_price != null) {
+      parts.push(
+        `Price change: ${formatCurrency(note.previous_price)} → ${formatCurrency(note.current_price)}`,
+      )
+    }
+    if (note?.tax_year) parts.push(`Tax year: ${note.tax_year}`)
+    if (note?.csm_status) parts.push(`Enforcement status: ${note.csm_status}`)
+    if (note?.days_on_market != null) parts.push(`${note.days_on_market} days on market`)
+    if (note?.as_of_date) parts.push(`Data as of ${note.as_of_date}`)
+
+    return parts.length ? parts.join(' · ') : null
+  }
+
+  function buildSignalDetailItems(deal, parsedNote = null) {
+    const items = []
+    const labels = getDealSignalLabels(deal)
+    labels.forEach((label) => items.push(`${label} signal detected`))
+
+    const note = parsedNote ?? parseDealShortNote(deal)
+    if (note?.csm_status) items.push(`Enforcement status: ${note.csm_status}`)
+    if (note?.notes_excerpt) items.push(note.notes_excerpt)
+    if (note?.previous_price != null && note?.current_price != null) {
+      items.push(
+        `Price change: ${formatCurrency(note.previous_price)} → ${formatCurrency(note.current_price)}`,
+      )
+    }
+    if (note?.days_on_market != null) items.push(`${note.days_on_market} days on market`)
+    if (note?.as_of_date) items.push(`Data as of ${note.as_of_date}`)
+    if (note?.source_type && note?.source) {
+      items.push(`Source: ${note.source} (${note.source_type})`)
+    }
+    if (note?.tax_year) items.push(`Tax year: ${note.tax_year}`)
+
+    if (items.length === 0 && deal?.description?.trim()) {
+      items.push(deal.description.trim())
+    }
+    return items.slice(0, 6)
+  }
+
+  function getDealAddressLine(deal, showLocationData) {
+    if (!showLocationData) return null
+    return deal?.full_address || deal?.address || null
+  }
+
+  function getDealIntelSummary(deal, view, parsedNote = null) {
+    if (!view?.showLocationData) {
+      return view?.note || null
+    }
+    return buildDealSummaryText(deal, parsedNote) || view?.note || null
+  }
+
+  function getDealSignalDetailItems(deal, view, parsedNote = null) {
+    if (!view?.showLocationData) {
+      return getDealSignalLabels(deal).map((label) => `${label} signal`)
+    }
+    const items = buildSignalDetailItems(deal, parsedNote)
+    return items.length > 0
+      ? items
+      : getDealSignalLabels(deal).map((label) => `${label} signal`)
   }
 
   function getDealBadge(status) {
@@ -2531,6 +2663,12 @@ function App() {
           >
             {dealsToShow.map((deal) => {
               const view = renderDealForTier(deal, filteredDeals)
+              const parsedNote = parseDealShortNote(deal)
+              const intelSummary = getDealIntelSummary(deal, view, parsedNote)
+              const signalLabel = getDealSignalLabel(deal)
+              const classificationLabel = getDealClassificationDisplay(deal)
+              const candidateChips =
+                userMode !== 'visitor' ? getDealCandidateChips(deal) : []
               const tier = getDealTier(deal)
               const isPremium = tier === 'premium'
               const isDiamond = tier === 'diamond'
@@ -2643,6 +2781,64 @@ function App() {
                     </div>
                   ) : null}
 
+                  {signalLabel || classificationLabel || candidateChips.length > 0 ? (
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '8px',
+                        marginBottom: '10px',
+                      }}
+                    >
+                      {signalLabel ? (
+                        <span
+                          style={{
+                            padding: '5px 10px',
+                            borderRadius: '999px',
+                            fontSize: '0.72rem',
+                            fontWeight: 800,
+                            color: '#e2e8f0',
+                            background: 'rgba(255,255,255,0.06)',
+                            border: '1px solid rgba(255,255,255,0.12)',
+                          }}
+                        >
+                          {signalLabel}
+                        </span>
+                      ) : null}
+                      {classificationLabel ? (
+                        <span
+                          style={{
+                            padding: '5px 10px',
+                            borderRadius: '999px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            color: '#94a3b8',
+                            background: 'rgba(255,255,255,0.04)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                          }}
+                        >
+                          {classificationLabel}
+                        </span>
+                      ) : null}
+                      {candidateChips.map((chip) => (
+                        <span
+                          key={chip}
+                          style={{
+                            padding: '5px 10px',
+                            borderRadius: '999px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            color: '#cbd5e1',
+                            background: 'rgba(255,255,255,0.03)',
+                            border: '1px dashed rgba(255,255,255,0.14)',
+                          }}
+                        >
+                          {chip}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+
                   <div
                     style={{
                       color: '#ffffff',
@@ -2654,6 +2850,18 @@ function App() {
                   >
                     {getDealCity(deal)} · {getDealTitle(deal)}
                   </div>
+
+                  {view.showLocationData && deal.property_type ? (
+                    <div
+                      style={{
+                        marginBottom: '8px',
+                        color: '#94a3b8',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      {deal.property_type}
+                    </div>
+                  ) : null}
 
                   <div
                     style={{
@@ -2711,7 +2919,7 @@ function App() {
                       fontSize: '0.9rem',
                     }}
                   >
-                    {view.note || 'General deal preview available.'}
+                    {intelSummary || 'General deal preview available.'}
                   </div>
 
                   {isLockedPremium ? (
@@ -2819,6 +3027,14 @@ function App() {
       (tier === 'premium' || tier === 'diamond')
 
     const detailView = renderDealForTier(selectedDeal, filteredDeals)
+    const parsedNote = parseDealShortNote(selectedDeal)
+    const intelSummary = getDealIntelSummary(selectedDeal, detailView, parsedNote)
+    const signalItems = getDealSignalDetailItems(selectedDeal, detailView, parsedNote)
+    const addressLine = getDealAddressLine(selectedDeal, detailView.showLocationData)
+    const signalLabel = getDealSignalLabel(selectedDeal)
+    const classificationLabel = getDealClassificationDisplay(selectedDeal)
+    const candidateChips =
+      userMode !== 'visitor' ? getDealCandidateChips(selectedDeal) : []
     const score = selectedDeal.score || 0
     const selectedDealDiamondUnlocked =
       diamondUnlocked || userHasPurchasedDeal(selectedDeal, 'diamond')
@@ -3230,6 +3446,64 @@ function App() {
                 </div>
               </div>
 
+              {signalLabel || classificationLabel || candidateChips.length > 0 ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '10px',
+                    marginTop: '16px',
+                  }}
+                >
+                  {signalLabel ? (
+                    <span
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '999px',
+                        fontSize: '0.78rem',
+                        fontWeight: 800,
+                        color: '#e2e8f0',
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                      }}
+                    >
+                      {signalLabel}
+                    </span>
+                  ) : null}
+                  {classificationLabel ? (
+                    <span
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '999px',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        color: '#94a3b8',
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      {classificationLabel}
+                    </span>
+                  ) : null}
+                  {candidateChips.map((chip) => (
+                    <span
+                      key={chip}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '999px',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        color: '#cbd5e1',
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px dashed rgba(255,255,255,0.14)',
+                      }}
+                    >
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+
               <div
                 style={{
                   marginTop: '26px',
@@ -3308,7 +3582,7 @@ function App() {
                     fontSize: '0.96rem',
                   }}
                 >
-                  {detailView.note || 'No detail available.'}
+                  {intelSummary || 'No detail available.'}
                 </div>
               </div>
 
@@ -3370,26 +3644,27 @@ function App() {
                     gap: '12px',
                   }}
                 >
-                  {[
-                    'Price below estimated market value',
-                    'Potential seller motivation pattern',
-                    'Market inefficiency signal in this area',
-                    'Comparable activity imbalance detected',
-                  ].map((signal) => (
-                    <div
-                      key={signal}
-                      style={{
-                        padding: '14px',
-                        borderRadius: '16px',
-                        border: '1px solid rgba(255,255,255,0.06)',
-                        background: 'rgba(0,0,0,0.16)',
-                        color: '#cbd5e1',
-                        lineHeight: 1.6,
-                      }}
-                    >
-                      {signal}
+                  {signalItems.length === 0 ? (
+                    <div style={{ color: '#94a3b8', lineHeight: 1.6 }}>
+                      No structured signals available for this deal.
                     </div>
-                  ))}
+                  ) : (
+                    signalItems.map((signal) => (
+                      <div
+                        key={signal}
+                        style={{
+                          padding: '14px',
+                          borderRadius: '16px',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          background: 'rgba(0,0,0,0.16)',
+                          color: '#cbd5e1',
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {signal}
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -3469,6 +3744,15 @@ function App() {
                         {detailView.propertyType || 'Unknown'}
                       </div>
                     </div>
+
+                    {addressLine ? (
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <div style={{ color: '#94a3b8', fontSize: '13px' }}>Address</div>
+                        <div style={{ marginTop: '8px', color: '#ffffff', fontWeight: 700 }}>
+                          {addressLine}
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 ) : (
                   <div
