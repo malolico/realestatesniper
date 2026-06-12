@@ -164,7 +164,6 @@ function SubscriberDashboard({
   access = null,
 }) {
   const email = user?.email || '—'
-  const accessRole = user?.user_metadata?.access_role || 'standard'
   const accessLevel = formatAccessLevel(userMode)
 
   const displayEmailVerified = access != null ? access.emailVerified : emailVerified
@@ -209,7 +208,6 @@ function SubscriberDashboard({
             tone={displayPhoneVerified ? 'good' : 'warn'}
           />
           <StatusPill label="Access level" value={accessLevel} />
-          <StatusPill label="Role metadata" value={accessRole} tone="neutral" />
         </div>
 
         {!displaySubscriptionActive ? (
