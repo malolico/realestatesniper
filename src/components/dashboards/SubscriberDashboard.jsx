@@ -133,25 +133,9 @@ function BlockShell({ eyebrow, title, description, children }) {
   )
 }
 
-function formatAccessLevel(userMode) {
-  switch (userMode) {
-    case 'admin':
-      return 'Admin'
-    case 'founder':
-      return 'Founder'
-    case 'subscriber':
-      return 'Subscriber'
-    case 'registered':
-      return 'Registered'
-    default:
-      return 'Visitor'
-  }
-}
-
 function SubscriberDashboard({
   user,
   subscriberUnlocked = false,
-  userMode = 'visitor',
   emailVerified = false,
   phoneVerified = false,
   purchasesLoaded = false,
@@ -164,7 +148,6 @@ function SubscriberDashboard({
   access = null,
 }) {
   const email = user?.email || '—'
-  const accessLevel = formatAccessLevel(userMode)
 
   const displayEmailVerified = access != null ? access.emailVerified : emailVerified
   const displayPhoneVerified = access != null ? access.phoneVerified : phoneVerified
@@ -207,7 +190,6 @@ function SubscriberDashboard({
             value={displayPhoneVerified ? 'Verified' : 'Not verified'}
             tone={displayPhoneVerified ? 'good' : 'warn'}
           />
-          <StatusPill label="Access level" value={accessLevel} />
         </div>
 
         {!displaySubscriptionActive ? (
