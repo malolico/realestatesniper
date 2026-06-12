@@ -2144,7 +2144,7 @@ function App() {
 
     if (!canOpen) {
       setPlatformInfoAccessNotice(
-        'Subscribe first to access full deal intelligence.',
+        'Subscribe first to access full standard deal intelligence.',
       )
       setShowPlatformInfo(true)
       return
@@ -2187,7 +2187,7 @@ function App() {
       !isAdmin
     ) {
       setPlatformInfoAccessNotice(
-        'Subscribe first to access full deal intelligence.',
+        'Subscribe first to access full standard deal intelligence.',
       )
       setShowPlatformInfo(true)
       return
@@ -4351,7 +4351,7 @@ function App() {
             </div>
 
             <div style={{ color: '#cbd5e1', lineHeight: 1.8 }}>
-              Access is intentionally limited. Only a small group of investors can see the full deal intelligence layer.
+              Access is intentionally limited. Only a small group of investors can see the full standard deal intelligence layer.
             </div>
 
             <div style={{ color: '#cbd5e1', lineHeight: 1.8 }}>
@@ -4639,12 +4639,34 @@ function App() {
           {currentUser &&
           !subscriberUnlocked &&
           (primaryVisualWorkspace === 'investor' || primaryVisualWorkspace === 'founder') ? (
-            <button
-              onClick={handleSubscriptionCheckout}
-              className="secondary-button"
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: '6px',
+                maxWidth: '240px',
+              }}
             >
-              Subscribe — $1,500/month
-            </button>
+              <button
+                onClick={handleSubscriptionCheckout}
+                className="secondary-button"
+              >
+                Subscribe — $1,500/month
+              </button>
+              <span
+                style={{
+                  color: '#94a3b8',
+                  fontSize: '0.72rem',
+                  lineHeight: 1.45,
+                  textAlign: 'right',
+                  fontWeight: 600,
+                }}
+              >
+                Subscription unlocks all standard deals. Premium and Diamond are optional
+                per-deal purchases.
+              </span>
+            </div>
           ) : null}
 
           {!currentUser ? (
@@ -5503,11 +5525,42 @@ function App() {
                 }}
               >
                 <div style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.1rem' }}>
-                  Subscriber
+                  Subscriber Access
                 </div>
-                <p style={{ color: '#cbd5e1', lineHeight: 1.7 }}>
-                  Base real account layer for platform access and future paid upgrades.
-                </p>
+                <div
+                  style={{
+                    color: '#ffffff',
+                    fontWeight: 800,
+                    marginTop: '8px',
+                    marginBottom: '12px',
+                  }}
+                >
+                  $1,500/month
+                </div>
+                <div style={{ color: '#cbd5e1', lineHeight: 1.65, fontSize: '0.92rem' }}>
+                  <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>
+                    Includes:
+                  </div>
+                  <ul style={{ margin: '0 0 12px', paddingLeft: '18px' }}>
+                    <li>Full visibility on all standard deals available to subscribers.</li>
+                    <li>
+                      Deal Facts, Source Signals, pricing context and internal ranking score.
+                    </li>
+                    <li>Access to Arizona deal intelligence and opportunity discovery.</li>
+                    <li>Access to verified marketplace opportunities across Arizona.</li>
+                    <li>Eligibility to purchase Premium and Diamond opportunities.</li>
+                  </ul>
+                  <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>
+                    Does not include:
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: '18px' }}>
+                    <li>Premium deal unlocks.</li>
+                    <li>Diamond deal unlocks.</li>
+                    <li>Owner contact access.</li>
+                    <li>Investment advice.</li>
+                    <li>Guaranteed returns.</li>
+                  </ul>
+                </div>
               </div>
 
               <div
