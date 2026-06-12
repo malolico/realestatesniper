@@ -5323,44 +5323,55 @@ function App() {
             </div>
           </section>
 
-          <section id="owners" className="section-block">
-            <div className="section-heading">
+          <section id="owners" className="section-block" style={{ padding: '20px 0 8px' }}>
+            <div
+              className="section-heading"
+              style={{ marginBottom: '12px', gap: '14px', alignItems: 'flex-start' }}
+            >
               <div>
-                <div className="eyebrow">Property owners</div>
-                <h2 style={{ color: '#ffffff' }}>Property Owners</h2>
+                <div className="eyebrow" style={{ marginBottom: '8px' }}>
+                  Property Owners
+                </div>
+                <h2 style={{ color: '#ffffff', fontSize: '1.35rem' }}>Own property too?</h2>
+                <p
+                  style={{
+                    maxWidth: '560px',
+                    margin: '8px 0 0',
+                    color: '#94a3b8',
+                    fontSize: '0.92rem',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  List privately, stay in control, and decide what investors can see.
+                </p>
               </div>
-              <p>
-                List privately, stay in control, and share contact details only when you choose.
-              </p>
             </div>
 
             <ul
               style={{
                 margin: 0,
-                paddingLeft: '22px',
-                color: '#cbd5e1',
-                lineHeight: 1.85,
+                paddingLeft: '18px',
+                color: '#94a3b8',
+                fontSize: '0.88rem',
+                lineHeight: 1.45,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '10px',
-                maxWidth: '640px',
+                gap: '4px',
+                maxWidth: '560px',
               }}
             >
               <li>Owners pay nothing.</li>
-              <li>Submit properties privately.</li>
-              <li>Control what investors can see.</li>
-              <li>Authorize contact sharing only if you choose.</li>
-              <li>Potential Diamond opportunities.</li>
               <li>No obligation to sell.</li>
+              <li>Contact details are shared only with your permission.</li>
             </ul>
 
-            <div style={{ marginTop: '24px' }}>
+            <div style={{ marginTop: '14px' }}>
               <button
                 type="button"
                 onClick={handleOwnerAccessRequest}
                 className="secondary-button"
               >
-                Create Free Owner Account
+                Open Owner Portal
               </button>
             </div>
           </section>
