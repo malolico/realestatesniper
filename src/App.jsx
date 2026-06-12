@@ -1715,7 +1715,9 @@ function App() {
   function getAccessTierLabel(accessTier) {
     if (accessTier === 'diamond') return '💎 DIAMOND PREMIUM'
     if (accessTier === 'premium') return 'PREMIUM'
-    return userMode === 'founder' ? 'FOUNDERS ACCESS' : 'FREE ACCESS'
+    if (userMode === 'founder') return 'FOUNDERS ACCESS'
+    if (subscriberUnlocked) return 'SUBSCRIBER ACCESS'
+    return 'FREE ACCESS'
   }
 
   function getAccessTierClass(accessTier) {
@@ -2316,6 +2318,22 @@ function App() {
       }
     }
 
+    if (subscriberUnlocked && !founderUnlocked) {
+      return {
+        estValue: formatCurrency(getDealEstimatedValue(deal)),
+        purchase: formatCurrency(getDealPurchasePrice(deal)),
+        discount: getDealDiscount(deal),
+        note: deal.description,
+        ownerLayer: false,
+        footerType:
+          score >= 80 ? 'founder-red-full' : score >= 60 ? 'founder-green-full' : 'founder-yellow',
+        visibilityLabel: '100%',
+        propertyType: deal.property_type,
+        showLocationData: true,
+        accessPriceLabel: '',
+      }
+    }
+
     const founderVisibility = getFounderVisibilityLevel(deal, allDeals)
     const hasFullAccess = founderVisibility === '100%'
     const hasHalfAccess = founderVisibility === '50%'
@@ -2672,21 +2690,30 @@ function App() {
     if (selectedCategory === 'yellow') {
       dealsToShow = yellowDeals
       categoryTitle = '🟡 Watchlist Deals'
-      categoryDescription = 'Lower-priority discoveries and weaker signals. Founder access can review all yellow opportunities.'
+      categoryDescription =
+        subscriberUnlocked && !founderUnlocked
+          ? 'Lower-priority discoveries and weaker signals. Full detail included with your subscription.'
+          : 'Lower-priority discoveries and weaker signals. Founder access can review all yellow opportunities.'
       accentColor = '#facc15'
     }
 
     if (selectedCategory === 'green') {
       dealsToShow = greenDeals
       categoryTitle = '🟢 Opportunity Deals'
-      categoryDescription = 'Qualified opportunities. Founder access sees the lower-score 50% with full detail and the rest as restricted previews.'
+      categoryDescription =
+        subscriberUnlocked && !founderUnlocked
+          ? 'Qualified opportunities with full detail included with your subscription.'
+          : 'Qualified opportunities. Founder access sees the lower-score 50% with full detail and the rest as restricted previews.'
       accentColor = '#22c55e'
     }
 
     if (selectedCategory === 'red') {
       dealsToShow = redDeals
       categoryTitle = '🔴 Sniper Deals'
-      categoryDescription = 'Highest-priority standard-access opportunities. Founder access sees the lower-score 25% with full detail and the rest as restricted previews.'
+      categoryDescription =
+        subscriberUnlocked && !founderUnlocked
+          ? 'Highest-priority standard-access opportunities with full detail included with your subscription.'
+          : 'Highest-priority standard-access opportunities. Founder access sees the lower-score 25% with full detail and the rest as restricted previews.'
       accentColor = '#ef4444'
     }
 
