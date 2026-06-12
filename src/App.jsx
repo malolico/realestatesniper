@@ -45,8 +45,6 @@ const DIAMOND_LAUNCH_PRICE = 7500
 const PREMIUM_TOTAL_SLOTS = 15
 const PREMIUM_REMAINING_SLOTS = 12
 
-const PREMIUM_RECENT_ACTIVITY = '2 investors unlocked this in the last hour'
-
 const ACCESS_SIGNAL_FEED = [
   'Founder access window is active.',
   'Premium and Diamond purchases are processed automatically.',
@@ -4036,7 +4034,6 @@ function App() {
                       Premium access required
                     </strong>
                     <div>{detailView.accessPriceLabel}</div>
-                    <div style={{ marginTop: '8px' }}>{PREMIUM_RECENT_ACTIVITY}</div>
                   </div>
                 ) : null}
 
@@ -4899,7 +4896,6 @@ function App() {
                     <h3>Signal Overview</h3>
                     <p>Current feed in active markets</p>
                   </div>
-                  <span className="live-badge">Live</span>
                 </div>
 
                 <div className="signal-boxes">
@@ -4914,38 +4910,6 @@ function App() {
                   <div className="signal-box">
                     <span>Diamond deals</span>
                     <strong>{deals.filter((d) => d.access_tier === 'diamond').length}</strong>
-                  </div>
-                </div>
-
-                <div className="progress-group">
-                  <div className="progress-row">
-                    <div className="progress-label">
-                      <span>Phoenix spread intensity</span>
-                      <span>84%</span>
-                    </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{ width: '84%' }}></div>
-                    </div>
-                  </div>
-
-                  <div className="progress-row">
-                    <div className="progress-label">
-                      <span>Tucson repricing weakness</span>
-                      <span>68%</span>
-                    </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{ width: '68%' }}></div>
-                    </div>
-                  </div>
-
-                  <div className="progress-row">
-                    <div className="progress-label">
-                      <span>Off-market prediction confidence</span>
-                      <span>61%</span>
-                    </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{ width: '61%' }}></div>
-                    </div>
                   </div>
                 </div>
               </div>
