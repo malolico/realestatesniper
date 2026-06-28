@@ -285,7 +285,7 @@ function App() {
   } else if (primaryVisualWorkspace === 'owner') {
     workspaceContextTitle = 'Owner Portal'
     workspaceContextStatus = 'Owner account active'
-    workspaceContextNote = 'Property submission and authorization tools are not available yet'
+    workspaceContextNote = 'Property review and submission tools are available in preview mode.'
   } else if (primaryVisualWorkspace === 'admin') {
     workspaceContextTitle = 'Admin Workspace'
     workspaceContextStatus = 'Operational monitoring active'
@@ -1822,7 +1822,13 @@ function App() {
     if (currentUser) {
       if (currentUser.user_metadata?.access_role === 'owner') {
         scrollToSection('owner-dashboard')
+        return
       }
+
+      setPlatformInfoAccessNotice(
+        'Owner Portal uses a separate owner workspace. Please sign up as a property owner to continue.',
+      )
+      setShowPlatformInfo(true)
       return
     }
 
