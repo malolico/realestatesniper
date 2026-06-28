@@ -280,8 +280,8 @@ function App() {
     workspaceContextNote = 'Trial window and deal visibility in focus'
   } else if (primaryVisualWorkspace === 'owner') {
     workspaceContextTitle = 'Owner Portal'
-    workspaceContextStatus = 'Property authorization active'
-    workspaceContextNote = 'Manage visibility and contact permissions'
+    workspaceContextStatus = 'Owner account active'
+    workspaceContextNote = 'Property submission and authorization tools are not available yet'
   } else if (primaryVisualWorkspace === 'admin') {
     workspaceContextTitle = 'Admin Workspace'
     workspaceContextStatus = 'Operational monitoring active'

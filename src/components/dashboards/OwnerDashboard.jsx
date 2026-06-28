@@ -286,99 +286,13 @@ export default function OwnerDashboard() {
     )
   }
 
-  const ownerOperationalModules = [
-    {
-      title: 'Property Authorization',
-      items: [
-        'Property visibility managed',
-        'Investor authorization prepared',
-        'Contact permissions monitored',
-      ],
-    },
-    {
-      title: 'Diamond Access Control',
-      items: [
-        'Diamond slots configurable',
-        'Investor access reviewed',
-        'Visibility rules active',
-      ],
-    },
-    {
-      title: 'Owner Activity',
-      items: [
-        'Owner workflow active',
-        'Property review pending',
-        'Off-market pipeline available',
-      ],
-    },
-    {
-      title: 'Property Expansion',
-      items: [
-        'Add future off-market properties',
-        'Expand owner portfolio visibility',
-        'Prepare investor-ready opportunities',
-      ],
-    },
-  ]
-
-  const ownerOperationalGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: '10px',
-  }
-  const ownerOperationalCardStyle = {
-    padding: '10px 12px',
-    borderRadius: '12px',
-    border: '1px solid rgba(148, 163, 184, 0.2)',
-    background: 'rgba(8, 12, 20, 0.68)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  }
-  const ownerOperationalTitleStyle = {
-    fontSize: '0.78rem',
-    fontWeight: 800,
-    letterSpacing: '0.06em',
-    textTransform: 'uppercase',
-    color: '#cbd5e1',
-  }
-  const ownerOperationalListStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  }
-  const ownerOperationalItemStyle = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    fontSize: '0.78rem',
-    color: '#94a3b8',
-  }
-  const ownerOperationalDotStyle = {
-    width: '5px',
-    height: '5px',
-    borderRadius: '999px',
-    background: '#22c55e',
-    flexShrink: 0,
-  }
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-      <div style={ownerOperationalGridStyle}>
-        {ownerOperationalModules.map((module) => (
-          <div key={module.title} style={ownerOperationalCardStyle}>
-            <div style={ownerOperationalTitleStyle}>{module.title}</div>
-            <div style={ownerOperationalListStyle}>
-              {module.items.map((item) => (
-                <span key={item} style={ownerOperationalItemStyle}>
-                  <span style={ownerOperationalDotStyle}></span>
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+      <BlockShell
+        eyebrow="Preview"
+        title="Owner Portal Preview"
+        description="The property review and submission workflow is being finalized. Your owner account is active, but property submission and authorization tools are not available yet."
+      />
 
       <div
         style={{
@@ -390,14 +304,9 @@ export default function OwnerDashboard() {
         <BlockShell
           eyebrow="Invited owner"
           title="Review Detected Property"
-          description="RealEstateSniper may invite you to review a property our intelligence engine detected. Verify the information, correct anything inaccurate, and decide what can be shared with investors."
+          description="For owners contacted by RealEstateSniper about a property already detected by our research process."
         >
-          <StatusPill
-            label="Status"
-            value="No detected property linked yet"
-            tone="muted"
-            hint="A linked property will appear here when our team or engines match one to your account."
-          />
+          <StatusPill label="Status" value="Coming soon" tone="muted" />
           <button
             type="button"
             disabled
@@ -416,22 +325,14 @@ export default function OwnerDashboard() {
           >
             Review detected property
           </button>
-          <span style={{ color: '#94a3b8', fontSize: '0.78rem', fontWeight: 700 }}>
-            Coming soon — owner review workflow not wired yet.
-          </span>
         </BlockShell>
 
         <BlockShell
           eyebrow="Organic owner"
           title="Submit New Property"
-          description="Add a property you may want to sell. We will review it privately and determine whether it qualifies for investor matching or Diamond visibility."
+          description="For owners who want to submit a property for private review."
         >
-          <StatusPill
-            label="Status"
-            value="Ready for owner submission"
-            tone="good"
-            hint="Submit from scratch when you are ready to list privately with RealEstateSniper."
-          />
+          <StatusPill label="Status" value="Coming soon" tone="muted" />
           <button
             type="button"
             disabled
@@ -450,9 +351,6 @@ export default function OwnerDashboard() {
           >
             Submit property for review
           </button>
-          <span style={{ color: '#94a3b8', fontSize: '0.78rem', fontWeight: 700 }}>
-            Coming soon — submission form not wired yet.
-          </span>
         </BlockShell>
       </div>
 
