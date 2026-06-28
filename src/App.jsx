@@ -217,9 +217,9 @@ function App() {
     heroDescription =
       'Review live opportunities, track purchases, and manage verification before high-trust unlocks.'
   } else if (primaryVisualWorkspace === 'owner') {
-    heroTitle = 'Owner portal for property authorization'
+    heroTitle = 'Private Off-Market Owner Portal'
     heroDescription =
-      'Manage property review, contact permissions, Diamond slots, and investor visibility.'
+      'Submit off-market properties for private review, authorize how your listings are shared, and manage properties connected to your owner account.'
   } else if (primaryVisualWorkspace === 'admin') {
     heroTitle = 'Operations command center'
     heroDescription =
@@ -382,7 +382,6 @@ function App() {
     currentUser &&
     (primaryVisualWorkspace === 'founder' ||
       showInvestorAccount ||
-      primaryVisualWorkspace === 'owner' ||
       primaryVisualWorkspace === 'admin')
 
   function renderOperationalDivider(label) {
@@ -4912,7 +4911,8 @@ function App() {
                   <h2 style={{ color: '#ffffff' }}>Owner Portal</h2>
                 </div>
                 <p>
-                  Manage properties, authorization, contact preferences, and Diamond controls.
+                  Submit off-market properties for private review. Review detected properties.
+                  Manage properties connected to your owner account.
                 </p>
               </div>
 
