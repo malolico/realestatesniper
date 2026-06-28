@@ -3,6 +3,7 @@
  * Static UI structure prepared for future wiring. No backend, no gates.
  */
 
+import ReviewDetectedPropertyPanel from './ReviewDetectedPropertyPanel'
 import SubmitNewPropertyForm from './SubmitNewPropertyForm'
 
 export default function OwnerDashboard() {
@@ -56,96 +57,20 @@ export default function OwnerDashboard() {
     )
   }
 
-  function StatusPill({ label, value, hint = null }) {
-    return (
-      <div
-        style={{
-          padding: '14px 16px',
-          borderRadius: '14px',
-          border: '1px solid rgba(148, 163, 184, 0.35)',
-          background: 'rgba(148, 163, 184, 0.08)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '6px',
-          minHeight: '72px',
-          minWidth: 0,
-          overflow: 'hidden',
-        }}
-      >
-        <span
-          style={{
-            fontSize: '0.78rem',
-            fontWeight: 700,
-            color: '#94a3b8',
-            letterSpacing: '0.04em',
-          }}
-        >
-          {label}
-        </span>
-        <span
-          style={{
-            fontSize: '0.98rem',
-            fontWeight: 800,
-            color: '#94a3b8',
-            lineHeight: 1.4,
-            minWidth: 0,
-          }}
-        >
-          {value}
-        </span>
-        {hint ? (
-          <span style={{ color: '#94a3b8', fontSize: '0.88rem', lineHeight: 1.4 }}>{hint}</span>
-        ) : null}
-      </div>
-    )
-  }
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       <BlockShell
-        eyebrow="Preview"
-        title="Owner Portal Preview"
-        description="The property review and submission workflow is being finalized. Your owner account is active, but property submission and authorization tools are not available yet."
-      />
-
-      <div
-        style={{
-          display: 'grid',
-          gap: '18px',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        }}
+        eyebrow="Invited owner"
+        title="Review Detected Property"
+        description="For owners contacted by RealEstateSniper about a property already detected by our research process."
       >
-        <BlockShell
-          eyebrow="Invited owner"
-          title="Review Detected Property"
-          description="For owners contacted by RealEstateSniper about a property already detected by our research process."
-        >
-          <StatusPill label="Status" value="Coming soon" />
-          <button
-            type="button"
-            disabled
-            style={{
-              alignSelf: 'flex-start',
-              padding: '12px 18px',
-              borderRadius: '14px',
-              border: '1px solid rgba(148, 163, 184, 0.28)',
-              background: 'rgba(148, 163, 184, 0.10)',
-              color: '#94a3b8',
-              fontWeight: 700,
-              fontSize: '0.92rem',
-              cursor: 'not-allowed',
-              opacity: 0.85,
-            }}
-          >
-            Review detected property
-          </button>
-        </BlockShell>
-      </div>
+        <ReviewDetectedPropertyPanel />
+      </BlockShell>
 
       <BlockShell
         eyebrow="Organic owner"
         title="Submit New Property"
-        description="For owners who want to submit a property for private review."
+        description="For owners who want to submit a property for private review. All submitted properties are reviewed manually before any information is shared with investors."
       >
         <SubmitNewPropertyForm />
       </BlockShell>

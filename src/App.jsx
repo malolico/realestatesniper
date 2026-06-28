@@ -227,8 +227,12 @@ function App() {
   }
 
   const compactHero = Boolean(currentUser)
+  const isOwnerWorkspace = primaryVisualWorkspace === 'owner'
   const heroSectionStyle = compactHero
-    ? { padding: '24px 0 12px', gap: '20px' }
+    ? {
+        padding: isOwnerWorkspace ? '20px 0 8px' : '24px 0 12px',
+        gap: isOwnerWorkspace ? '16px' : '20px',
+      }
     : undefined
   const heroH1Style = compactHero
     ? { color: '#ffffff', fontSize: '40px', lineHeight: 1.12 }
@@ -257,8 +261,8 @@ function App() {
     : undefined
   const dealsFilterRowStyle = compactDeals ? { marginBottom: '12px' } : undefined
   const workspaceContextBarStyle = {
-    marginTop: '8px',
-    marginBottom: '10px',
+    marginTop: isOwnerWorkspace ? '4px' : '8px',
+    marginBottom: isOwnerWorkspace ? '6px' : '10px',
     padding: '10px 14px',
     borderRadius: '12px',
     border: '1px solid rgba(255,255,255,0.12)',
@@ -4904,10 +4908,13 @@ function App() {
           ) : null}
 
           {primaryVisualWorkspace === 'owner' ? (
-            <section id="owner-dashboard" className="section-block">
-              <div className="section-heading">
+            <section
+              id="owner-dashboard"
+              className="section-block"
+              style={{ padding: '16px 0 4px' }}
+            >
+              <div className="section-heading" style={{ marginBottom: '14px' }}>
                 <div>
-                  <div className="eyebrow">Owner workspace</div>
                   <h2 style={{ color: '#ffffff' }}>Owner Portal</h2>
                 </div>
                 <p>

@@ -378,9 +378,10 @@ export default function SubmitNewPropertyForm() {
             Submit For Review
           </button>
         </div>
-        <span style={{ color: '#94a3b8', fontSize: '0.88rem', fontWeight: 700 }}>
-          Coming soon.
-        </span>
+        <p style={{ margin: 0, fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.55, maxWidth: '720px' }}>
+          Submission workflow under development. Every property will be reviewed after identity
+          and ownership verification.
+        </p>
       </div>
     </div>
   )
