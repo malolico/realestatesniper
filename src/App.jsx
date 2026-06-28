@@ -5209,7 +5209,8 @@ function App() {
                 <h2 style={{ color: '#ffffff' }}>Choose the level of intelligence you need</h2>
               </div>
               <p>
-                Each tier unlocks a different level of visibility, execution advantage and contact access.
+                Each tier defines a different level of marketplace visibility, deal intelligence
+                and optional per-deal access.
               </p>
             </div>
 
@@ -5278,19 +5279,49 @@ function App() {
                 <div style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.1rem' }}>
                   Premium
                 </div>
-                <p style={{ color: '#cbd5e1', lineHeight: 1.7 }}>
-                  Unlocks premium deal intelligence and full premium layer visibility.
-                </p>
-
-                <div style={{ color: '#60a5fa', fontWeight: 800, marginBottom: '10px' }}>
-                  {formatCurrency(PREMIUM_ACCESS_PRICE)}
+                <div
+                  style={{
+                    color: '#60a5fa',
+                    fontWeight: 800,
+                    marginTop: '8px',
+                    marginBottom: '12px',
+                  }}
+                >
+                  {formatCurrency(PREMIUM_ACCESS_PRICE)} per deal
+                </div>
+                <div style={{ color: '#cbd5e1', lineHeight: 1.65, fontSize: '0.92rem' }}>
+                  <p style={{ margin: '0 0 12px', lineHeight: 1.65 }}>
+                    Unlock the full intelligence package for a single Premium opportunity.
+                  </p>
+                  <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>
+                    Includes:
+                  </div>
+                  <ul style={{ margin: '0 0 12px', paddingLeft: '18px' }}>
+                    <li>Exact property location when available in the deal record.</li>
+                    <li>Full Deal Facts and Source Signals.</li>
+                    <li>Pricing context, discount data and internal ranking score.</li>
+                    <li>Full standard intelligence for the purchased Premium deal.</li>
+                    <li>Permanent access to the purchased deal.</li>
+                  </ul>
+                  <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>
+                    Does not include:
+                  </div>
+                  <ul style={{ margin: '0 0 12px', paddingLeft: '18px' }}>
+                    <li>Owner contact access.</li>
+                    <li>Legal, financial or investment advice.</li>
+                    <li>Guaranteed acquisition or returns.</li>
+                  </ul>
+                  <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.88rem', lineHeight: 1.55 }}>
+                    Premium purchases are final and non-refundable once access is delivered.
+                  </p>
                 </div>
 
                 <button
                   onClick={() => scrollToSection('deals')}
                   className="secondary-button"
+                  style={{ marginTop: '14px' }}
                 >
-                  {premiumUnlocked ? 'Premium Active' : 'View Premium Deals'}
+                  View Premium Deals
                 </button>
               </div>
 
@@ -5305,19 +5336,66 @@ function App() {
                 <div style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.1rem' }}>
                   Diamond
                 </div>
-                <p style={{ color: '#cbd5e1', lineHeight: 1.7 }}>
-                  Unlocks the highest restricted layer and diamond-level opportunity access.
-                </p>
-
-                <div style={{ color: '#facc15', fontWeight: 800, marginBottom: '10px' }}>
-                  {formatCurrency(DIAMOND_LAUNCH_PRICE)}
+                <div
+                  style={{
+                    color: '#facc15',
+                    fontWeight: 800,
+                    marginTop: '8px',
+                    marginBottom: '12px',
+                  }}
+                >
+                  {formatCurrency(DIAMOND_LAUNCH_PRICE)} launch price per deal
+                </div>
+                <div style={{ color: '#cbd5e1', lineHeight: 1.65, fontSize: '0.92rem' }}>
+                  <p style={{ margin: '0 0 12px', lineHeight: 1.65 }}>
+                    Diamond is the highest restricted layer for opportunities with owner-controlled
+                    access.
+                  </p>
+                  <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>
+                    Includes:
+                  </div>
+                  <ul style={{ margin: '0 0 12px', paddingLeft: '18px' }}>
+                    <li>Everything included in Premium.</li>
+                    <li>Owner-authorized sharing when available.</li>
+                    <li>Diamond-level opportunity context after publication.</li>
+                    <li>Strict investor access limit for each Diamond deal.</li>
+                    <li>Permanent access to the purchased deal.</li>
+                  </ul>
+                  <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>
+                    Owner-Controlled Access:
+                  </div>
+                  <p style={{ margin: '0 0 12px', lineHeight: 1.55 }}>
+                    The property owner determines how many investors may access each Diamond
+                    opportunity. This limit is strict and cannot be increased by RealEstateSniper
+                    after publication.
+                  </p>
+                  <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>
+                    Launch Price Note:
+                  </div>
+                  <p style={{ margin: '0 0 12px', lineHeight: 1.55 }}>
+                    Diamond launch access is {formatCurrency(DIAMOND_LAUNCH_PRICE)} per deal. Planned
+                    future price: $10,500 once RealEstateSniper reaches 3 active states.
+                  </p>
+                  <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>
+                    Does not include:
+                  </div>
+                  <ul style={{ margin: '0 0 12px', paddingLeft: '18px' }}>
+                    <li>Guaranteed transaction with the owner.</li>
+                    <li>Guaranteed profitability or returns.</li>
+                    <li>Legal, financial or investment advice.</li>
+                    <li>Unauthorized owner contact information.</li>
+                  </ul>
+                  <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.88rem', lineHeight: 1.55 }}>
+                    Diamond purchases are final and non-refundable once access is delivered.
+                  </p>
                 </div>
 
                 <button
                   onClick={() => scrollToSection('deals')}
                   className="secondary-button"
+                  style={{ marginTop: '14px' }}
                 >
-                  {diamondUnlocked ? 'Diamond Active' : 'View Diamond Deals'}
+                  View Diamond Deals
                 </button>
               </div>
             </div>
