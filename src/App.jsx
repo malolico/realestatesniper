@@ -68,6 +68,10 @@ const SUBSCRIPTION_TERMS_PATH =
   getLegalPage('subscriptionTerms')?.path ?? '/legal/subscription-terms'
 const TERMS_OF_SERVICE_PATH =
   getLegalPage('termsOfService')?.path ?? '/legal/terms-of-service'
+const PREMIUM_PURCHASE_TERMS_PATH =
+  getLegalPage('premiumPurchaseTerms')?.path ?? '/legal/premium-purchase-terms'
+const DIAMOND_PURCHASE_TERMS_PATH =
+  getLegalPage('diamondPurchaseTerms')?.path ?? '/legal/diamond-purchase-terms'
 
 const ENGINE_SIGNAL_LABELS = {
   active_distress_enforcement_engine: 'Distress',
@@ -4486,6 +4490,12 @@ function App() {
     const isDiamond = tier === 'diamond'
     const tierLabel = isDiamond ? 'Diamond' : 'Premium'
     const accessPrice = isDiamond ? DIAMOND_LAUNCH_PRICE : PREMIUM_ACCESS_PRICE
+    const purchaseTermsPath = isDiamond
+      ? DIAMOND_PURCHASE_TERMS_PATH
+      : PREMIUM_PURCHASE_TERMS_PATH
+    const purchaseTermsLabel = isDiamond
+      ? 'Diamond Purchase Terms'
+      : 'Premium Purchase Terms'
     const dealTitle = getDealTitle(deal)
     const dealAddress = deal?.address || getDealCity(deal)
 
@@ -4593,6 +4603,48 @@ function App() {
             <p style={{ margin: 0 }}>You are responsible for your own due diligence.</p>
           </div>
 
+          {isDiamond ? (
+            <div
+              style={{
+                marginBottom: '18px',
+                padding: '14px 16px',
+                borderRadius: '14px',
+                border: '1px solid rgba(239, 68, 68, 0.28)',
+                background: 'rgba(239, 68, 68, 0.08)',
+                color: '#fecaca',
+                lineHeight: 1.6,
+                fontSize: '0.92rem',
+              }}
+            >
+              Diamond access includes owner contact rules. Unauthorized contact,
+              harassment, redistribution or misuse of owner/property information may
+              result in account restriction or removal.
+            </div>
+          ) : null}
+
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '10px 16px',
+              marginBottom: '18px',
+              fontSize: '0.92rem',
+            }}
+          >
+            <a
+              href={purchaseTermsPath}
+              style={{ color: '#93c5fd', fontWeight: 700, textDecoration: 'underline' }}
+            >
+              {purchaseTermsLabel}
+            </a>
+            <a
+              href={TERMS_OF_SERVICE_PATH}
+              style={{ color: '#93c5fd', fontWeight: 700, textDecoration: 'underline' }}
+            >
+              Terms of Service
+            </a>
+          </div>
+
           <label
             style={{
               display: 'flex',
@@ -4611,7 +4663,23 @@ function App() {
               onChange={(event) => setPurchaseTermsAccepted(event.target.checked)}
               style={{ marginTop: '3px' }}
             />
-            <span>I understand and accept the purchase terms for this deal.</span>
+            <span>
+              I have read and agree to the{' '}
+              <a
+                href={purchaseTermsPath}
+                style={{ color: '#93c5fd', fontWeight: 700, textDecoration: 'underline' }}
+              >
+                {purchaseTermsLabel}
+              </a>{' '}
+              and{' '}
+              <a
+                href={TERMS_OF_SERVICE_PATH}
+                style={{ color: '#93c5fd', fontWeight: 700, textDecoration: 'underline' }}
+              >
+                Terms of Service
+              </a>
+              .
+            </span>
           </label>
 
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
