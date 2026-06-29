@@ -1,6 +1,12 @@
 /**
- * SubmitNewPropertyForm — UI structure only. No backend, validation, or state logic.
+ * SubmitNewPropertyForm — UI structure only. No backend or submission workflow.
  */
+
+import { useState } from 'react'
+import { getLegalPage } from '../../legal/legalPages'
+
+const OWNER_AGREEMENT_PATH =
+  getLegalPage('ownerAgreement')?.path ?? '/legal/owner-agreement'
 
 const fieldStyle = {
   display: 'flex',
@@ -170,6 +176,8 @@ function UploadPlaceholder({ label, required = false, optional = false }) {
 }
 
 export default function SubmitNewPropertyForm() {
+  const [ownerAgreementAccepted, setOwnerAgreementAccepted] = useState(false)
+
   const representativeRoles = [
     'Authorized Representative',
     'Trustee',
@@ -374,10 +382,56 @@ export default function SubmitNewPropertyForm() {
           <button type="button" disabled style={disabledButtonStyle}>
             Save Draft
           </button>
-          <button type="button" disabled style={disabledButtonStyle}>
-            Submit For Review
-          </button>
         </div>
+
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '10px',
+            color: '#e2e8f0',
+            lineHeight: 1.5,
+            fontSize: '0.92rem',
+            cursor: 'pointer',
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={ownerAgreementAccepted}
+            onChange={(event) => setOwnerAgreementAccepted(event.target.checked)}
+            style={{ marginTop: '3px' }}
+          />
+          <span>
+            I have read and agree to the{' '}
+            <a
+              href={OWNER_AGREEMENT_PATH}
+              style={{ color: '#93c5fd', fontWeight: 700, textDecoration: 'underline' }}
+            >
+              Owner Agreement
+            </a>
+            .
+          </span>
+        </label>
+
+        <button
+          type="button"
+          disabled={!ownerAgreementAccepted}
+          style={
+            !ownerAgreementAccepted
+              ? disabledButtonStyle
+              : {
+                  padding: '12px 20px',
+                  borderRadius: '14px',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: 'rgba(255,255,255,0.04)',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: '0.92rem',
+                }
+          }
+        >
+          Submit for Review
+        </button>
         <p style={{ margin: 0, fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.55, maxWidth: '720px' }}>
           Submission workflow under development. Every property will be reviewed after identity
           and ownership verification.

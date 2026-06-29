@@ -2,6 +2,11 @@
  * ReviewDetectedPropertyPanel — UI structure only. No backend, validation, or state logic.
  */
 
+import { getLegalPage } from '../../legal/legalPages'
+
+const OWNER_AGREEMENT_PATH =
+  getLegalPage('ownerAgreement')?.path ?? '/legal/owner-agreement'
+
 const pendingReviewValue = '— Pending review —'
 
 const sectionStyle = {
@@ -186,6 +191,16 @@ export default function ReviewDetectedPropertyPanel() {
       <FormSection title="Publication Authorization">
         <p style={bodyStyle}>
           Your property cannot be published until you authorize RealEstateSniper.
+        </p>
+        <p style={{ ...bodyStyle, color: '#cbd5e1' }}>
+          Publication of your property is subject to the{' '}
+          <a
+            href={OWNER_AGREEMENT_PATH}
+            style={{ color: '#93c5fd', fontWeight: 700, textDecoration: 'underline' }}
+          >
+            Owner Agreement
+          </a>
+          .
         </p>
         <StatusRow label="Publication Status" value="Pending" />
       </FormSection>
