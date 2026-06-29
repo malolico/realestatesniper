@@ -23,6 +23,7 @@ import { redeemAndActivateFounderCode } from './lib/founder/redeemAndActivateFou
 import { getFounderCodesStatus } from './lib/founder/getFounderCodesStatus'
 import { getFounderAccessState } from './lib/founder/getFounderAccessState'
 import { resolveAccess } from './lib/access/resolveAccess'
+import { getLegalPage } from './legal/legalPages'
 import {
   FOUNDER_SESSION_REFRESH_FAILED_MESSAGE,
   refreshFounderSessionState,
@@ -62,6 +63,11 @@ const DEAL_CHECKOUT_DEAL_ID_KEY = 'realestatesniper_deal_checkout_deal_id'
 const DEAL_CHECKOUT_TIER_KEY = 'realestatesniper_deal_checkout_tier'
 const PREMIUM_MAX_SLOTS = 15
 const DIAMOND_DEFAULT_MAX_SLOTS = 10
+
+const SUBSCRIPTION_TERMS_PATH =
+  getLegalPage('subscriptionTerms')?.path ?? '/legal/subscription-terms'
+const TERMS_OF_SERVICE_PATH =
+  getLegalPage('termsOfService')?.path ?? '/legal/terms-of-service'
 
 const ENGINE_SIGNAL_LABELS = {
   active_distress_enforcement_engine: 'Distress',
@@ -129,6 +135,8 @@ function App() {
   const [unlockFeedbackMessage, setUnlockFeedbackMessage] = useState('')
   const [purchaseConfirmation, setPurchaseConfirmation] = useState(null)
   const [purchaseTermsAccepted, setPurchaseTermsAccepted] = useState(false)
+  const [showSubscriptionConfirmation, setShowSubscriptionConfirmation] = useState(false)
+  const [subscriptionTermsAccepted, setSubscriptionTermsAccepted] = useState(false)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [adminUsers, setAdminUsers] = useState([])
   const [adminLoading, setAdminLoading] = useState(false)
@@ -502,6 +510,22 @@ function App() {
     const { tier, deal } = purchaseConfirmation
     closePurchaseConfirmation()
     await handleStripeCheckout(tier, deal)
+  }
+
+  function openSubscriptionConfirmation() {
+    setSubscriptionTermsAccepted(false)
+    setShowSubscriptionConfirmation(true)
+  }
+
+  function closeSubscriptionConfirmation() {
+    setShowSubscriptionConfirmation(false)
+    setSubscriptionTermsAccepted(false)
+  }
+
+  async function confirmSubscriptionCheckout() {
+    if (!subscriptionTermsAccepted) return
+    closeSubscriptionConfirmation()
+    await handleSubscriptionCheckout()
   }
 
   async function handleSubscriptionCheckout() {
@@ -4276,6 +4300,185 @@ function App() {
     )
   }
 
+  function renderSubscriptionConfirmationModal() {
+    if (!showSubscriptionConfirmation) return null
+
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.72)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+          zIndex: 10001,
+        }}
+      >
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '640px',
+            background: '#0b1120',
+            border: '1px solid rgba(34, 197, 94, 0.28)',
+            borderRadius: '22px',
+            padding: '28px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
+            maxHeight: '85vh',
+            overflowY: 'auto',
+          }}
+        >
+          <div style={{ marginBottom: '18px' }}>
+            <div
+              style={{
+                display: 'inline-block',
+                padding: '8px 14px',
+                borderRadius: '999px',
+                fontSize: '0.8rem',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: '#bbf7d0',
+                border: '1px solid rgba(34, 197, 94, 0.32)',
+                background: 'rgba(34, 197, 94, 0.12)',
+              }}
+            >
+              Subscription Confirmation
+            </div>
+          </div>
+
+          <h3 style={{ margin: '0 0 8px', color: '#ffffff', fontSize: '1.5rem' }}>
+            Subscription
+          </h3>
+
+          <div
+            style={{
+              display: 'grid',
+              gap: '10px',
+              marginBottom: '18px',
+              padding: '14px 16px',
+              borderRadius: '14px',
+              border: '1px solid rgba(255,255,255,0.10)',
+              background: 'rgba(255,255,255,0.03)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+              <span style={{ color: '#94a3b8' }}>Price</span>
+              <span style={{ color: '#ffffff', fontWeight: 800 }}>$1,500/month</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+              <span style={{ color: '#94a3b8' }}>Billing</span>
+              <span style={{ color: '#ffffff', fontWeight: 800 }}>Recurring monthly</span>
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginBottom: '18px',
+              color: '#cbd5e1',
+              lineHeight: 1.6,
+              fontSize: '0.92rem',
+            }}
+          >
+            <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: '8px' }}>
+              Subscriber access includes:
+            </div>
+            <ul style={{ margin: 0, paddingLeft: '18px' }}>
+              <li>Full visibility on all standard deals available to subscribers.</li>
+              <li>Deal Facts, Source Signals, pricing context and internal ranking score.</li>
+              <li>Access to Arizona deal intelligence and opportunity discovery.</li>
+              <li>Access to verified marketplace opportunities across Arizona.</li>
+              <li>Eligibility to purchase Premium and Diamond opportunities.</li>
+            </ul>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '10px 16px',
+              marginBottom: '18px',
+              fontSize: '0.92rem',
+            }}
+          >
+            <a
+              href={SUBSCRIPTION_TERMS_PATH}
+              style={{ color: '#93c5fd', fontWeight: 700, textDecoration: 'underline' }}
+            >
+              Subscription Terms
+            </a>
+            <a
+              href={TERMS_OF_SERVICE_PATH}
+              style={{ color: '#93c5fd', fontWeight: 700, textDecoration: 'underline' }}
+            >
+              Terms of Service
+            </a>
+          </div>
+
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '10px',
+              marginBottom: '20px',
+              color: '#e2e8f0',
+              lineHeight: 1.5,
+              fontSize: '0.92rem',
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={subscriptionTermsAccepted}
+              onChange={(event) => setSubscriptionTermsAccepted(event.target.checked)}
+              style={{ marginTop: '3px' }}
+            />
+            <span>
+              I have read and agree to the{' '}
+              <a
+                href={SUBSCRIPTION_TERMS_PATH}
+                style={{ color: '#93c5fd', fontWeight: 700, textDecoration: 'underline' }}
+              >
+                Subscription Terms
+              </a>{' '}
+              and{' '}
+              <a
+                href={TERMS_OF_SERVICE_PATH}
+                style={{ color: '#93c5fd', fontWeight: 700, textDecoration: 'underline' }}
+              >
+                Terms of Service
+              </a>
+              .
+            </span>
+          </label>
+
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={closeSubscriptionConfirmation}
+              className="secondary-button"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={confirmSubscriptionCheckout}
+              className="primary-button"
+              disabled={!subscriptionTermsAccepted}
+              style={
+                !subscriptionTermsAccepted
+                  ? { opacity: 0.55, cursor: 'not-allowed' }
+                  : undefined
+              }
+            >
+              Continue to Stripe
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   function renderPurchaseConfirmationModal() {
     if (!purchaseConfirmation) return null
 
@@ -4697,7 +4900,7 @@ function App() {
               }}
             >
               <button
-                onClick={handleSubscriptionCheckout}
+                onClick={openSubscriptionConfirmation}
                 className="secondary-button"
               >
                 Subscribe — $1,500/month
@@ -5984,6 +6187,7 @@ function App() {
       )}
 
       {renderPlatformInfoModal()}
+      {renderSubscriptionConfirmationModal()}
       {renderPurchaseConfirmationModal()}
 
       {!foundersCohortFull ? (
