@@ -145,6 +145,7 @@ function SubscriberDashboard({
   getDealScore,
   onViewDeal,
   onGoToAccess,
+  onExploreMarketplace,
   access = null,
 }) {
   const email = user?.email || '—'
@@ -205,7 +206,7 @@ function SubscriberDashboard({
             }}
           >
             Subscriber membership is not active on this account yet. You can still manage
-            verification settings and review any deal purchases below.
+            verification settings and review any access purchases below.
             {onGoToAccess ? (
               <div style={{ marginTop: '12px' }}>
                 <button type="button" className="secondary-button" onClick={onGoToAccess}>
@@ -213,6 +214,14 @@ function SubscriberDashboard({
                 </button>
               </div>
             ) : null}
+          </div>
+        ) : null}
+
+        {displaySubscriptionActive && onExploreMarketplace ? (
+          <div style={{ marginTop: '4px' }}>
+            <button type="button" className="primary-button" onClick={onExploreMarketplace}>
+              Explore Marketplace
+            </button>
           </div>
         ) : null}
       </BlockShell>
@@ -304,16 +313,16 @@ function SubscriberDashboard({
         </div>
       </BlockShell>
 
-      {/* 3. My Purchases — same data as legacy #my-purchases */}
+      {/* 3. My Access Purchases — same data as legacy #my-purchases */}
       <BlockShell
         eyebrow="Purchases"
-        title="My Purchases"
-        description="Deals where you unlocked Premium or Diamond access via purchase."
+        title="My Access Purchases"
+        description="Opportunities where you activated Premium or Diamond platform access."
       >
         {!purchasesLoaded ? (
           <div style={{ color: '#94a3b8' }}>Loading purchases...</div>
         ) : myPurchasedEntries.length === 0 ? (
-          <div style={{ color: '#94a3b8' }}>No purchases yet.</div>
+          <div style={{ color: '#94a3b8' }}>No access purchases yet.</div>
         ) : (
           <div
             style={{
@@ -434,7 +443,7 @@ function SubscriberDashboard({
                     }}
                     onClick={() => onViewDeal(deal)}
                   >
-                    View Deal
+                    View Opportunity
                   </button>
                 </div>
               )

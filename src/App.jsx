@@ -5376,6 +5376,7 @@ function App() {
                 getDealScore={getDealScore}
                 onViewDeal={openDealDetail}
                 onGoToAccess={() => scrollToSection('access')}
+                onExploreMarketplace={() => scrollToSection('deals')}
                 access={dashboardAccess}
               />
             </section>
