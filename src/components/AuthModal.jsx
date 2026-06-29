@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { getLegalPage } from '../legal/legalPages'
+
+const TERMS_OF_SERVICE_PATH =
+  getLegalPage('termsOfService')?.path ?? '/legal/terms-of-service'
+const PRIVACY_POLICY_PATH =
+  getLegalPage('privacyPolicy')?.path ?? '/legal/privacy-policy'
 
 function AuthModal({
   showAuthModal,
@@ -15,6 +21,7 @@ function AuthModal({
   const [authError, setAuthError] = useState('')
   const [authInfo, setAuthInfo] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [legalTermsAccepted, setLegalTermsAccepted] = useState(false)
 
   useEffect(() => {
     if (!showAuthModal) {
@@ -25,6 +32,7 @@ function AuthModal({
       setAuthError('')
       setAuthInfo('')
       setSubmitting(false)
+      setLegalTermsAccepted(false)
     }
   }, [showAuthModal])
 
@@ -77,6 +85,10 @@ function AuthModal({
 
     if (password.length < 6) {
       setAuthError('Password must be at least 6 characters.')
+      return
+    }
+
+    if (authMode === 'signup' && !legalTermsAccepted) {
       return
     }
 
@@ -372,12 +384,58 @@ function AuthModal({
           </div>
         ) : null}
 
+        {authMode === 'signup' ? (
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '10px',
+              marginTop: '18px',
+              color: '#e2e8f0',
+              lineHeight: 1.5,
+              fontSize: '0.92rem',
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={legalTermsAccepted}
+              onChange={(event) => setLegalTermsAccepted(event.target.checked)}
+              style={{ marginTop: '3px' }}
+            />
+            <span>
+              I have read and agree to the{' '}
+              <a
+                href={TERMS_OF_SERVICE_PATH}
+                style={{ color: '#93c5fd', fontWeight: 700, textDecoration: 'underline' }}
+              >
+                Terms of Service
+              </a>{' '}
+              and{' '}
+              <a
+                href={PRIVACY_POLICY_PATH}
+                style={{ color: '#93c5fd', fontWeight: 700, textDecoration: 'underline' }}
+              >
+                Privacy Policy
+              </a>
+              .
+            </span>
+          </label>
+        ) : null}
+
         <div style={{ display: 'flex', gap: '12px', marginTop: '22px', flexWrap: 'wrap' }}>
           <button
             onClick={handleSubmit}
             className="primary-button"
-            disabled={submitting}
-            style={{ opacity: submitting ? 0.7 : 1 }}
+            disabled={submitting || (authMode === 'signup' && !legalTermsAccepted)}
+            style={{
+              opacity:
+                submitting || (authMode === 'signup' && !legalTermsAccepted) ? 0.55 : 1,
+              cursor:
+                submitting || (authMode === 'signup' && !legalTermsAccepted)
+                  ? 'not-allowed'
+                  : 'pointer',
+            }}
           >
             {submitting
               ? 'Please wait...'
