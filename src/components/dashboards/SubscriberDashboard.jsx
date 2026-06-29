@@ -324,7 +324,7 @@ function SubscriberDashboard({
           >
             {myPurchasedEntries.map(({ deal, access }) => {
               const isDiamond = access.diamond === true
-              const typeLabel = isDiamond ? 'Diamond Purchased' : 'Premium Purchased'
+              const typeLabel = isDiamond ? 'Diamond Access Active' : 'Premium Access Active'
               const badgeLabel = isDiamond ? '◆ DIAMOND' : 'PREMIUM 🔴'
               const score = getDealScore(deal)
 

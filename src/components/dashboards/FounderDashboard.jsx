@@ -205,7 +205,7 @@ export default function FounderDashboard({
           }}
         >
           During your Founder window, you can review deal intelligence early and purchase
-          Premium/Diamond unlocks.
+          Premium/Diamond access unlocks.
           {founderTrialEndsAt
             ? ` Your trial ends on ${trialEndLabel}.`
             : ' No expiration date available.'}
@@ -344,7 +344,7 @@ export default function FounderDashboard({
         <BulletList
           items={[
             'Early access to the private window and new deal intelligence.',
-            'Can buy Premium/Diamond during the Founder window.',
+            'Can purchase Premium/Diamond access during the Founder window.',
             'Private beta investor status (Founder cohort).',
           ]}
         />

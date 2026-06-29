@@ -453,7 +453,7 @@ function App() {
     }
 
     if (tier === 'diamond' && diamondUnlocked) {
-      return deal?.address || 'Full address available after purchase'
+      return deal?.address || 'Full address available after access unlock'
     }
 
     return getDealCity(deal)
@@ -1427,7 +1427,7 @@ function App() {
         items.push({ label: 'Estimated value', value: pricing.estValue })
       }
       if (pricing.purchase && pricing.purchase !== 'Pricing not verified yet') {
-        items.push({ label: 'Purchase price', value: pricing.purchase })
+        items.push({ label: 'Property price signal', value: pricing.purchase })
       }
     }
 
@@ -2748,9 +2748,9 @@ function App() {
               let actionLabel = 'View Deal Detail'
 
               if (purchasedDiamond) {
-                actionLabel = 'Diamond Purchased'
+                actionLabel = 'Diamond Access Active'
               } else if (purchasedPremium) {
-                actionLabel = 'Premium Purchased'
+                actionLabel = 'Premium Access Active'
               } else if (isLockedPremium) {
                 actionLabel = premiumSoldOut ? 'Premium Sold Out' : 'Unlock Premium Access — $4,500'
               } else if (isLockedDiamond) {
@@ -3239,7 +3239,7 @@ function App() {
                   </div>
 
                   <div style={{ color: '#ffffff', lineHeight: 1.85 }}>
-                    <div>✔ Owner/contact layer unlocked after purchase</div>
+                    <div>✔ Owner/contact layer unlocked after Diamond access</div>
                     <div>✔ Off-market seller context</div>
                     <div>✔ Direct execution path for serious investors</div>
                     <div>✔ Limited investor access for this deal</div>
@@ -3319,7 +3319,7 @@ function App() {
                   </div>
 
                   <div style={{ color: '#e2e8f0', marginTop: '10px', fontWeight: 600 }}>
-                    Full property intelligence, owner layer, and contact path unlock after purchase.
+                    Full property intelligence, owner layer, and contact path unlock after Diamond access purchase.
                   </div>
                 </div>
               ) : null}
@@ -3418,7 +3418,7 @@ function App() {
                   )}
 
                   <div style={{ color: '#e2e8f0', marginTop: '10px', fontWeight: 600 }}>
-                    Full deal intelligence is unlocked immediately after purchase.
+                    Full opportunity intelligence is unlocked immediately after Premium access purchase.
                   </div>
                 </div>
               ) : null}
@@ -3600,7 +3600,7 @@ function App() {
                   }}
                 >
                   <div style={{ color: '#94a3b8', fontSize: '13px' }}>
-                    {pricing.priced ? 'Purchase Price' : 'Verified purchase'}
+                    {pricing.priced ? 'Property price signal' : 'Verified property pricing'}
                   </div>
                   <div style={{ marginTop: '8px', color: '#ffffff', fontWeight: 800, fontSize: '22px' }}>
                     {pricing.purchase}
@@ -5445,8 +5445,8 @@ function App() {
                   {myPurchasedEntries.map(({ deal, access }) => {
                     const isDiamond = access.diamond === true
                     const typeLabel = isDiamond
-                      ? 'Diamond Purchased'
-                      : 'Premium Purchased'
+                      ? 'Diamond Access Active'
+                      : 'Premium Access Active'
                     const badgeLabel = isDiamond ? '◆ DIAMOND' : 'PREMIUM 🔴'
                     const score = getDealScore(deal)
 
@@ -5782,7 +5782,7 @@ function App() {
                     <li>Full Deal Facts and Source Signals.</li>
                     <li>Pricing context, discount data and internal ranking score.</li>
                     <li>Full standard intelligence for the purchased Premium deal.</li>
-                    <li>Permanent access to the purchased deal.</li>
+                    <li>Permanent platform access to intelligence for that opportunity.</li>
                   </ul>
                   <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>
                     Does not include:
@@ -5840,7 +5840,7 @@ function App() {
                     <li>Owner-authorized sharing when available.</li>
                     <li>Diamond-level opportunity context after publication.</li>
                     <li>Strict investor access limit for each Diamond deal.</li>
-                    <li>Permanent access to the purchased deal.</li>
+                    <li>Permanent platform access to intelligence for that opportunity.</li>
                   </ul>
                   <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>
                     Owner-Controlled Access:
