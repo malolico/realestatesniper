@@ -295,7 +295,7 @@ export default function SubmitNewPropertyForm() {
         </div>
         <p style={noteStyle}>
           Properties previously marketed through MLS, public listing websites or real estate
-          agencies may require additional review and may not qualify for Diamond publication.
+          agencies may require additional review and may not match the interests of our investors.
         </p>
       </FormSection>
 

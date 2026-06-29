@@ -5043,6 +5043,23 @@ function App() {
               <h1 style={heroH1Style}>{heroTitle}</h1>
               <p style={heroDescStyle}>{heroDescription}</p>
 
+              {primaryVisualWorkspace === 'owner' ? (
+                <p
+                  style={{
+                    margin: compactHero ? '12px 0 0' : '14px 0 0',
+                    maxWidth: '720px',
+                    color: '#94a3b8',
+                    fontSize: compactHero ? '0.92rem' : '0.95rem',
+                    lineHeight: 1.6,
+                    fontWeight: 500,
+                  }}
+                >
+                  RealEstateSniper never charges commissions or listing fees to property owners.
+                  Our compensation comes exclusively from investor subscriptions and optional
+                  Premium and Diamond access purchases.
+                </p>
+              ) : null}
+
               {!currentUser ? (
                 <FounderStatus
                   remainingSpots={remainingFounderSpots}
