@@ -126,6 +126,8 @@ function App() {
   const [purchasedDealAccess, setPurchasedDealAccess] = useState({})
   const [purchasesLoaded, setPurchasesLoaded] = useState(false)
   const [unlockFeedbackMessage, setUnlockFeedbackMessage] = useState('')
+  const [purchaseConfirmation, setPurchaseConfirmation] = useState(null)
+  const [purchaseTermsAccepted, setPurchaseTermsAccepted] = useState(false)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [adminUsers, setAdminUsers] = useState([])
   const [adminLoading, setAdminLoading] = useState(false)
@@ -481,6 +483,24 @@ function App() {
       console.error('Stripe deal checkout error:', error)
       alert('Error connecting to payment')
     }
+  }
+
+  function openPurchaseConfirmation(tier, deal) {
+    if (!deal) return
+    setPurchaseTermsAccepted(false)
+    setPurchaseConfirmation({ tier, deal })
+  }
+
+  function closePurchaseConfirmation() {
+    setPurchaseConfirmation(null)
+    setPurchaseTermsAccepted(false)
+  }
+
+  async function confirmPurchaseCheckout() {
+    if (!purchaseConfirmation || !purchaseTermsAccepted) return
+    const { tier, deal } = purchaseConfirmation
+    closePurchaseConfirmation()
+    await handleStripeCheckout(tier, deal)
   }
 
   async function handleSubscriptionCheckout() {
@@ -3235,7 +3255,7 @@ function App() {
                         fontWeight: 800,
                       }}
                       onClick={() => {
-                        handleStripeCheckout('diamond', selectedDeal)
+                        openPurchaseConfirmation('diamond', selectedDeal)
                       }}
                     >
                       Unlock Diamond Access — $7,500
@@ -3347,7 +3367,7 @@ function App() {
                         fontWeight: 800,
                       }}
                       onClick={() => {
-                        handleStripeCheckout('premium', selectedDeal)
+                        openPurchaseConfirmation('premium', selectedDeal)
                       }}
                     >
                       Unlock Premium Access — $4,500
@@ -4234,6 +4254,168 @@ function App() {
               className="secondary-button"
             >
               Subscriber Access
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  function renderPurchaseConfirmationModal() {
+    if (!purchaseConfirmation) return null
+
+    const { tier, deal } = purchaseConfirmation
+    const isDiamond = tier === 'diamond'
+    const tierLabel = isDiamond ? 'Diamond' : 'Premium'
+    const accessPrice = isDiamond ? DIAMOND_LAUNCH_PRICE : PREMIUM_ACCESS_PRICE
+    const dealTitle = getDealTitle(deal)
+    const dealAddress = deal?.address || getDealCity(deal)
+
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.72)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+          zIndex: 10001,
+        }}
+      >
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '640px',
+            background: '#0b1120',
+            border: isDiamond
+              ? '1px solid rgba(239, 68, 68, 0.28)'
+              : '1px solid rgba(249, 115, 22, 0.28)',
+            borderRadius: '22px',
+            padding: '28px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
+            maxHeight: '85vh',
+            overflowY: 'auto',
+          }}
+        >
+          <div style={{ marginBottom: '18px' }}>
+            <div
+              style={{
+                display: 'inline-block',
+                padding: '8px 14px',
+                borderRadius: '999px',
+                fontSize: '0.8rem',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: isDiamond ? '#fecaca' : '#fdba74',
+                border: isDiamond
+                  ? '1px solid rgba(239, 68, 68, 0.32)'
+                  : '1px solid rgba(249, 115, 22, 0.32)',
+                background: isDiamond
+                  ? 'rgba(239, 68, 68, 0.12)'
+                  : 'rgba(249, 115, 22, 0.12)',
+              }}
+            >
+              Purchase Confirmation
+            </div>
+          </div>
+
+          <h3 style={{ margin: '0 0 8px', color: '#ffffff', fontSize: '1.5rem' }}>
+            Confirm {tierLabel} Access
+          </h3>
+
+          <div style={{ color: '#e2e8f0', fontWeight: 700, marginBottom: '4px' }}>{dealTitle}</div>
+          <div style={{ color: '#94a3b8', marginBottom: '16px', lineHeight: 1.5 }}>{dealAddress}</div>
+
+          <div
+            style={{
+              display: 'grid',
+              gap: '10px',
+              marginBottom: '18px',
+              padding: '14px 16px',
+              borderRadius: '14px',
+              border: '1px solid rgba(255,255,255,0.10)',
+              background: 'rgba(255,255,255,0.03)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+              <span style={{ color: '#94a3b8' }}>Tier</span>
+              <span style={{ color: '#ffffff', fontWeight: 800 }}>{tierLabel}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+              <span style={{ color: '#94a3b8' }}>Price</span>
+              <span style={{ color: '#ffffff', fontWeight: 800 }}>
+                {formatCurrency(accessPrice)}
+              </span>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              marginBottom: '18px',
+              color: '#cbd5e1',
+              lineHeight: 1.6,
+              fontSize: '0.92rem',
+            }}
+          >
+            <p style={{ margin: 0 }}>
+              This purchase provides access to the selected opportunity only.
+            </p>
+            <p style={{ margin: 0 }}>
+              Purchases are final and non-refundable once access is delivered.
+            </p>
+            <p style={{ margin: 0 }}>
+              RealEstateSniper does not guarantee property condition, transaction outcome,
+              profit, financing, inspection results, or seller response.
+            </p>
+            <p style={{ margin: 0 }}>You are responsible for your own due diligence.</p>
+          </div>
+
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '10px',
+              marginBottom: '20px',
+              color: '#e2e8f0',
+              lineHeight: 1.5,
+              fontSize: '0.92rem',
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={purchaseTermsAccepted}
+              onChange={(event) => setPurchaseTermsAccepted(event.target.checked)}
+              style={{ marginTop: '3px' }}
+            />
+            <span>I understand and accept the purchase terms for this deal.</span>
+          </label>
+
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={closePurchaseConfirmation}
+              className="secondary-button"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={confirmPurchaseCheckout}
+              className="primary-button"
+              disabled={!purchaseTermsAccepted}
+              style={
+                !purchaseTermsAccepted
+                  ? { opacity: 0.55, cursor: 'not-allowed' }
+                  : undefined
+              }
+            >
+              Continue to Stripe
             </button>
           </div>
         </div>
@@ -5787,6 +5969,7 @@ function App() {
       )}
 
       {renderPlatformInfoModal()}
+      {renderPurchaseConfirmationModal()}
 
       {!foundersCohortFull ? (
         <FounderModal
