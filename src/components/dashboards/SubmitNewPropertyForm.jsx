@@ -413,25 +413,12 @@ export default function SubmitNewPropertyForm() {
           </span>
         </label>
 
-        <button
-          type="button"
-          disabled={!ownerAgreementAccepted}
-          style={
-            !ownerAgreementAccepted
-              ? disabledButtonStyle
-              : {
-                  padding: '12px 20px',
-                  borderRadius: '14px',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  background: 'rgba(255,255,255,0.04)',
-                  color: '#ffffff',
-                  fontWeight: 700,
-                  fontSize: '0.92rem',
-                }
-          }
-        >
+        <button type="button" disabled style={disabledButtonStyle}>
           Submit for Review
         </button>
+        <p style={{ margin: 0, fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.55 }}>
+          Submission workflow is not active yet.
+        </p>
         <p style={{ margin: 0, fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.55, maxWidth: '720px' }}>
           Submission workflow under development. Every property will be reviewed after identity
           and ownership verification.
