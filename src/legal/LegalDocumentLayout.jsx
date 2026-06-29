@@ -1,5 +1,6 @@
 import logo from '../assets/logo.png'
 import '../App.css'
+import SiteFooter from '../components/SiteFooter'
 
 function LegalDocumentLayout({ title, subtitle, children }) {
   return (
@@ -82,6 +83,8 @@ function LegalDocumentLayout({ title, subtitle, children }) {
           {children}
         </div>
       </main>
+
+      <SiteFooter />
     </div>
   )
 }

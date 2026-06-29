@@ -13,6 +13,7 @@ import logo from './assets/logo.png'
 import FounderModal from './components/FounderModal'
 import FounderStatus from './components/FounderStatus'
 import ContactMenu from './components/ContactMenu'
+import SiteFooter from './components/SiteFooter'
 import AuthModal from './components/AuthModal'
 import SubscriberDashboard from './components/dashboards/SubscriberDashboard'
 import FounderDashboard from './components/dashboards/FounderDashboard'
@@ -6175,6 +6176,8 @@ function App() {
         authContext={authContext}
         handleAuthModalClose={handleAuthModalClose}
       />
+
+      <SiteFooter />
     </div>
   )
 }
