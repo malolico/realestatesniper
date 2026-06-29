@@ -653,6 +653,7 @@ function App() {
     async function loadUser() {
       const searchParams = new URLSearchParams(window.location.search)
       const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+      const stripeCanceled = searchParams.get('canceled') === 'true'
       const stripeSuccess = searchParams.get('success') === 'true'
       const recoveryRequested =
         searchParams.get('type') === 'recovery' || hashParams.get('type') === 'recovery'
@@ -660,6 +661,12 @@ function App() {
       if (recoveryRequested && !cancelled) {
         setShowPasswordResetFlow(true)
         setShowAuthModal(false)
+      }
+
+      if (stripeCanceled && !cancelled) {
+        setUnlockFeedbackMessage('Checkout canceled. No payment was made.')
+        const cleanCanceledUrl = `${window.location.origin}${window.location.pathname}${window.location.hash || ''}`
+        window.history.replaceState({}, '', cleanCanceledUrl)
       }
 
       if (stripeSuccess) {
@@ -716,6 +723,13 @@ function App() {
         sessionStorage.removeItem(SUBSCRIPTION_SYNC_PENDING_KEY)
         sessionStorage.removeItem(STRIPE_SUCCESS_RELOAD_DONE_KEY)
         if (stripeSuccess) {
+          const dealCheckoutPending =
+            sessionStorage.getItem(DEAL_CHECKOUT_SYNC_PENDING_KEY) === '1'
+          if (!dealCheckoutPending) {
+            setUnlockFeedbackMessage(
+              'Subscription active. Your investor access is now enabled.',
+            )
+          }
           const cleanUrl = `${window.location.origin}${window.location.pathname}${window.location.hash || ''}`
           window.history.replaceState({}, '', cleanUrl)
         }
