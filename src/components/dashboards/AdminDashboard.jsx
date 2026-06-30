@@ -3,9 +3,9 @@
  * Presentation-only console. No backend wiring, no live actions.
  */
 
-import { PlatformSnapshot } from '../admin'
+import { PlatformSnapshot, BusinessOverview } from '../admin'
 
-export default function AdminDashboard({ platformSnapshot = null }) {
+export default function AdminDashboard({ platformSnapshot = null, businessOverview = null }) {
   function BlockShell({ eyebrow, title, description, children }) {
     return (
       <div
@@ -266,52 +266,7 @@ export default function AdminDashboard({ platformSnapshot = null }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
       <PlatformSnapshot platformSnapshot={platformSnapshot} />
 
-      {/* 1. Business Overview */}
-      <BlockShell
-        eyebrow="Revenue"
-        title="Business Overview"
-        description="Subscription and access-purchase metrics for platform revenue and conversion tracking."
-      >
-        <div style={pillGrid}>
-          <StatusPill label="MRR" value="—" tone="admin" hint="Monthly recurring revenue from subscriptions." />
-          <StatusPill
-            label="Active subscribers"
-            value="—"
-            tone="muted"
-            hint="Accounts with an active paid subscription."
-          />
-          <StatusPill
-            label="Premium access purchases"
-            value="—"
-            tone="premium"
-            hint="One-time Premium opportunity access purchases."
-          />
-          <StatusPill
-            label="Diamond access purchases"
-            value="—"
-            tone="diamond"
-            hint="One-time Diamond opportunity access purchases."
-          />
-          <StatusPill
-            label="Monthly revenue"
-            value="—"
-            tone="admin"
-            hint="Combined subscription + access purchase revenue."
-          />
-          <StatusPill
-            label="Conversion rate"
-            value="—"
-            tone="muted"
-            hint="Registered users converting to paid subscription."
-          />
-        </div>
-        <div style={previewNoticeStyle}>
-          <span style={{ color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 }}>
-            Revenue metrics will pull from Stripe and purchase records when connected.
-          </span>
-          <PreviewBadge label="Not connected yet" />
-        </div>
-      </BlockShell>
+      <BusinessOverview businessOverview={businessOverview} />
 
       {/* 2. Critical Alerts */}
       <BlockShell

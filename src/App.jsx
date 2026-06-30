@@ -1277,6 +1277,42 @@ function App() {
     },
   }
 
+  const businessOverview = {
+    revenue: {
+      available: false,
+    },
+    subscriptions: {
+      available: false,
+    },
+    premium: {
+      totalPurchases: platformSnapshot.quickMetrics.totalPremiumPurchases,
+    },
+    diamond: {
+      totalPurchases: platformSnapshot.quickMetrics.totalDiamondPurchases,
+    },
+    refunds: {
+      available: false,
+    },
+    failedPayments: {
+      available: false,
+    },
+    conversion: {
+      available: false,
+    },
+    churn: {
+      available: false,
+    },
+    revenueByProduct: {
+      available: false,
+    },
+    revenueByState: {
+      available: false,
+    },
+    lastUpdate: {
+      marketplaceReady: !loading,
+    },
+  }
+
   function getPremiumSlotsTaken(deal) {
     return dealPurchaseCounts[deal?.id]?.premium || 0
   }
@@ -5484,7 +5520,10 @@ function App() {
                 </p>
               </div>
 
-              <AdminDashboard platformSnapshot={platformSnapshot} />
+              <AdminDashboard
+                platformSnapshot={platformSnapshot}
+                businessOverview={businessOverview}
+              />
             </section>
           ) : null}
 
