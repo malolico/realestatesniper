@@ -61,12 +61,12 @@ export default function MarketplaceOperations({ marketplaceOperations = null }) 
 
       <section>
         <h3>Premium Opportunities</h3>
-        <p>Premium Deals: {formatMetric(premium?.premiumDeals)}</p>
+        <p>Premium Deals: {formatMetric(premium?.premiumDeals)} ({formatMetric(premium?.premiumPercentage)})</p>
       </section>
 
       <section>
         <h3>Diamond Opportunities</h3>
-        <p>Diamond Deals: {formatMetric(diamond?.diamondDeals)}</p>
+        <p>Diamond Deals: {formatMetric(diamond?.diamondDeals)} ({formatMetric(diamond?.diamondPercentage)})</p>
       </section>
 
       <section>

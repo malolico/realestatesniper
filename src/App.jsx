@@ -1452,9 +1452,11 @@ function App() {
     },
     premium: {
       premiumDeals: premiumDeals.length,
+      premiumPercentage: platformSnapshot.quickMetrics.premiumPercentage,
     },
     diamond: {
       diamondDeals: diamondDeals.length,
+      diamondPercentage: platformSnapshot.quickMetrics.diamondPercentage,
     },
     marketplaceEligible: {
       available: false,
