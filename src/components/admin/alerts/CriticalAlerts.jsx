@@ -95,6 +95,10 @@ export default function CriticalAlerts({ criticalAlerts = null }) {
           </li>
           <li>Admin Panel Error: {formatMetric(warnings?.adminPanelError)}</li>
           <li>
+            User Directory Loaded:{' '}
+            {warnings?.userDirectoryLoaded === true ? 'Yes' : 'No'}
+          </li>
+          <li>
             Marketplace Ready: {lastUpdate?.marketplaceReady === true ? 'Yes' : 'No'}
           </li>
         </ul>

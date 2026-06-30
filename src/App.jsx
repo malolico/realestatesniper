@@ -1375,6 +1375,7 @@ function App() {
       marketplaceEmpty: !loading && deals.length === 0,
       foundersCohortFull,
       adminPanelError: adminError || null,
+      userDirectoryLoaded: adminUsers.length > 0,
     },
   }
 
