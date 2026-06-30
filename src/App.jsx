@@ -1283,6 +1283,7 @@ function App() {
     },
     subscriptions: {
       available: false,
+      loaded: purchasesLoaded === true,
     },
     premium: {
       totalPurchases: platformSnapshot.quickMetrics.totalPremiumPurchases,

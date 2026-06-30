@@ -45,6 +45,7 @@ export default function BusinessOverview({ businessOverview = null }) {
         ) : (
           <NotConnected />
         )}
+        <p>Purchase data loaded: {subscriptions?.loaded === true ? 'Yes' : 'No'}</p>
       </section>
 
       <section>
