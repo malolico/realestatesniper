@@ -3,9 +3,13 @@
  * Presentation-only console. No backend wiring, no live actions.
  */
 
-import { PlatformSnapshot, BusinessOverview } from '../admin'
+import { PlatformSnapshot, BusinessOverview, CriticalAlerts } from '../admin'
 
-export default function AdminDashboard({ platformSnapshot = null, businessOverview = null }) {
+export default function AdminDashboard({
+  platformSnapshot = null,
+  businessOverview = null,
+  criticalAlerts = null,
+}) {
   function BlockShell({ eyebrow, title, description, children }) {
     return (
       <div
@@ -268,35 +272,7 @@ export default function AdminDashboard({ platformSnapshot = null, businessOvervi
 
       <BusinessOverview businessOverview={businessOverview} />
 
-      {/* 2. Critical Alerts */}
-      <BlockShell
-        eyebrow="Alerts"
-        title="Critical Alerts"
-        description="Operational incidents requiring admin attention. No live monitoring in this preview."
-      >
-        <div style={{ display: 'grid', gap: '12px' }}>
-          <PreviewRow
-            title="Stripe payment failures"
-            body="Failed subscription renewals, declined access purchases, and incomplete checkouts."
-          />
-          <PreviewRow
-            title="Supabase / Edge Function errors"
-            body="Auth, database, and edge runtime failures affecting platform operations."
-          />
-          <PreviewRow
-            title="Owner review overdue"
-            body="Owner submissions or detected properties waiting beyond SLA thresholds."
-          />
-          <PreviewRow
-            title="Diamond capacity reached"
-            body="Opportunities at Diamond slot limit requiring admin visibility."
-          />
-          <PreviewRow
-            title="Webhook failures"
-            body="Stripe webhook delivery retries and signature verification issues."
-          />
-        </div>
-      </BlockShell>
+      <CriticalAlerts criticalAlerts={criticalAlerts} />
 
       {/* 3. Owner Review Queue */}
       <BlockShell

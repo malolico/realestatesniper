@@ -1313,6 +1313,46 @@ function App() {
     },
   }
 
+  const criticalAlerts = {
+    stripe: {
+      available: false,
+    },
+    webhooks: {
+      available: false,
+    },
+    subscriptions: {
+      available: false,
+    },
+    payments: {
+      available: false,
+    },
+    ownerQueue: {
+      available: false,
+    },
+    factory: {
+      available: false,
+    },
+    supabase: {
+      available: false,
+    },
+    emails: {
+      available: false,
+    },
+    security: {
+      available: false,
+    },
+    system: {
+      available: false,
+    },
+    lastUpdate: {
+      marketplaceReady: !loading,
+    },
+    warnings: {
+      marketplaceEmpty: !loading && deals.length === 0,
+      adminPanelError: adminError || null,
+    },
+  }
+
   function getPremiumSlotsTaken(deal) {
     return dealPurchaseCounts[deal?.id]?.premium || 0
   }
@@ -5523,6 +5563,7 @@ function App() {
               <AdminDashboard
                 platformSnapshot={platformSnapshot}
                 businessOverview={businessOverview}
+                criticalAlerts={criticalAlerts}
               />
             </section>
           ) : null}
