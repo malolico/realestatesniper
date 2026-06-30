@@ -10,6 +10,7 @@ import {
   UserDirectory,
   MarketplaceOperations,
   OwnerReviewQueue,
+  AuditSecurityBlackBox,
 } from '../admin'
 
 export default function AdminDashboard({
@@ -19,6 +20,7 @@ export default function AdminDashboard({
   userDirectory = null,
   marketplaceOperations = null,
   ownerReviewQueue = null,
+  auditSecurity = null,
 }) {
   function BlockShell({ eyebrow, title, description, children }) {
     return (
@@ -290,43 +292,7 @@ export default function AdminDashboard({
 
       <OwnerReviewQueue ownerReviewQueue={ownerReviewQueue} />
 
-      {/* 4. Audit & Security Black Box */}
-      <BlockShell
-        eyebrow="Audit"
-        title="Audit & Security Black Box"
-        description="Immutable traceability for compliance, incident response, and admin accountability."
-      >
-        <div style={{ display: 'grid', gap: '12px' }}>
-          <PreviewRow
-            title="Admin actions"
-            body="Approve, reject, revoke, and manual overrides with actor identity."
-          />
-          <PreviewRow
-            title="User logins"
-            body="Authentication events, session anomalies, and failed access attempts."
-          />
-          <PreviewRow
-            title="Payment events"
-            body="Checkout sessions, subscription changes, and access purchase confirmations."
-          />
-          <PreviewRow
-            title="Owner submissions"
-            body="Intake, document uploads, status transitions, and decision history."
-          />
-          <PreviewRow
-            title="Role changes"
-            body="Subscriber, founder, owner, and restricted status modifications."
-          />
-          <PreviewRow
-            title="Stripe webhook events"
-            body="Inbound webhook payloads, processing results, and retry outcomes."
-          />
-          <PreviewRow
-            title="IP / device / timestamp evidence"
-            body="Forensic context attached to sensitive actions and access grants."
-          />
-        </div>
-      </BlockShell>
+      <AuditSecurityBlackBox auditSecurity={auditSecurity} />
 
       {/* 5. System Health */}
       <BlockShell

@@ -1458,6 +1458,42 @@ function App() {
     },
   }
 
+  const auditSecurity = {
+    authentication: {
+      available: false,
+    },
+    payments: {
+      available: false,
+    },
+    subscriptions: {
+      available: false,
+    },
+    roleChanges: {
+      available: false,
+    },
+    ownerActivity: {
+      available: false,
+    },
+    factoryActivity: {
+      available: false,
+    },
+    adminActions: {
+      available: false,
+    },
+    securityEvents: {
+      available: false,
+    },
+    systemEvents: {
+      available: false,
+    },
+    requestIds: {
+      available: false,
+    },
+    lastUpdate: {
+      marketplaceReady: !loading,
+    },
+  }
+
   function getPremiumSlotsTaken(deal) {
     return dealPurchaseCounts[deal?.id]?.premium || 0
   }
@@ -5672,6 +5708,7 @@ function App() {
                 userDirectory={userDirectory}
                 marketplaceOperations={marketplaceOperations}
                 ownerReviewQueue={ownerReviewQueue}
+                auditSecurity={auditSecurity}
               />
             </section>
           ) : null}
