@@ -11,6 +11,7 @@ import {
   MarketplaceOperations,
   OwnerReviewQueue,
   AuditSecurityBlackBox,
+  SystemHealth,
 } from '../admin'
 
 export default function AdminDashboard({
@@ -21,6 +22,7 @@ export default function AdminDashboard({
   marketplaceOperations = null,
   ownerReviewQueue = null,
   auditSecurity = null,
+  systemHealth = null,
 }) {
   function BlockShell({ eyebrow, title, description, children }) {
     return (
@@ -294,48 +296,7 @@ export default function AdminDashboard({
 
       <AuditSecurityBlackBox auditSecurity={auditSecurity} />
 
-      {/* 5. System Health */}
-      <BlockShell
-        eyebrow="Health"
-        title="System Health"
-        description="Infrastructure and integration status. All channels are preview placeholders until monitoring is wired."
-      >
-        <div style={pillGrid}>
-          <StatusPill label="Stripe" value="Preview" tone="muted" hint="Payments and billing API." />
-          <StatusPill label="Supabase" value="Preview" tone="muted" hint="Auth, database, and storage." />
-          <StatusPill
-            label="Edge Functions"
-            value="Preview"
-            tone="muted"
-            hint="checkout, webhooks, admin-access."
-          />
-          <StatusPill
-            label="Factory pipeline"
-            value="Preview"
-            tone="muted"
-            hint="Investigation scoring and recommendations."
-          />
-          <StatusPill
-            label="Email delivery"
-            value="Preview"
-            tone="muted"
-            hint="Transactional and alert notifications."
-          />
-          <StatusPill
-            label="Webhooks"
-            value="Preview"
-            tone="muted"
-            hint="Inbound event delivery and retry health."
-          />
-        </div>
-        <div style={previewNoticeStyle}>
-          <span style={{ color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 }}>
-            Live uptime, latency, and incident history will appear here when observability is
-            connected.
-          </span>
-          <PreviewBadge label="Not connected yet" />
-        </div>
-      </BlockShell>
+      <SystemHealth systemHealth={systemHealth} />
     </div>
   )
 }

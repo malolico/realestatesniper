@@ -1494,6 +1494,54 @@ function App() {
     },
   }
 
+  const systemHealth = {
+    stripe: {
+      available: false,
+    },
+    supabase: {
+      available: false,
+    },
+    edgeFunctions: {
+      available: false,
+    },
+    marketplace: {
+      ready: !loading,
+    },
+    factory: {
+      available: false,
+    },
+    emailServices: {
+      available: false,
+    },
+    storage: {
+      available: false,
+    },
+    backups: {
+      available: false,
+    },
+    cronJobs: {
+      available: false,
+    },
+    webhooks: {
+      available: false,
+    },
+    performance: {
+      available: false,
+    },
+    latency: {
+      available: false,
+    },
+    errors: {
+      available: false,
+    },
+    warnings: {
+      available: false,
+    },
+    lastUpdate: {
+      marketplaceReady: !loading,
+    },
+  }
+
   function getPremiumSlotsTaken(deal) {
     return dealPurchaseCounts[deal?.id]?.premium || 0
   }
@@ -5709,6 +5757,7 @@ function App() {
                 marketplaceOperations={marketplaceOperations}
                 ownerReviewQueue={ownerReviewQueue}
                 auditSecurity={auditSecurity}
+                systemHealth={systemHealth}
               />
             </section>
           ) : null}
