@@ -1542,6 +1542,45 @@ function App() {
     },
   }
 
+  const factoryControl = {
+    factoryStatus: {
+      available: false,
+    },
+    registeredEngines: {
+      available: false,
+    },
+    runningJobs: {
+      available: false,
+    },
+    completedJobs: {
+      available: false,
+    },
+    failedJobs: {
+      available: false,
+    },
+    warnings: {
+      available: false,
+    },
+    duplicates: {
+      available: false,
+    },
+    pendingQueue: {
+      available: false,
+    },
+    processingTime: {
+      available: false,
+    },
+    lastSynchronization: {
+      available: false,
+    },
+    nextScheduledRun: {
+      available: false,
+    },
+    lastUpdate: {
+      marketplaceReady: !loading,
+    },
+  }
+
   function getPremiumSlotsTaken(deal) {
     return dealPurchaseCounts[deal?.id]?.premium || 0
   }
@@ -5758,6 +5797,7 @@ function App() {
                 ownerReviewQueue={ownerReviewQueue}
                 auditSecurity={auditSecurity}
                 systemHealth={systemHealth}
+                factoryControl={factoryControl}
               />
             </section>
           ) : null}

@@ -12,6 +12,7 @@ import {
   OwnerReviewQueue,
   AuditSecurityBlackBox,
   SystemHealth,
+  FactoryControlCenter,
 } from '../admin'
 
 export default function AdminDashboard({
@@ -23,6 +24,7 @@ export default function AdminDashboard({
   ownerReviewQueue = null,
   auditSecurity = null,
   systemHealth = null,
+  factoryControl = null,
 }) {
   function BlockShell({ eyebrow, title, description, children }) {
     return (
@@ -297,6 +299,8 @@ export default function AdminDashboard({
       <AuditSecurityBlackBox auditSecurity={auditSecurity} />
 
       <SystemHealth systemHealth={systemHealth} />
+
+      <FactoryControlCenter factoryControl={factoryControl} />
     </div>
   )
 }
