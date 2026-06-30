@@ -3,12 +3,13 @@
  * Presentation-only console. No backend wiring, no live actions.
  */
 
-import { PlatformSnapshot, BusinessOverview, CriticalAlerts } from '../admin'
+import { PlatformSnapshot, BusinessOverview, CriticalAlerts, UserDirectory } from '../admin'
 
 export default function AdminDashboard({
   platformSnapshot = null,
   businessOverview = null,
   criticalAlerts = null,
+  userDirectory = null,
 }) {
   function BlockShell({ eyebrow, title, description, children }) {
     return (
@@ -274,6 +275,8 @@ export default function AdminDashboard({
 
       <CriticalAlerts criticalAlerts={criticalAlerts} />
 
+      <UserDirectory userDirectory={userDirectory} />
+
       {/* 3. Owner Review Queue */}
       <BlockShell
         eyebrow="Owners"
@@ -445,54 +448,6 @@ export default function AdminDashboard({
           <span style={{ color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 }}>
             Live uptime, latency, and incident history will appear here when observability is
             connected.
-          </span>
-          <PreviewBadge label="Not connected yet" />
-        </div>
-      </BlockShell>
-
-      {/* 6. User & Access Overview */}
-      <BlockShell
-        eyebrow="Users"
-        title="User & Access Overview"
-        description="Platform population segmented by role and access state."
-      >
-        <div style={pillGrid}>
-          <StatusPill
-            label="Registered users"
-            value="—"
-            tone="neutral"
-            hint="All accounts with platform registration."
-          />
-          <StatusPill
-            label="Subscribers"
-            value="—"
-            tone="muted"
-            hint="Active paid subscription accounts."
-          />
-          <StatusPill
-            label="Founders"
-            value="—"
-            tone="warn"
-            hint="Founder cohort members and trial status."
-          />
-          <StatusPill
-            label="Owners"
-            value="—"
-            tone="neutral"
-            hint="Property owner accounts."
-          />
-          <StatusPill label="Admins" value="—" tone="admin" hint="Platform administrator accounts." />
-          <StatusPill
-            label="Restricted users"
-            value="—"
-            tone="danger"
-            hint="Accounts limited by policy or admin action."
-          />
-        </div>
-        <div style={previewNoticeStyle}>
-          <span style={{ color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 }}>
-            User counts will sync from auth and admin-access. Use Admin Access Panel for the live
-            user directory today.
           </span>
           <PreviewBadge label="Not connected yet" />
         </div>

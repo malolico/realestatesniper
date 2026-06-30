@@ -1353,6 +1353,41 @@ function App() {
     },
   }
 
+  const userDirectoryLoaded =
+    (showAdminPanel && !adminLoading) || adminUsers.length > 0 || Boolean(adminError)
+
+  const userDirectory = {
+    loaded: userDirectoryLoaded && !adminLoading,
+    loading: showAdminPanel && adminLoading,
+    error: adminError || null,
+    registeredUsers: userDirectoryLoaded && !adminLoading ? adminUsers.length : null,
+    subscribers:
+      userDirectoryLoaded && !adminLoading
+        ? adminUsers.filter((user) => user.subscription_active === true).length
+        : null,
+    premiumUsers:
+      userDirectoryLoaded && !adminLoading
+        ? adminUsers.filter((user) => (user.premium_purchase_count || 0) > 0).length
+        : null,
+    diamondUsers:
+      userDirectoryLoaded && !adminLoading
+        ? adminUsers.filter((user) => (user.diamond_purchase_count || 0) > 0).length
+        : null,
+    owners:
+      userDirectoryLoaded && !adminLoading
+        ? adminUsers.filter((user) => user.access_role === 'owner').length
+        : null,
+    admins:
+      userDirectoryLoaded && !adminLoading
+        ? adminUsers.filter((user) =>
+            ADMIN_EMAILS.includes((user.email || '').toLowerCase()),
+          ).length
+        : null,
+    lastUpdate: {
+      marketplaceReady: !loading,
+    },
+  }
+
   function getPremiumSlotsTaken(deal) {
     return dealPurchaseCounts[deal?.id]?.premium || 0
   }
@@ -5564,6 +5599,7 @@ function App() {
                 platformSnapshot={platformSnapshot}
                 businessOverview={businessOverview}
                 criticalAlerts={criticalAlerts}
+                userDirectory={userDirectory}
               />
             </section>
           ) : null}

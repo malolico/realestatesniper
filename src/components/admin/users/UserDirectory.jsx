@@ -1,61 +1,87 @@
-export default function UserDirectory() {
+function formatCount(value) {
+  if (value === null || value === undefined) {
+    return 'Not available'
+  }
+
+  return String(value)
+}
+
+function NotConnected() {
+  return <p>Not connected yet</p>
+}
+
+export default function UserDirectory({ userDirectory = null }) {
+  const loaded = userDirectory?.loaded === true
+  const loading = userDirectory?.loading === true
+  const error = userDirectory?.error
+  const lastUpdate = userDirectory?.lastUpdate
+  const marketplaceReady = lastUpdate?.marketplaceReady === true
+
   return (
     <section>
       <h2>User Directory</h2>
 
       <section>
         <h3>User Search</h3>
-        <p>User search will appear here.</p>
+        <NotConnected />
       </section>
 
       <section>
         <h3>Role Filters</h3>
-        <p>Role filters will appear here.</p>
+        <NotConnected />
       </section>
 
       <section>
         <h3>Registered Users</h3>
-        <p>Registered users information will appear here.</p>
+        {loading ? (
+          <p>Loading users...</p>
+        ) : !loaded ? (
+          <p>Open Admin Access Panel to load users.</p>
+        ) : error ? (
+          <p>{error}</p>
+        ) : (
+          <p>{formatCount(userDirectory?.registeredUsers)}</p>
+        )}
       </section>
 
       <section>
         <h3>Subscribers</h3>
-        <p>Subscriber information will appear here.</p>
+        {loaded ? <p>{formatCount(userDirectory?.subscribers)}</p> : null}
       </section>
 
       <section>
-        <h3>Premium Access</h3>
-        <p>Premium access information will appear here.</p>
+        <h3>Premium Users</h3>
+        {loaded ? <p>{formatCount(userDirectory?.premiumUsers)}</p> : null}
       </section>
 
       <section>
-        <h3>Diamond Access</h3>
-        <p>Diamond access information will appear here.</p>
+        <h3>Diamond Users</h3>
+        {loaded ? <p>{formatCount(userDirectory?.diamondUsers)}</p> : null}
       </section>
 
       <section>
         <h3>Owners</h3>
-        <p>Owner information will appear here.</p>
+        {loaded ? <p>{formatCount(userDirectory?.owners)}</p> : null}
       </section>
 
       <section>
         <h3>Admins</h3>
-        <p>Admin information will appear here.</p>
+        {loaded ? <p>{formatCount(userDirectory?.admins)}</p> : null}
       </section>
 
       <section>
         <h3>Recent Activity</h3>
-        <p>Recent user activity will appear here.</p>
+        <NotConnected />
       </section>
 
       <section>
         <h3>Account Status</h3>
-        <p>Account status information will appear here.</p>
+        <NotConnected />
       </section>
 
       <section>
         <h3>Last Update</h3>
-        <p>Last user directory update will appear here.</p>
+        {marketplaceReady ? <p>Marketplace data ready</p> : <p>—</p>}
       </section>
     </section>
   )
