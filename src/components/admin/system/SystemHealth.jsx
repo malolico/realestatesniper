@@ -29,6 +29,8 @@ export default function SystemHealth({ systemHealth = null }) {
       <section>
         <h3>Marketplace</h3>
         <p>Marketplace Ready: {marketplace?.ready === true ? 'Yes' : 'No'}</p>
+        <p>Marketplace Loading: {marketplace?.loading === true ? 'Yes' : 'No'}</p>
+        <p>Marketplace Empty: {marketplace?.empty === true ? 'Yes' : 'No'}</p>
       </section>
 
       <section>

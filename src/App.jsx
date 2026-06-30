@@ -1563,6 +1563,8 @@ function App() {
     },
     marketplace: {
       ready: !loading,
+      loading: loading,
+      empty: !loading && deals.length === 0,
     },
     factory: {
       available: false,
