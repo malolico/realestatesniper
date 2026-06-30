@@ -12,6 +12,7 @@ function NotConnected() {
 
 export default function MarketplaceOperations({ marketplaceOperations = null }) {
   const marketplaceStatus = marketplaceOperations?.marketplaceStatus
+  const marketSummary = marketplaceOperations?.marketSummary
   const liveDeals = marketplaceOperations?.liveDeals
   const premium = marketplaceOperations?.premium
   const diamond = marketplaceOperations?.diamond
@@ -34,6 +35,16 @@ export default function MarketplaceOperations({ marketplaceOperations = null }) 
             Marketplace Empty:{' '}
             {marketplaceStatus?.marketplaceEmpty === true ? 'Yes' : 'No'}
           </li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Market Summary</h3>
+        <ul>
+          <li>Active Markets: {formatMetric(marketSummary?.activeMarkets)}</li>
+          <li>Tracked Opportunities: {formatMetric(marketSummary?.trackedOpportunities)}</li>
+          <li>Sniper Deals: {formatMetric(marketSummary?.sniperDeals)}</li>
+          <li>Average Deal Score: {formatMetric(marketSummary?.averageDealScore)}</li>
         </ul>
       </section>
 

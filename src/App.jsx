@@ -1394,6 +1394,12 @@ function App() {
       marketplaceReady: !loading,
       marketplaceEmpty: !loading && deals.length === 0,
     },
+    marketSummary: {
+      activeMarkets: platformSnapshot.quickMetrics.activeMarketsCount,
+      trackedOpportunities: platformSnapshot.quickMetrics.trackedOpportunitiesCount,
+      sniperDeals: platformSnapshot.quickMetrics.sniperDealsCount,
+      averageDealScore: platformSnapshot.quickMetrics.averageDealScore,
+    },
     liveDeals: {
       totalDeals: deals.length,
       yellowDeals: yellowDeals.length,
