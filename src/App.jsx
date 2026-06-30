@@ -1307,6 +1307,9 @@ function App() {
     subscriptions: {
       available: false,
       loaded: purchasesLoaded === true,
+      founderSpotsRemaining: platformSnapshot.quickMetrics.founderSpotsRemaining,
+      founderSpotsTotal: platformSnapshot.quickMetrics.founderSpotsTotal,
+      foundersCohortFull,
     },
     premium: {
       totalPurchases: platformSnapshot.quickMetrics.totalPremiumPurchases,

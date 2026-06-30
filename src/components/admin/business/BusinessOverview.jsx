@@ -46,6 +46,13 @@ export default function BusinessOverview({ businessOverview = null }) {
           <NotConnected />
         )}
         <p>Purchase data loaded: {subscriptions?.loaded === true ? 'Yes' : 'No'}</p>
+        <p>
+          Founder spots: {formatMetric(subscriptions?.founderSpotsRemaining)} /{' '}
+          {formatMetric(subscriptions?.founderSpotsTotal)}
+        </p>
+        <p>
+          Founder cohort full: {subscriptions?.foundersCohortFull === true ? 'Yes' : 'No'}
+        </p>
       </section>
 
       <section>
