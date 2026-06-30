@@ -43,8 +43,10 @@ export default function PlatformSnapshot({ platformSnapshot = null }) {
           <li>Unpriced leads: {formatMetric(quickMetrics?.unpricedLeadsCount)}</li>
           <li>Premium deals: {formatMetric(quickMetrics?.premiumDealsCount)}</li>
           <li>Premium ratio: {formatMetric(quickMetrics?.premiumRatio)}</li>
+          <li>Premium percentage: {formatMetric(quickMetrics?.premiumPercentage)}</li>
           <li>Diamond deals: {formatMetric(quickMetrics?.diamondDealsCount)}</li>
           <li>Diamond ratio: {formatMetric(quickMetrics?.diamondRatio)}</li>
+          <li>Diamond percentage: {formatMetric(quickMetrics?.diamondPercentage)}</li>
           <li>Average deal score: {formatMetric(quickMetrics?.averageDealScore)}</li>
           <li>Total premium purchases: {formatMetric(quickMetrics?.totalPremiumPurchases)}</li>
           <li>Total diamond purchases: {formatMetric(quickMetrics?.totalDiamondPurchases)}</li>
