@@ -1425,6 +1425,39 @@ function App() {
     },
   }
 
+  const ownerReviewQueue = {
+    pendingReviews: {
+      available: false,
+    },
+    ownerIdentity: {
+      available: false,
+    },
+    propertyVerification: {
+      available: false,
+    },
+    brokerRisk: {
+      available: false,
+    },
+    offMarketConfidence: {
+      available: false,
+    },
+    missingDocuments: {
+      available: false,
+    },
+    factoryRecommendation: {
+      available: false,
+    },
+    adminDecision: {
+      available: false,
+    },
+    nextActions: {
+      available: false,
+    },
+    lastUpdate: {
+      marketplaceReady: !loading,
+    },
+  }
+
   function getPremiumSlotsTaken(deal) {
     return dealPurchaseCounts[deal?.id]?.premium || 0
   }
@@ -5638,6 +5671,7 @@ function App() {
                 criticalAlerts={criticalAlerts}
                 userDirectory={userDirectory}
                 marketplaceOperations={marketplaceOperations}
+                ownerReviewQueue={ownerReviewQueue}
               />
             </section>
           ) : null}

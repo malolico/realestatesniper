@@ -9,6 +9,7 @@ import {
   CriticalAlerts,
   UserDirectory,
   MarketplaceOperations,
+  OwnerReviewQueue,
 } from '../admin'
 
 export default function AdminDashboard({
@@ -17,6 +18,7 @@ export default function AdminDashboard({
   criticalAlerts = null,
   userDirectory = null,
   marketplaceOperations = null,
+  ownerReviewQueue = null,
 }) {
   function BlockShell({ eyebrow, title, description, children }) {
     return (
@@ -286,100 +288,7 @@ export default function AdminDashboard({
 
       <MarketplaceOperations marketplaceOperations={marketplaceOperations} />
 
-      {/* 3. Owner Review Queue */}
-      <BlockShell
-        eyebrow="Owners"
-        title="Owner Review Queue"
-        description="Future end-to-end workflow for owner submissions, Factory investigation, and admin final decisions."
-      >
-        <div style={pillGrid}>
-          <StatusPill
-            label="New owner submissions"
-            value="—"
-            tone="muted"
-            hint="Fresh owner portal intake awaiting triage."
-          />
-          <StatusPill
-            label="Detected property reviews"
-            value="—"
-            tone="muted"
-            hint="System-detected properties pending owner confirmation."
-          />
-          <StatusPill
-            label="Documents uploaded"
-            value="—"
-            tone="muted"
-            hint="Supporting files attached to owner cases."
-          />
-          <StatusPill
-            label="Admin decision required"
-            value="—"
-            tone="warn"
-            hint="Cases blocked on final admin sign-off."
-          />
-        </div>
-
-        <div style={queueCardStyle}>
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '10px',
-            }}
-          >
-            <div>
-              <div style={{ color: '#ffffff', fontWeight: 800 }}>Sample queue item</div>
-              <div style={{ color: '#64748b', fontSize: '0.88rem', marginTop: '4px' }}>
-                Illustrative record — not a live submission
-              </div>
-            </div>
-            <PreviewBadge />
-          </div>
-
-          <div style={queueFieldGrid}>
-            <div style={queueFieldStyle}>
-              <div style={queueLabelStyle}>Factory investigation report</div>
-              <div style={queueValueStyle}>Pending connection</div>
-            </div>
-            <div style={queueFieldStyle}>
-              <div style={queueLabelStyle}>Broker risk score</div>
-              <div style={queueValueStyle}>—</div>
-            </div>
-            <div style={queueFieldStyle}>
-              <div style={queueLabelStyle}>Off-market confidence score</div>
-              <div style={queueValueStyle}>—</div>
-            </div>
-            <div style={queueFieldStyle}>
-              <div style={queueLabelStyle}>Factory recommendation</div>
-              <div style={queueValueStyle}>Awaiting pipeline</div>
-            </div>
-            <div style={queueFieldStyle}>
-              <div style={queueLabelStyle}>Admin final decision</div>
-              <div style={queueValueStyle}>Required — preview</div>
-            </div>
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '10px',
-              paddingTop: '4px',
-              borderTop: '1px solid rgba(255,255,255,0.06)',
-            }}
-          >
-            <DisabledAction label="Request more documents" />
-            <DisabledAction label="Reject" />
-            <DisabledAction label="Manual review" />
-            <DisabledAction label="Approve for Diamond candidate" />
-          </div>
-          <div style={{ color: '#64748b', fontSize: '0.84rem', lineHeight: 1.5 }}>
-            Actions are disabled in this preview. They will require audit logging when wired.
-          </div>
-        </div>
-      </BlockShell>
+      <OwnerReviewQueue ownerReviewQueue={ownerReviewQueue} />
 
       {/* 4. Audit & Security Black Box */}
       <BlockShell
