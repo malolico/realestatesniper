@@ -33,6 +33,7 @@ export default function PlatformSnapshot({ platformSnapshot = null }) {
         <h3>Quick Metrics</h3>
         <ul>
           <li>Active markets: {formatMetric(quickMetrics?.activeMarketsCount)}</li>
+          <li>Cities: {formatMetric(quickMetrics?.citiesCount)}</li>
           <li>Total deals: {formatMetric(quickMetrics?.totalDealsCount)}</li>
           <li>Tracked opportunities: {formatMetric(quickMetrics?.trackedOpportunitiesCount)}</li>
           <li>Sniper deals: {formatMetric(quickMetrics?.sniperDealsCount)}</li>

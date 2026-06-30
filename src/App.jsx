@@ -1232,6 +1232,7 @@ function App() {
     },
     quickMetrics: {
       activeMarketsCount: markets.filter((market) => market.status === 'active').length,
+      citiesCount: new Set(deals.map((deal) => deal.city).filter(Boolean)).size,
       totalDealsCount: deals.length,
       trackedOpportunitiesCount: markets.reduce(
         (sum, market) => sum + (market.opportunities_count || 0),
