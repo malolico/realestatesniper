@@ -1447,6 +1447,10 @@ function App() {
     },
     enrichmentPending: {
       unpricedLeads: unpricedLeads.length,
+      unpricedPercentage:
+        deals.length > 0
+          ? `${Math.round((unpricedLeads.length / deals.length) * 100)}%`
+          : '0%',
     },
     internalSignals: {
       available: false,

@@ -77,6 +77,7 @@ export default function MarketplaceOperations({ marketplaceOperations = null }) 
       <section>
         <h3>Enrichment Pending</h3>
         <p>Unpriced Leads: {formatMetric(enrichmentPending?.unpricedLeads)}</p>
+        <p>Unpriced Percentage: {formatMetric(enrichmentPending?.unpricedPercentage)}</p>
       </section>
 
       <section>
