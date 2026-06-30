@@ -1349,6 +1349,7 @@ function App() {
     },
     warnings: {
       marketplaceEmpty: !loading && deals.length === 0,
+      foundersCohortFull,
       adminPanelError: adminError || null,
     },
   }

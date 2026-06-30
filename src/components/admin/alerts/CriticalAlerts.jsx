@@ -90,6 +90,9 @@ export default function CriticalAlerts({ criticalAlerts = null }) {
         <h3>Last Update</h3>
         <ul>
           <li>Marketplace Empty: {warnings?.marketplaceEmpty === true ? 'Yes' : 'No'}</li>
+          <li>
+            Founders Cohort Full: {warnings?.foundersCohortFull === true ? 'Yes' : 'No'}
+          </li>
           <li>Admin Panel Error: {formatMetric(warnings?.adminPanelError)}</li>
           <li>
             Marketplace Ready: {lastUpdate?.marketplaceReady === true ? 'Yes' : 'No'}
