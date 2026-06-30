@@ -1224,6 +1224,59 @@ function App() {
   return filteredDeals.filter((deal) => deal.access_tier === 'diamond')
   }, [filteredDeals])
 
+  const platformSnapshot = {
+    generalStatus: {
+      workspaceLabel: workspaceContextTitle,
+      marketplaceLoading: loading,
+      adminEmail: currentUser?.email ?? null,
+    },
+    quickMetrics: {
+      activeMarketsCount: markets.filter((market) => market.status === 'active').length,
+      totalDealsCount: deals.length,
+      trackedOpportunitiesCount: markets.reduce(
+        (sum, market) => sum + (market.opportunities_count || 0),
+        0,
+      ),
+      sniperDealsCount: markets.reduce(
+        (sum, market) => sum + (market.sniper_deals_count || 0),
+        0,
+      ),
+      yellowDealsCount: yellowDeals.length,
+      greenDealsCount: greenDeals.length,
+      redDealsCount: redDeals.length,
+      unpricedLeadsCount: unpricedLeads.length,
+      premiumDealsCount: premiumDeals.length,
+      diamondDealsCount: diamondDeals.length,
+      averageDealScore:
+        deals.length > 0
+          ? Math.round(deals.reduce((sum, deal) => sum + (deal.score || 0), 0) / deals.length)
+          : null,
+      totalPremiumPurchases: Object.values(dealPurchaseCounts).reduce(
+        (sum, counts) => sum + (counts.premium || 0),
+        0,
+      ),
+      totalDiamondPurchases: Object.values(dealPurchaseCounts).reduce(
+        (sum, counts) => sum + (counts.diamond || 0),
+        0,
+      ),
+      founderSpotsRemaining: remainingFounderSpots,
+      founderSpotsTotal: totalFounderSpots,
+    },
+    pendingActions: {
+      userDirectoryLoaded: adminUsers.length > 0,
+      registeredUsersCount:
+        showAdminPanel && !adminLoading ? adminUsers.length : null,
+    },
+    warnings: {
+      marketplaceEmpty: !loading && deals.length === 0,
+      foundersCohortFull,
+      adminPanelError: adminError || null,
+    },
+    lastUpdate: {
+      marketplaceReady: !loading,
+    },
+  }
+
   function getPremiumSlotsTaken(deal) {
     return dealPurchaseCounts[deal?.id]?.premium || 0
   }
@@ -5431,7 +5484,7 @@ function App() {
                 </p>
               </div>
 
-              <AdminDashboard />
+              <AdminDashboard platformSnapshot={platformSnapshot} />
             </section>
           ) : null}
 

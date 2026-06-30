@@ -5,7 +5,7 @@
 
 import { PlatformSnapshot } from '../admin'
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ platformSnapshot = null }) {
   function BlockShell({ eyebrow, title, description, children }) {
     return (
       <div
@@ -264,7 +264,7 @@ export default function AdminDashboard() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-      <PlatformSnapshot />
+      <PlatformSnapshot platformSnapshot={platformSnapshot} />
 
       {/* 1. Business Overview */}
       <BlockShell
