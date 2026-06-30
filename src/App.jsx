@@ -1366,6 +1366,10 @@ function App() {
       userDirectoryLoaded && !adminLoading
         ? adminUsers.filter((user) => user.subscription_active === true).length
         : null,
+    founders:
+      userDirectoryLoaded && !adminLoading
+        ? adminUsers.filter((user) => user.founder_trial_status === 'active').length
+        : null,
     premiumUsers:
       userDirectoryLoaded && !adminLoading
         ? adminUsers.filter((user) => (user.premium_purchase_count || 0) > 0).length

@@ -50,6 +50,11 @@ export default function UserDirectory({ userDirectory = null }) {
       </section>
 
       <section>
+        <h3>Founders</h3>
+        {loaded ? <p>Founders: {formatCount(userDirectory?.founders)}</p> : null}
+      </section>
+
+      <section>
         <h3>Premium Users</h3>
         {loaded ? <p>{formatCount(userDirectory?.premiumUsers)}</p> : null}
       </section>
