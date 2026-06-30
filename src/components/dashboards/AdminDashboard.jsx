@@ -3,6 +3,8 @@
  * Presentation-only console. No backend wiring, no live actions.
  */
 
+import { PlatformSnapshot } from '../admin'
+
 export default function AdminDashboard() {
   function BlockShell({ eyebrow, title, description, children }) {
     return (
@@ -262,42 +264,7 @@ export default function AdminDashboard() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-      <div
-        style={{
-          padding: '18px 20px',
-          borderRadius: '18px',
-          border: '1px solid rgba(96, 165, 250, 0.28)',
-          background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.35), rgba(15, 23, 42, 0.65))',
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '12px',
-        }}
-      >
-        <div>
-          <div
-            style={{
-              fontSize: '0.75rem',
-              fontWeight: 800,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: '#93c5fd',
-              marginBottom: '6px',
-            }}
-          >
-            Admin 2.0
-          </div>
-          <div style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.15rem' }}>
-            Operations Command Center
-          </div>
-          <p style={{ margin: '8px 0 0', color: '#94a3b8', maxWidth: '640px', lineHeight: 1.55 }}>
-            Preview layout for revenue, alerts, owner review, audit trails, system health, and
-            marketplace operations. Live data and actions will connect in a future release.
-          </p>
-        </div>
-        <PreviewBadge label="Preview only" />
-      </div>
+      <PlatformSnapshot />
 
       {/* 1. Business Overview */}
       <BlockShell
