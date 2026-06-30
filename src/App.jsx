@@ -1262,6 +1262,8 @@ function App() {
       ),
       founderSpotsRemaining: remainingFounderSpots,
       founderSpotsTotal: totalFounderSpots,
+      premiumRatio: `${premiumDeals.length}/${deals.length}`,
+      diamondRatio: `${diamondDeals.length}/${deals.length}`,
     },
     pendingActions: {
       userDirectoryLoaded: adminUsers.length > 0,
