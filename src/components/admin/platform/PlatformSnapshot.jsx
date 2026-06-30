@@ -38,8 +38,11 @@ export default function PlatformSnapshot({ platformSnapshot = null }) {
           <li>Tracked opportunities: {formatMetric(quickMetrics?.trackedOpportunitiesCount)}</li>
           <li>Sniper deals: {formatMetric(quickMetrics?.sniperDealsCount)}</li>
           <li>Yellow deals: {formatMetric(quickMetrics?.yellowDealsCount)}</li>
+          <li>Yellow percentage: {formatMetric(quickMetrics?.yellowPercentage)}</li>
           <li>Green deals: {formatMetric(quickMetrics?.greenDealsCount)}</li>
+          <li>Green percentage: {formatMetric(quickMetrics?.greenPercentage)}</li>
           <li>Red deals: {formatMetric(quickMetrics?.redDealsCount)}</li>
+          <li>Red percentage: {formatMetric(quickMetrics?.redPercentage)}</li>
           <li>Unpriced leads: {formatMetric(quickMetrics?.unpricedLeadsCount)}</li>
           <li>Premium deals: {formatMetric(quickMetrics?.premiumDealsCount)}</li>
           <li>Premium ratio: {formatMetric(quickMetrics?.premiumRatio)}</li>

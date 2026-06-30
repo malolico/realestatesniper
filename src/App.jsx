@@ -1272,6 +1272,18 @@ function App() {
         deals.length > 0
           ? `${Math.round((diamondDeals.length / deals.length) * 100)}%`
           : '0%',
+      yellowPercentage:
+        deals.length > 0
+          ? `${Math.round((yellowDeals.length / deals.length) * 100)}%`
+          : '0%',
+      greenPercentage:
+        deals.length > 0
+          ? `${Math.round((greenDeals.length / deals.length) * 100)}%`
+          : '0%',
+      redPercentage:
+        deals.length > 0
+          ? `${Math.round((redDeals.length / deals.length) * 100)}%`
+          : '0%',
     },
     pendingActions: {
       userDirectoryLoaded: adminUsers.length > 0,
