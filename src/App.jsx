@@ -4811,7 +4811,7 @@ function App() {
               Admin
             </a>
           ) : null}
-          {showInvestorMarketplace ? (
+          {showInvestorMarketplace && primaryVisualWorkspace !== 'admin' ? (
             <a
               href="#tiers"
               onClick={(e) => {
@@ -4826,7 +4826,7 @@ function App() {
               Tiers
             </a>
           ) : null}
-          {showInvestorMarketplace ? (
+          {showInvestorMarketplace && primaryVisualWorkspace !== 'admin' ? (
             <a
               href="#owners"
               onClick={(e) => {
@@ -5701,6 +5701,7 @@ function App() {
             </div>
           </section>
 
+          {primaryVisualWorkspace !== 'admin' ? (
           <section id="tiers" className="section-block">
             <div className="section-heading">
               <div>
@@ -5899,7 +5900,9 @@ function App() {
               </div>
             </div>
           </section>
+          ) : null}
 
+          {primaryVisualWorkspace !== 'admin' ? (
           <section id="owners" className="section-block" style={{ padding: '20px 0 8px' }}>
             <div
               className="section-heading"
@@ -5952,6 +5955,7 @@ function App() {
               </button>
             </div>
           </section>
+          ) : null}
           </>
           ) : null}
 

@@ -1,6 +1,6 @@
 /**
- * AdminDashboard — v1 operations console (presentation only).
- * Static UI prepared for future wiring. No backend, no gates.
+ * AdminDashboard — Admin 2.0 operations preview.
+ * Presentation-only console. No backend wiring, no live actions.
  */
 
 export default function AdminDashboard() {
@@ -54,17 +54,33 @@ export default function AdminDashboard() {
     )
   }
 
+  function PreviewBadge({ label = 'Preview' }) {
+    return (
+      <span
+        style={{
+          flexShrink: 0,
+          padding: '6px 10px',
+          borderRadius: '999px',
+          fontSize: '0.72rem',
+          fontWeight: 800,
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          color: '#94a3b8',
+          border: '1px solid rgba(148, 163, 184, 0.30)',
+          background: 'rgba(148, 163, 184, 0.10)',
+        }}
+      >
+        {label}
+      </span>
+    )
+  }
+
   function StatusPill({ label, value, tone = 'neutral', hint = null }) {
     const tones = {
       neutral: {
         border: '1px solid rgba(255,255,255,0.12)',
         background: 'rgba(255,255,255,0.04)',
         color: '#e2e8f0',
-      },
-      good: {
-        border: '1px solid rgba(34, 197, 94, 0.35)',
-        background: 'rgba(34, 197, 94, 0.12)',
-        color: '#4ade80',
       },
       warn: {
         border: '1px solid rgba(250, 204, 21, 0.35)',
@@ -143,35 +159,14 @@ export default function AdminDashboard() {
     )
   }
 
-  function ComingSoonBadge() {
-    return (
-      <span
-        style={{
-          flexShrink: 0,
-          padding: '6px 10px',
-          borderRadius: '999px',
-          fontSize: '0.72rem',
-          fontWeight: 800,
-          letterSpacing: '0.06em',
-          textTransform: 'uppercase',
-          color: '#94a3b8',
-          border: '1px solid rgba(148, 163, 184, 0.30)',
-          background: 'rgba(148, 163, 184, 0.10)',
-        }}
-      >
-        Coming soon
-      </span>
-    )
-  }
-
-  function AuditRow({ title, body }) {
+  function PreviewRow({ title, body }) {
     return (
       <div
         style={{
           padding: '14px 16px',
           borderRadius: '14px',
-          border: '1px solid rgba(96, 165, 250, 0.22)',
-          background: 'rgba(96, 165, 250, 0.06)',
+          border: '1px solid rgba(148, 163, 184, 0.22)',
+          background: 'rgba(148, 163, 184, 0.06)',
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'space-between',
@@ -182,8 +177,31 @@ export default function AdminDashboard() {
           <div style={{ fontWeight: 800, color: '#ffffff', marginBottom: '6px' }}>{title}</div>
           <div style={{ color: '#cbd5e1', lineHeight: 1.55, fontSize: '0.94rem' }}>{body}</div>
         </div>
-        <ComingSoonBadge />
+        <PreviewBadge label="Not connected yet" />
       </div>
+    )
+  }
+
+  function DisabledAction({ label }) {
+    return (
+      <button
+        type="button"
+        disabled
+        title="Preview only — not connected yet"
+        style={{
+          padding: '10px 14px',
+          borderRadius: '12px',
+          border: '1px solid rgba(148, 163, 184, 0.25)',
+          background: 'rgba(148, 163, 184, 0.08)',
+          color: '#64748b',
+          fontWeight: 700,
+          fontSize: '0.86rem',
+          cursor: 'not-allowed',
+          opacity: 0.72,
+        }}
+      >
+        {label}
+      </button>
     )
   }
 
@@ -193,343 +211,445 @@ export default function AdminDashboard() {
     gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
   }
 
-  const adminOperationalModules = [
-    {
-      title: 'Platform Oversight',
-      items: [
-        'Workspace monitoring active',
-        'Platform visibility synchronized',
-        'Access layers operational',
-      ],
-    },
-    {
-      title: 'Investor Access Review',
-      items: [
-        'Premium access monitored',
-        'Diamond access reviewed',
-        'Subscriber activity tracked',
-      ],
-    },
-    {
-      title: 'Owner Operations',
-      items: [
-        'Owner workflows visible',
-        'Property authorization monitored',
-        'Diamond visibility controlled',
-      ],
-    },
-    {
-      title: 'Audit & Security',
-      items: [
-        'Audit preparation enabled',
-        'Access logs planned',
-        'Security review active',
-      ],
-    },
-  ]
-  const adminOperationalGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: '10px',
-  }
-  const adminOperationalCardStyle = {
-    padding: '10px 12px',
-    borderRadius: '12px',
-    border: '1px solid rgba(148, 163, 184, 0.2)',
-    background: 'rgba(8, 12, 20, 0.68)',
+  const previewNoticeStyle = {
+    padding: '14px 16px',
+    borderRadius: '14px',
+    border: '1px dashed rgba(148, 163, 184, 0.35)',
+    background: 'rgba(148, 163, 184, 0.06)',
     display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  }
-  const adminOperationalTitleStyle = {
-    fontSize: '0.78rem',
-    fontWeight: 800,
-    letterSpacing: '0.06em',
-    textTransform: 'uppercase',
-    color: '#cbd5e1',
-  }
-  const adminOperationalListStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  }
-  const adminOperationalItemStyle = {
-    display: 'inline-flex',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: '6px',
-    fontSize: '0.78rem',
-    color: '#94a3b8',
+    gap: '12px',
   }
-  const adminOperationalDotStyle = {
-    width: '5px',
-    height: '5px',
-    borderRadius: '999px',
-    background: '#22c55e',
-    flexShrink: 0,
+
+  const queueCardStyle = {
+    padding: '18px',
+    borderRadius: '16px',
+    border: '1px solid rgba(255,255,255,0.10)',
+    background: 'rgba(8, 12, 20, 0.55)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '14px',
+  }
+
+  const queueFieldGrid = {
+    display: 'grid',
+    gap: '10px',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+  }
+
+  const queueFieldStyle = {
+    padding: '10px 12px',
+    borderRadius: '10px',
+    border: '1px solid rgba(255,255,255,0.08)',
+    background: 'rgba(255,255,255,0.02)',
+  }
+
+  const queueLabelStyle = {
+    fontSize: '0.72rem',
+    fontWeight: 700,
+    letterSpacing: '0.05em',
+    textTransform: 'uppercase',
+    color: '#64748b',
+    marginBottom: '4px',
+  }
+
+  const queueValueStyle = {
+    fontSize: '0.9rem',
+    fontWeight: 700,
+    color: '#94a3b8',
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-      <div style={adminOperationalGridStyle}>
-        {adminOperationalModules.map((module) => (
-          <div key={module.title} style={adminOperationalCardStyle}>
-            <div style={adminOperationalTitleStyle}>{module.title}</div>
-            <div style={adminOperationalListStyle}>
-              {module.items.map((item) => (
-                <span key={item} style={adminOperationalItemStyle}>
-                  <span style={adminOperationalDotStyle}></span>
-                  {item}
-                </span>
-              ))}
-            </div>
+      <div
+        style={{
+          padding: '18px 20px',
+          borderRadius: '18px',
+          border: '1px solid rgba(96, 165, 250, 0.28)',
+          background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.35), rgba(15, 23, 42, 0.65))',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+        }}
+      >
+        <div>
+          <div
+            style={{
+              fontSize: '0.75rem',
+              fontWeight: 800,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: '#93c5fd',
+              marginBottom: '6px',
+            }}
+          >
+            Admin 2.0
           </div>
-        ))}
+          <div style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.15rem' }}>
+            Operations Command Center
+          </div>
+          <p style={{ margin: '8px 0 0', color: '#94a3b8', maxWidth: '640px', lineHeight: 1.55 }}>
+            Preview layout for revenue, alerts, owner review, audit trails, system health, and
+            marketplace operations. Live data and actions will connect in a future release.
+          </p>
+        </div>
+        <PreviewBadge label="Preview only" />
       </div>
 
-      {/* 1. System Overview */}
+      {/* 1. Business Overview */}
       <BlockShell
-        eyebrow="System"
-        title="System Overview"
-        description="High-level platform metrics across users, cohorts, and monetized deal access."
+        eyebrow="Revenue"
+        title="Business Overview"
+        description="Subscription and access-purchase metrics for platform revenue and conversion tracking."
       >
         <div style={pillGrid}>
+          <StatusPill label="MRR" value="—" tone="admin" hint="Monthly recurring revenue from subscriptions." />
           <StatusPill
-            label="Active users"
+            label="Active subscribers"
             value="—"
-            tone="admin"
-            hint="Registered accounts with recent session activity."
+            tone="muted"
+            hint="Accounts with an active paid subscription."
           />
           <StatusPill
-            label="Subscribers"
+            label="Premium access purchases"
             value="—"
-            tone="good"
-            hint="Accounts with active subscription metadata."
+            tone="premium"
+            hint="One-time Premium opportunity access purchases."
           />
           <StatusPill
-            label="Founder cohort"
-            value="— / 10"
-            tone="warn"
-            hint="Redeemed founder codes vs total cohort capacity."
-          />
-          <StatusPill
-            label="Premium/Diamond purchases"
+            label="Diamond access purchases"
             value="—"
             tone="diamond"
-            hint="Deal access purchases across all tiers."
+            hint="One-time Diamond opportunity access purchases."
+          />
+          <StatusPill
+            label="Monthly revenue"
+            value="—"
+            tone="admin"
+            hint="Combined subscription + access purchase revenue."
+          />
+          <StatusPill
+            label="Conversion rate"
+            value="—"
+            tone="muted"
+            hint="Registered users converting to paid subscription."
+          />
+        </div>
+        <div style={previewNoticeStyle}>
+          <span style={{ color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 }}>
+            Revenue metrics will pull from Stripe and purchase records when connected.
+          </span>
+          <PreviewBadge label="Not connected yet" />
+        </div>
+      </BlockShell>
+
+      {/* 2. Critical Alerts */}
+      <BlockShell
+        eyebrow="Alerts"
+        title="Critical Alerts"
+        description="Operational incidents requiring admin attention. No live monitoring in this preview."
+      >
+        <div style={{ display: 'grid', gap: '12px' }}>
+          <PreviewRow
+            title="Stripe payment failures"
+            body="Failed subscription renewals, declined access purchases, and incomplete checkouts."
+          />
+          <PreviewRow
+            title="Supabase / Edge Function errors"
+            body="Auth, database, and edge runtime failures affecting platform operations."
+          />
+          <PreviewRow
+            title="Owner review overdue"
+            body="Owner submissions or detected properties waiting beyond SLA thresholds."
+          />
+          <PreviewRow
+            title="Diamond capacity reached"
+            body="Opportunities at Diamond slot limit requiring admin visibility."
+          />
+          <PreviewRow
+            title="Webhook failures"
+            body="Stripe webhook delivery retries and signature verification issues."
           />
         </div>
       </BlockShell>
 
-      {/* 2. User Management */}
+      {/* 3. Owner Review Queue */}
       <BlockShell
-        eyebrow="Users"
-        title="User Management"
-        description="Segmented view of investor, founder, owner, and restricted accounts."
+        eyebrow="Owners"
+        title="Owner Review Queue"
+        description="Future end-to-end workflow for owner submissions, Factory investigation, and admin final decisions."
       >
         <div style={pillGrid}>
           <StatusPill
+            label="New owner submissions"
+            value="—"
+            tone="muted"
+            hint="Fresh owner portal intake awaiting triage."
+          />
+          <StatusPill
+            label="Detected property reviews"
+            value="—"
+            tone="muted"
+            hint="System-detected properties pending owner confirmation."
+          />
+          <StatusPill
+            label="Documents uploaded"
+            value="—"
+            tone="muted"
+            hint="Supporting files attached to owner cases."
+          />
+          <StatusPill
+            label="Admin decision required"
+            value="—"
+            tone="warn"
+            hint="Cases blocked on final admin sign-off."
+          />
+        </div>
+
+        <div style={queueCardStyle}>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px',
+            }}
+          >
+            <div>
+              <div style={{ color: '#ffffff', fontWeight: 800 }}>Sample queue item</div>
+              <div style={{ color: '#64748b', fontSize: '0.88rem', marginTop: '4px' }}>
+                Illustrative record — not a live submission
+              </div>
+            </div>
+            <PreviewBadge />
+          </div>
+
+          <div style={queueFieldGrid}>
+            <div style={queueFieldStyle}>
+              <div style={queueLabelStyle}>Factory investigation report</div>
+              <div style={queueValueStyle}>Pending connection</div>
+            </div>
+            <div style={queueFieldStyle}>
+              <div style={queueLabelStyle}>Broker risk score</div>
+              <div style={queueValueStyle}>—</div>
+            </div>
+            <div style={queueFieldStyle}>
+              <div style={queueLabelStyle}>Off-market confidence score</div>
+              <div style={queueValueStyle}>—</div>
+            </div>
+            <div style={queueFieldStyle}>
+              <div style={queueLabelStyle}>Factory recommendation</div>
+              <div style={queueValueStyle}>Awaiting pipeline</div>
+            </div>
+            <div style={queueFieldStyle}>
+              <div style={queueLabelStyle}>Admin final decision</div>
+              <div style={queueValueStyle}>Required — preview</div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '10px',
+              paddingTop: '4px',
+              borderTop: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <DisabledAction label="Request more documents" />
+            <DisabledAction label="Reject" />
+            <DisabledAction label="Manual review" />
+            <DisabledAction label="Approve for Diamond candidate" />
+          </div>
+          <div style={{ color: '#64748b', fontSize: '0.84rem', lineHeight: 1.5 }}>
+            Actions are disabled in this preview. They will require audit logging when wired.
+          </div>
+        </div>
+      </BlockShell>
+
+      {/* 4. Audit & Security Black Box */}
+      <BlockShell
+        eyebrow="Audit"
+        title="Audit & Security Black Box"
+        description="Immutable traceability for compliance, incident response, and admin accountability."
+      >
+        <div style={{ display: 'grid', gap: '12px' }}>
+          <PreviewRow
+            title="Admin actions"
+            body="Approve, reject, revoke, and manual overrides with actor identity."
+          />
+          <PreviewRow
+            title="User logins"
+            body="Authentication events, session anomalies, and failed access attempts."
+          />
+          <PreviewRow
+            title="Payment events"
+            body="Checkout sessions, subscription changes, and access purchase confirmations."
+          />
+          <PreviewRow
+            title="Owner submissions"
+            body="Intake, document uploads, status transitions, and decision history."
+          />
+          <PreviewRow
+            title="Role changes"
+            body="Subscriber, founder, owner, and restricted status modifications."
+          />
+          <PreviewRow
+            title="Stripe webhook events"
+            body="Inbound webhook payloads, processing results, and retry outcomes."
+          />
+          <PreviewRow
+            title="IP / device / timestamp evidence"
+            body="Forensic context attached to sensitive actions and access grants."
+          />
+        </div>
+      </BlockShell>
+
+      {/* 5. System Health */}
+      <BlockShell
+        eyebrow="Health"
+        title="System Health"
+        description="Infrastructure and integration status. All channels are preview placeholders until monitoring is wired."
+      >
+        <div style={pillGrid}>
+          <StatusPill label="Stripe" value="Preview" tone="muted" hint="Payments and billing API." />
+          <StatusPill label="Supabase" value="Preview" tone="muted" hint="Auth, database, and storage." />
+          <StatusPill
+            label="Edge Functions"
+            value="Preview"
+            tone="muted"
+            hint="checkout, webhooks, admin-access."
+          />
+          <StatusPill
+            label="Factory pipeline"
+            value="Preview"
+            tone="muted"
+            hint="Investigation scoring and recommendations."
+          />
+          <StatusPill
+            label="Email delivery"
+            value="Preview"
+            tone="muted"
+            hint="Transactional and alert notifications."
+          />
+          <StatusPill
+            label="Webhooks"
+            value="Preview"
+            tone="muted"
+            hint="Inbound event delivery and retry health."
+          />
+        </div>
+        <div style={previewNoticeStyle}>
+          <span style={{ color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 }}>
+            Live uptime, latency, and incident history will appear here when observability is
+            connected.
+          </span>
+          <PreviewBadge label="Not connected yet" />
+        </div>
+      </BlockShell>
+
+      {/* 6. User & Access Overview */}
+      <BlockShell
+        eyebrow="Users"
+        title="User & Access Overview"
+        description="Platform population segmented by role and access state."
+      >
+        <div style={pillGrid}>
+          <StatusPill
+            label="Registered users"
+            value="—"
+            tone="neutral"
+            hint="All accounts with platform registration."
+          />
+          <StatusPill
             label="Subscribers"
             value="—"
-            tone="good"
-            hint="Manage subscription status and access role."
+            tone="muted"
+            hint="Active paid subscription accounts."
           />
           <StatusPill
             label="Founders"
             value="—"
             tone="warn"
-            hint="Active founder trials and expired cohort members."
+            hint="Founder cohort members and trial status."
           />
           <StatusPill
             label="Owners"
             value="—"
             tone="neutral"
-            hint="Property owners connected to the platform."
+            hint="Property owner accounts."
           />
+          <StatusPill label="Admins" value="—" tone="admin" hint="Platform administrator accounts." />
           <StatusPill
             label="Restricted users"
             value="—"
             tone="danger"
-            hint="Accounts flagged or limited by admin action."
+            hint="Accounts limited by policy or admin action."
           />
         </div>
-        <div
-          style={{
-            padding: '14px 16px',
-            borderRadius: '14px',
-            border: '1px dashed rgba(148, 163, 184, 0.35)',
-            background: 'rgba(148, 163, 184, 0.06)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '12px',
-          }}
-        >
+        <div style={previewNoticeStyle}>
           <span style={{ color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 }}>
-            Full user directory, search, and role editing will connect to admin-access.
+            User counts will sync from auth and admin-access. Use Admin Access Panel for the live
+            user directory today.
           </span>
-          <ComingSoonBadge />
+          <PreviewBadge label="Not connected yet" />
         </div>
       </BlockShell>
 
-      {/* 3. Deal Access Control */}
+      {/* 7. Marketplace Operations */}
       <BlockShell
-        eyebrow="Deals"
-        title="Deal Access Control"
-        description="Monitor Premium and Diamond unlocks, slot capacity, and anomalous access patterns."
+        eyebrow="Marketplace"
+        title="Marketplace Operations"
+        description="Opportunity inventory, tier candidacy, and Factory sync for deal pipeline management."
       >
         <div style={pillGrid}>
           <StatusPill
-            label="Premium unlocks"
-            value="—"
-            tone="premium"
-            hint="Total premium_one_time purchases."
-          />
-          <StatusPill
-            label="Diamond unlocks"
-            value="—"
-            tone="diamond"
-            hint="Total platinum_one_time purchases."
-          />
-          <StatusPill
-            label="Sold-out slots"
-            value="—"
-            tone="muted"
-            hint="Deals at Diamond slot capacity."
-          />
-          <StatusPill
-            label="Suspicious access"
-            value="—"
-            tone="danger"
-            hint="Patterns requiring manual review."
-          />
-        </div>
-      </BlockShell>
-
-      {/* 4. Owner Review */}
-      <BlockShell
-        eyebrow="Owners"
-        title="Owner Review"
-        description="Queue for owner verification, property authorization, and investor contact approvals."
-      >
-        <div style={pillGrid}>
-          <StatusPill
-            label="Pending owner validations"
-            value="—"
-            tone="warn"
-            hint="Owners awaiting identity and listing verification."
-          />
-          <StatusPill
-            label="Property authorizations"
+            label="Standard opportunities"
             value="—"
             tone="neutral"
-            hint="Listings pending platform or owner sign-off."
+            hint="Subscriber-visible marketplace inventory."
           />
           <StatusPill
-            label="Contact permissions"
+            label="Premium candidates"
             value="—"
-            tone="admin"
-            hint="Investor contact releases awaiting owner consent."
+            tone="premium"
+            hint="Opportunities eligible for Premium access layer."
           />
           <StatusPill
-            label="Diamond slot approvals"
+            label="Diamond candidates"
             value="—"
             tone="diamond"
-            hint="Owner-approved Diamond capacity requests."
+            hint="Opportunities eligible for Diamond access layer."
+          />
+          <StatusPill
+            label="Unpriced leads"
+            value="—"
+            tone="warn"
+            hint="Signals without verified pricing context."
+          />
+          <StatusPill
+            label="Marketplace eligible"
+            value="—"
+            tone="muted"
+            hint="Records cleared for subscriber visibility."
+          />
+          <StatusPill
+            label="Factory sync status"
+            value="Preview"
+            tone="muted"
+            hint="Last sync and pipeline freshness."
           />
         </div>
-      </BlockShell>
-
-      {/* 5. Audit & Security */}
-      <BlockShell
-        eyebrow="Audit"
-        title="Audit & Security"
-        description="Compliance-ready tracking for admin actions, sensitive data changes, and protected owner/investor records."
-      >
-        <div style={{ display: 'grid', gap: '12px' }}>
-          <AuditRow
-            title="Audit logs prepared"
-            body="Immutable event stream for sign-ins, role changes, purchases, and authorization updates."
-          />
-          <AuditRow
-            title="Sensitive data changes tracked"
-            body="Metadata edits, contact releases, and deal visibility changes logged with actor and timestamp."
-          />
-          <AuditRow
-            title="Admin actions traceable"
-            body="Every approve, revoke, and manual override attributed to an admin account."
-          />
-          <AuditRow
-            title="Protected owner/contact/consent data"
-            body="Owner contact details and investor consent records remain gated until explicit authorization."
-          />
-        </div>
-        <ul
-          style={{
-            margin: 0,
-            paddingLeft: '20px',
-            color: '#cbd5e1',
-            lineHeight: 1.7,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-          }}
-        >
-          <li>Export and retention policies for audit records — coming soon.</li>
-          <li>Real-time alerts for suspicious admin or access events — coming soon.</li>
-        </ul>
-      </BlockShell>
-
-      {/* 6. System Health */}
-      <BlockShell
-        eyebrow="Health"
-        title="System Health"
-        description="Operational status of payments, edge functions, database, and deal data pipeline."
-      >
-        <div style={pillGrid}>
-          <StatusPill
-            label="Stripe webhooks"
-            value="Monitoring"
-            tone="muted"
-            hint="Checkout and subscription event delivery."
-          />
-          <StatusPill
-            label="Supabase functions"
-            value="Monitoring"
-            tone="muted"
-            hint="create-checkout-session, stripe-webhook, admin-access."
-          />
-          <StatusPill
-            label="Database status"
-            value="Monitoring"
-            tone="muted"
-            hint="Auth, deals, purchases, founder_codes."
-          />
-          <StatusPill
-            label="Data pipeline status"
-            value="Monitoring"
-            tone="muted"
-            hint="Markets, deals scoring, and purchase counts sync."
-          />
-        </div>
-        <div
-          style={{
-            padding: '14px 16px',
-            borderRadius: '14px',
-            border: '1px solid rgba(255,255,255,0.10)',
-            background: 'rgba(255,255,255,0.03)',
-            color: '#94a3b8',
-            fontWeight: 600,
-            lineHeight: 1.55,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            gap: '12px',
-          }}
-        >
-          <span>
-            Live health checks and incident history will appear here once monitoring is wired.
+        <div style={previewNoticeStyle}>
+          <span style={{ color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 }}>
+            Marketplace operations will connect to deals data and Factory pipeline in a future
+            release.
           </span>
-          <ComingSoonBadge />
+          <PreviewBadge label="Not connected yet" />
         </div>
       </BlockShell>
     </div>
