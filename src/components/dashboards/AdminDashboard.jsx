@@ -3,13 +3,20 @@
  * Presentation-only console. No backend wiring, no live actions.
  */
 
-import { PlatformSnapshot, BusinessOverview, CriticalAlerts, UserDirectory } from '../admin'
+import {
+  PlatformSnapshot,
+  BusinessOverview,
+  CriticalAlerts,
+  UserDirectory,
+  MarketplaceOperations,
+} from '../admin'
 
 export default function AdminDashboard({
   platformSnapshot = null,
   businessOverview = null,
   criticalAlerts = null,
   userDirectory = null,
+  marketplaceOperations = null,
 }) {
   function BlockShell({ eyebrow, title, description, children }) {
     return (
@@ -277,6 +284,8 @@ export default function AdminDashboard({
 
       <UserDirectory userDirectory={userDirectory} />
 
+      <MarketplaceOperations marketplaceOperations={marketplaceOperations} />
+
       {/* 3. Owner Review Queue */}
       <BlockShell
         eyebrow="Owners"
@@ -448,59 +457,6 @@ export default function AdminDashboard({
           <span style={{ color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 }}>
             Live uptime, latency, and incident history will appear here when observability is
             connected.
-          </span>
-          <PreviewBadge label="Not connected yet" />
-        </div>
-      </BlockShell>
-
-      {/* 7. Marketplace Operations */}
-      <BlockShell
-        eyebrow="Marketplace"
-        title="Marketplace Operations"
-        description="Opportunity inventory, tier candidacy, and Factory sync for deal pipeline management."
-      >
-        <div style={pillGrid}>
-          <StatusPill
-            label="Standard opportunities"
-            value="—"
-            tone="neutral"
-            hint="Subscriber-visible marketplace inventory."
-          />
-          <StatusPill
-            label="Premium candidates"
-            value="—"
-            tone="premium"
-            hint="Opportunities eligible for Premium access layer."
-          />
-          <StatusPill
-            label="Diamond candidates"
-            value="—"
-            tone="diamond"
-            hint="Opportunities eligible for Diamond access layer."
-          />
-          <StatusPill
-            label="Unpriced leads"
-            value="—"
-            tone="warn"
-            hint="Signals without verified pricing context."
-          />
-          <StatusPill
-            label="Marketplace eligible"
-            value="—"
-            tone="muted"
-            hint="Records cleared for subscriber visibility."
-          />
-          <StatusPill
-            label="Factory sync status"
-            value="Preview"
-            tone="muted"
-            hint="Last sync and pipeline freshness."
-          />
-        </div>
-        <div style={previewNoticeStyle}>
-          <span style={{ color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 }}>
-            Marketplace operations will connect to deals data and Factory pipeline in a future
-            release.
           </span>
           <PreviewBadge label="Not connected yet" />
         </div>

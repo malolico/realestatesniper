@@ -1,56 +1,90 @@
-export default function MarketplaceOperations() {
+function formatMetric(value) {
+  if (value === null || value === undefined) {
+    return '—'
+  }
+
+  return String(value)
+}
+
+function NotConnected() {
+  return <p>Not connected yet</p>
+}
+
+export default function MarketplaceOperations({ marketplaceOperations = null }) {
+  const marketplaceStatus = marketplaceOperations?.marketplaceStatus
+  const liveDeals = marketplaceOperations?.liveDeals
+  const premium = marketplaceOperations?.premium
+  const diamond = marketplaceOperations?.diamond
+  const enrichmentPending = marketplaceOperations?.enrichmentPending
+  const lastUpdate = marketplaceOperations?.lastUpdate
+  const marketplaceReady = lastUpdate?.marketplaceReady === true
+
   return (
     <section>
       <h2>Marketplace Operations</h2>
 
       <section>
         <h3>Marketplace Status</h3>
-        <p>Marketplace status will appear here.</p>
+        <ul>
+          <li>
+            Marketplace Ready:{' '}
+            {marketplaceStatus?.marketplaceReady === true ? 'Yes' : 'No'}
+          </li>
+          <li>
+            Marketplace Empty:{' '}
+            {marketplaceStatus?.marketplaceEmpty === true ? 'Yes' : 'No'}
+          </li>
+        </ul>
       </section>
 
       <section>
         <h3>Live Deals</h3>
-        <p>Live deals will appear here.</p>
+        <ul>
+          <li>Total Deals: {formatMetric(liveDeals?.totalDeals)}</li>
+          <li>Yellow Deals: {formatMetric(liveDeals?.yellowDeals)}</li>
+          <li>Green Deals: {formatMetric(liveDeals?.greenDeals)}</li>
+          <li>Red Deals: {formatMetric(liveDeals?.redDeals)}</li>
+        </ul>
       </section>
 
       <section>
         <h3>Premium Opportunities</h3>
-        <p>Premium opportunities will appear here.</p>
+        <p>Premium Deals: {formatMetric(premium?.premiumDeals)}</p>
       </section>
 
       <section>
         <h3>Diamond Opportunities</h3>
-        <p>Diamond opportunities will appear here.</p>
+        <p>Diamond Deals: {formatMetric(diamond?.diamondDeals)}</p>
       </section>
 
       <section>
         <h3>Marketplace Eligible</h3>
-        <p>Marketplace eligible opportunities will appear here.</p>
+        <NotConnected />
       </section>
 
       <section>
         <h3>Enrichment Pending</h3>
-        <p>Enrichment pending opportunities will appear here.</p>
+        <p>Unpriced Leads: {formatMetric(enrichmentPending?.unpricedLeads)}</p>
       </section>
 
       <section>
         <h3>Internal Signals</h3>
-        <p>Internal signals will appear here.</p>
+        <NotConnected />
       </section>
 
       <section>
         <h3>Factory Sync</h3>
-        <p>Factory sync status will appear here.</p>
+        <NotConnected />
       </section>
 
       <section>
         <h3>Pipeline Status</h3>
-        <p>Pipeline status will appear here.</p>
+        <NotConnected />
       </section>
 
       <section>
         <h3>Last Update</h3>
-        <p>Last marketplace update will appear here.</p>
+        {marketplaceReady ? <p>Marketplace data ready</p> : <p>—</p>}
       </section>
     </section>
   )

@@ -1388,6 +1388,43 @@ function App() {
     },
   }
 
+  const marketplaceOperations = {
+    marketplaceStatus: {
+      marketplaceReady: !loading,
+      marketplaceEmpty: !loading && deals.length === 0,
+    },
+    liveDeals: {
+      totalDeals: deals.length,
+      yellowDeals: yellowDeals.length,
+      greenDeals: greenDeals.length,
+      redDeals: redDeals.length,
+    },
+    premium: {
+      premiumDeals: premiumDeals.length,
+    },
+    diamond: {
+      diamondDeals: diamondDeals.length,
+    },
+    marketplaceEligible: {
+      available: false,
+    },
+    enrichmentPending: {
+      unpricedLeads: unpricedLeads.length,
+    },
+    internalSignals: {
+      available: false,
+    },
+    factorySync: {
+      available: false,
+    },
+    pipelineStatus: {
+      available: false,
+    },
+    lastUpdate: {
+      marketplaceReady: !loading,
+    },
+  }
+
   function getPremiumSlotsTaken(deal) {
     return dealPurchaseCounts[deal?.id]?.premium || 0
   }
@@ -5600,6 +5637,7 @@ function App() {
                 businessOverview={businessOverview}
                 criticalAlerts={criticalAlerts}
                 userDirectory={userDirectory}
+                marketplaceOperations={marketplaceOperations}
               />
             </section>
           ) : null}
