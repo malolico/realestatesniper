@@ -1402,6 +1402,7 @@ function App() {
     },
     marketSummary: {
       activeMarkets: platformSnapshot.quickMetrics.activeMarketsCount,
+      cities: platformSnapshot.quickMetrics.citiesCount,
       trackedOpportunities: platformSnapshot.quickMetrics.trackedOpportunitiesCount,
       sniperDeals: platformSnapshot.quickMetrics.sniperDealsCount,
       averageDealScore: platformSnapshot.quickMetrics.averageDealScore,

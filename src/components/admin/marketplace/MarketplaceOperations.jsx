@@ -42,6 +42,7 @@ export default function MarketplaceOperations({ marketplaceOperations = null }) 
         <h3>Market Summary</h3>
         <ul>
           <li>Active Markets: {formatMetric(marketSummary?.activeMarkets)}</li>
+          <li>Cities: {formatMetric(marketSummary?.cities)}</li>
           <li>Tracked Opportunities: {formatMetric(marketSummary?.trackedOpportunities)}</li>
           <li>Sniper Deals: {formatMetric(marketSummary?.sniperDeals)}</li>
           <li>Average Deal Score: {formatMetric(marketSummary?.averageDealScore)}</li>
