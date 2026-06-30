@@ -53,9 +53,9 @@ export default function MarketplaceOperations({ marketplaceOperations = null }) 
         <h3>Live Deals</h3>
         <ul>
           <li>Total Deals: {formatMetric(liveDeals?.totalDeals)}</li>
-          <li>Yellow Deals: {formatMetric(liveDeals?.yellowDeals)}</li>
-          <li>Green Deals: {formatMetric(liveDeals?.greenDeals)}</li>
-          <li>Red Deals: {formatMetric(liveDeals?.redDeals)}</li>
+          <li>Yellow Deals: {formatMetric(liveDeals?.yellowDeals)} ({formatMetric(liveDeals?.yellowPercentage)})</li>
+          <li>Green Deals: {formatMetric(liveDeals?.greenDeals)} ({formatMetric(liveDeals?.greenPercentage)})</li>
+          <li>Red Deals: {formatMetric(liveDeals?.redDeals)} ({formatMetric(liveDeals?.redPercentage)})</li>
         </ul>
       </section>
 

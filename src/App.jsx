@@ -1435,6 +1435,9 @@ function App() {
       yellowDeals: yellowDeals.length,
       greenDeals: greenDeals.length,
       redDeals: redDeals.length,
+      yellowPercentage: platformSnapshot.quickMetrics.yellowPercentage,
+      greenPercentage: platformSnapshot.quickMetrics.greenPercentage,
+      redPercentage: platformSnapshot.quickMetrics.redPercentage,
     },
     premium: {
       premiumDeals: premiumDeals.length,
