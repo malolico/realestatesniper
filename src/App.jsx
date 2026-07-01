@@ -1566,6 +1566,9 @@ function App() {
       loading: loading,
       empty: !loading && deals.length === 0,
     },
+    purchases: {
+      loaded: purchasesLoaded === true,
+    },
     factory: {
       available: false,
     },

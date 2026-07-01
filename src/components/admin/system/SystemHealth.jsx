@@ -31,6 +31,7 @@ export default function SystemHealth({ systemHealth = null }) {
         <p>Marketplace Ready: {marketplace?.ready === true ? 'Yes' : 'No'}</p>
         <p>Marketplace Loading: {marketplace?.loading === true ? 'Yes' : 'No'}</p>
         <p>Marketplace Empty: {marketplace?.empty === true ? 'Yes' : 'No'}</p>
+        <p>Purchase Data Loaded: {systemHealth?.purchases?.loaded === true ? 'Yes' : 'No'}</p>
       </section>
 
       <section>
