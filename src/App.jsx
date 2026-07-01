@@ -1317,6 +1317,33 @@ function App() {
     diamond: {
       totalPurchases: platformSnapshot.quickMetrics.totalDiamondPurchases,
     },
+    purchaseSummary: {
+      totalPurchases:
+        platformSnapshot.quickMetrics.totalPremiumPurchases +
+        platformSnapshot.quickMetrics.totalDiamondPurchases,
+      premiumPercentage:
+        platformSnapshot.quickMetrics.totalPremiumPurchases +
+          platformSnapshot.quickMetrics.totalDiamondPurchases >
+        0
+          ? `${Math.round(
+              (platformSnapshot.quickMetrics.totalPremiumPurchases /
+                (platformSnapshot.quickMetrics.totalPremiumPurchases +
+                  platformSnapshot.quickMetrics.totalDiamondPurchases)) *
+                100,
+            )}%`
+          : '0%',
+      diamondPercentage:
+        platformSnapshot.quickMetrics.totalPremiumPurchases +
+          platformSnapshot.quickMetrics.totalDiamondPurchases >
+        0
+          ? `${Math.round(
+              (platformSnapshot.quickMetrics.totalDiamondPurchases /
+                (platformSnapshot.quickMetrics.totalPremiumPurchases +
+                  platformSnapshot.quickMetrics.totalDiamondPurchases)) *
+                100,
+            )}%`
+          : '0%',
+    },
     refunds: {
       available: false,
     },

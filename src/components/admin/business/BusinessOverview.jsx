@@ -15,6 +15,7 @@ export default function BusinessOverview({ businessOverview = null }) {
   const subscriptions = businessOverview?.subscriptions
   const premium = businessOverview?.premium
   const diamond = businessOverview?.diamond
+  const purchaseSummary = businessOverview?.purchaseSummary
   const refunds = businessOverview?.refunds
   const failedPayments = businessOverview?.failedPayments
   const conversion = businessOverview?.conversion
@@ -63,6 +64,9 @@ export default function BusinessOverview({ businessOverview = null }) {
       <section>
         <h3>Diamond Access</h3>
         <p>Total Diamond Purchases: {formatMetric(diamond?.totalPurchases)}</p>
+        <p>Total Purchases: {formatMetric(purchaseSummary?.totalPurchases)}</p>
+        <p>Premium Share: {formatMetric(purchaseSummary?.premiumPercentage)}</p>
+        <p>Diamond Share: {formatMetric(purchaseSummary?.diamondPercentage)}</p>
       </section>
 
       <section>
