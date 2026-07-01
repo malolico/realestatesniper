@@ -1433,6 +1433,14 @@ function App() {
       userDirectoryLoaded && !adminLoading
         ? adminUsers.filter((user) => user.founder_trial_status === 'active').length
         : null,
+    founderPercentage:
+      userDirectoryLoaded && !adminLoading && adminUsers.length > 0
+        ? `${Math.round(
+            (adminUsers.filter((user) => user.founder_trial_status === 'active').length /
+              adminUsers.length) *
+              100,
+          )}%`
+        : '0%',
     premiumUsers:
       userDirectoryLoaded && !adminLoading
         ? adminUsers.filter((user) => (user.premium_purchase_count || 0) > 0).length
