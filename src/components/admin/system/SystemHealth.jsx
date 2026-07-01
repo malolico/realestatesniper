@@ -9,7 +9,7 @@ export default function SystemHealth({ systemHealth = null }) {
 
   return (
     <section>
-      <h2>System Health</h2>
+      <h2 style={{ color: '#ff3b3b' }}>System Health</h2>
 
       <section>
         <h3>Stripe</h3>

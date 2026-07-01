@@ -28,7 +28,7 @@ export default function BusinessOverview({ businessOverview = null }) {
 
   return (
     <section>
-      <h2>Business Overview</h2>
+      <h2 style={{ color: '#ff3b3b' }}>Business Overview</h2>
 
       <section>
         <h3>Revenue</h3>

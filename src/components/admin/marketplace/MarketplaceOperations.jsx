@@ -22,7 +22,7 @@ export default function MarketplaceOperations({ marketplaceOperations = null }) 
 
   return (
     <section>
-      <h2>Marketplace Operations</h2>
+      <h2 style={{ color: '#ff3b3b' }}>Marketplace Operations</h2>
 
       <section>
         <h3>Marketplace Status</h3>

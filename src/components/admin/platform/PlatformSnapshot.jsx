@@ -18,7 +18,7 @@ export default function PlatformSnapshot({ platformSnapshot = null }) {
 
   return (
     <section>
-      <h2>Platform Snapshot</h2>
+      <h2 style={{ color: '#ff3b3b' }}>Platform Snapshot</h2>
 
       <section>
         <h3>General Status</h3>

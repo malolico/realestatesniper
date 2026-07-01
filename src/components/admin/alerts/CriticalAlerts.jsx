@@ -26,7 +26,7 @@ export default function CriticalAlerts({ criticalAlerts = null }) {
 
   return (
     <section>
-      <h2>Critical Alerts</h2>
+      <h2 style={{ color: '#ff3b3b' }}>Critical Alerts</h2>
 
       <section>
         <h3>Stripe</h3>

@@ -8,7 +8,7 @@ export default function FactoryControlCenter({ factoryControl = null }) {
 
   return (
     <section>
-      <h2>Factory Control Center</h2>
+      <h2 style={{ color: '#ff3b3b' }}>Factory Control Center</h2>
 
       <section>
         <h3>Factory Status</h3>

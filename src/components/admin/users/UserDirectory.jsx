@@ -19,7 +19,7 @@ export default function UserDirectory({ userDirectory = null }) {
 
   return (
     <section>
-      <h2>User Directory</h2>
+      <h2 style={{ color: '#ff3b3b' }}>User Directory</h2>
 
       <section>
         <h3>User Search</h3>

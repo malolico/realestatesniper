@@ -8,7 +8,7 @@ export default function OwnerReviewQueue({ ownerReviewQueue = null }) {
 
   return (
     <section>
-      <h2>Owner Review Queue</h2>
+      <h2 style={{ color: '#ff3b3b' }}>Owner Review Queue</h2>
 
       <section>
         <h3>Pending Reviews</h3>

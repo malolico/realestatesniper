@@ -8,7 +8,7 @@ export default function AuditSecurityBlackBox({ auditSecurity = null }) {
 
   return (
     <section>
-      <h2>Audit & Security Black Box</h2>
+      <h2 style={{ color: '#ff3b3b' }}>Audit & Security Black Box</h2>
 
       <section>
         <h3>Authentication Events</h3>
