@@ -1459,6 +1459,7 @@ function App() {
             ADMIN_EMAILS.includes((user.email || '').toLowerCase()),
           ).length
         : null,
+    users: userDirectoryLoaded && !adminLoading ? adminUsers : null,
     lastUpdate: {
       marketplaceReady: !loading,
     },
