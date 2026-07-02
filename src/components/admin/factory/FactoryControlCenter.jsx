@@ -2,10 +2,7 @@ function NotConnected() {
   return <p>Not connected yet</p>
 }
 
-export default function FactoryControlCenter({ factoryControl = null }) {
-  const lastUpdate = factoryControl?.lastUpdate
-  const marketplaceReady = lastUpdate?.marketplaceReady === true
-
+export default function FactoryControlCenter() {
   return (
     <section>
       <h2 style={{ color: '#ff3b3b' }}>Factory Control Center</h2>
@@ -63,11 +60,6 @@ export default function FactoryControlCenter({ factoryControl = null }) {
       <section>
         <h3>Next Scheduled Run</h3>
         <NotConnected />
-      </section>
-
-      <section>
-        <h3>Last Update</h3>
-        {marketplaceReady ? <p>Marketplace data ready</p> : <p>—</p>}
       </section>
     </section>
   )
