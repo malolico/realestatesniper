@@ -158,6 +158,7 @@ function App() {
   const selectedCategoryRef = useRef(null)
   const categoryHistoryActiveRef = useRef(false)
   const skipCategoryPopStateRef = useRef(false)
+  const adminUsersLoadInFlightRef = useRef(false)
 
   selectedDealRef.current = selectedDeal
   selectedCategoryRef.current = selectedCategory
@@ -1409,12 +1410,11 @@ function App() {
     },
   }
 
-  const userDirectoryLoaded =
-    (showAdminPanel && !adminLoading) || adminUsers.length > 0 || Boolean(adminError)
+  const userDirectoryLoaded = adminUsers.length > 0 || Boolean(adminError)
 
   const userDirectory = {
     loaded: userDirectoryLoaded && !adminLoading,
-    loading: showAdminPanel && adminLoading,
+    loading: adminLoading,
     error: adminError || null,
     registeredUsers: userDirectoryLoaded && !adminLoading ? adminUsers.length : null,
     subscribers:
@@ -2261,7 +2261,11 @@ function App() {
     return data
   }
 
-  async function loadAdminRequests() {
+  async function loadAdminRequests({ force = false } = {}) {
+    if (adminUsersLoadInFlightRef.current) return
+    if (!force && adminUsers.length > 0) return
+
+    adminUsersLoadInFlightRef.current = true
     setAdminLoading(true)
     setAdminError('')
     setAdminSuccess('')
@@ -2274,8 +2278,15 @@ function App() {
       setAdminUsers([])
     } finally {
       setAdminLoading(false)
+      adminUsersLoadInFlightRef.current = false
     }
   }
+
+  useEffect(() => {
+    if (!isAdmin) return
+
+    loadAdminRequests()
+  }, [isAdmin, currentUser?.id])
 
   async function handleAdminAction(action, userId, successMessage) {
     const key = `${action}-${userId}`
@@ -2286,7 +2297,7 @@ function App() {
     try {
       await invokeAdminAccess(action, userId)
       setAdminSuccess(successMessage)
-      await loadAdminRequests()
+      await loadAdminRequests({ force: true })
     } catch (error) {
       setAdminError(error instanceof Error ? error.message : 'Admin action failed.')
     } finally {
@@ -4522,7 +4533,7 @@ function App() {
             }}
           >
             <button
-              onClick={loadAdminRequests}
+              onClick={() => loadAdminRequests({ force: true })}
               className="secondary-button"
             >
               Refresh
