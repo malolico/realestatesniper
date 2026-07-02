@@ -1605,6 +1605,16 @@ function App() {
     purchases: {
       loaded: purchasesLoaded === true,
     },
+    userDirectory: {
+      loaded: userDirectoryLoaded && !adminLoading,
+      loading: adminLoading,
+      error: adminError || null,
+    },
+    adminWorkspace: {
+      active: isAdmin && primaryVisualWorkspace === 'admin',
+      label: workspaceContextTitle,
+      adminEmail: currentUser?.email ?? null,
+    },
     factory: {
       available: false,
     },
