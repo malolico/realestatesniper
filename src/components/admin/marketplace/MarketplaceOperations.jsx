@@ -17,8 +17,6 @@ export default function MarketplaceOperations({ marketplaceOperations = null }) 
   const premium = marketplaceOperations?.premium
   const diamond = marketplaceOperations?.diamond
   const enrichmentPending = marketplaceOperations?.enrichmentPending
-  const lastUpdate = marketplaceOperations?.lastUpdate
-  const marketplaceReady = lastUpdate?.marketplaceReady === true
 
   return (
     <section>
@@ -52,32 +50,40 @@ export default function MarketplaceOperations({ marketplaceOperations = null }) 
       <section>
         <h3>Live Deals</h3>
         <ul>
-          <li>Total Deals: {formatMetric(liveDeals?.totalDeals)}</li>
-          <li>Yellow Deals: {formatMetric(liveDeals?.yellowDeals)} ({formatMetric(liveDeals?.yellowPercentage)})</li>
-          <li>Green Deals: {formatMetric(liveDeals?.greenDeals)} ({formatMetric(liveDeals?.greenPercentage)})</li>
-          <li>Red Deals: {formatMetric(liveDeals?.redDeals)} ({formatMetric(liveDeals?.redPercentage)})</li>
+          <li>Total: {formatMetric(liveDeals?.totalDeals)}</li>
+          <li>Yellow: {formatMetric(liveDeals?.yellowDeals)} ({formatMetric(liveDeals?.yellowPercentage)})</li>
+          <li>Green: {formatMetric(liveDeals?.greenDeals)} ({formatMetric(liveDeals?.greenPercentage)})</li>
+          <li>Red: {formatMetric(liveDeals?.redDeals)} ({formatMetric(liveDeals?.redPercentage)})</li>
         </ul>
       </section>
 
       <section>
-        <h3>Premium Opportunities</h3>
-        <p>Premium Deals: {formatMetric(premium?.premiumDeals)} ({formatMetric(premium?.premiumPercentage)})</p>
+        <h3>Premium Deals</h3>
+        <ul>
+          <li>Total: {formatMetric(premium?.premiumDeals)}</li>
+          <li>Percentage: {formatMetric(premium?.premiumPercentage)}</li>
+        </ul>
       </section>
 
       <section>
-        <h3>Diamond Opportunities</h3>
-        <p>Diamond Deals: {formatMetric(diamond?.diamondDeals)} ({formatMetric(diamond?.diamondPercentage)})</p>
+        <h3>Diamond Deals</h3>
+        <ul>
+          <li>Total: {formatMetric(diamond?.diamondDeals)}</li>
+          <li>Percentage: {formatMetric(diamond?.diamondPercentage)}</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Enrichment Pending</h3>
+        <ul>
+          <li>Unpriced Leads: {formatMetric(enrichmentPending?.unpricedLeads)}</li>
+          <li>Unpriced Percentage: {formatMetric(enrichmentPending?.unpricedPercentage)}</li>
+        </ul>
       </section>
 
       <section>
         <h3>Marketplace Eligible</h3>
         <NotConnected />
-      </section>
-
-      <section>
-        <h3>Enrichment Pending</h3>
-        <p>Unpriced Leads: {formatMetric(enrichmentPending?.unpricedLeads)}</p>
-        <p>Unpriced Percentage: {formatMetric(enrichmentPending?.unpricedPercentage)}</p>
       </section>
 
       <section>
@@ -93,11 +99,6 @@ export default function MarketplaceOperations({ marketplaceOperations = null }) 
       <section>
         <h3>Pipeline Status</h3>
         <NotConnected />
-      </section>
-
-      <section>
-        <h3>Last Update</h3>
-        {marketplaceReady ? <p>Marketplace data ready</p> : <p>—</p>}
       </section>
     </section>
   )
