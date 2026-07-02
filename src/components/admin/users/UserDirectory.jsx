@@ -51,8 +51,6 @@ export default function UserDirectory({ userDirectory = null }) {
   const loading = userDirectory?.loading === true
   const error = userDirectory?.error
   const users = userDirectory?.users
-  const lastUpdate = userDirectory?.lastUpdate
-  const marketplaceReady = lastUpdate?.marketplaceReady === true
 
   return (
     <section>
@@ -68,104 +66,110 @@ export default function UserDirectory({ userDirectory = null }) {
         <NotConnected />
       </section>
 
-      <section>
-        <h3>Registered Users</h3>
-        {loading ? (
-          <p>Loading users...</p>
-        ) : error ? (
-          <p style={{ color: '#fca5a5' }}>{error}</p>
-        ) : loaded ? (
-          <p>{formatCount(userDirectory?.registeredUsers)}</p>
-        ) : (
-          <p>User data not available yet.</p>
-        )}
-      </section>
-
-      <section>
-        <h3>Subscribers</h3>
-        {loaded ? (
-          <p>
-            Subscribers: {formatCount(userDirectory?.subscribers)} ({formatCount(userDirectory?.subscriberPercentage)})
-          </p>
-        ) : null}
-      </section>
-
-      <section>
-        <h3>Founders</h3>
-        {loaded ? (
-          <p>
-            Founders: {formatCount(userDirectory?.founders)} ({formatCount(userDirectory?.founderPercentage)})
-          </p>
-        ) : null}
-      </section>
-
-      <section>
-        <h3>Premium Users</h3>
-        {loaded ? <p>{formatCount(userDirectory?.premiumUsers)}</p> : null}
-      </section>
-
-      <section>
-        <h3>Diamond Users</h3>
-        {loaded ? <p>{formatCount(userDirectory?.diamondUsers)}</p> : null}
-      </section>
-
-      <section>
-        <h3>Owners</h3>
-        {loaded ? <p>{formatCount(userDirectory?.owners)}</p> : null}
-      </section>
-
-      <section>
-        <h3>Admins</h3>
-        {loaded ? <p>{formatCount(userDirectory?.admins)}</p> : null}
-      </section>
-
-      <section>
-        <h3>Users</h3>
-        {loading ? (
+      {loading ? (
+        <section>
           <p style={{ color: '#cbd5e1', fontWeight: 700 }}>Loading users...</p>
-        ) : error ? (
+        </section>
+      ) : null}
+
+      {error ? (
+        <section>
           <p style={{ color: '#fca5a5' }}>{error}</p>
-        ) : loaded && Array.isArray(users) && users.length === 0 ? (
-          <p style={{ color: '#94a3b8' }}>No admin-visible users found.</p>
-        ) : loaded && Array.isArray(users) && users.length > 0 ? (
-          <div style={{ overflowX: 'auto' }}>
-            <table
-              style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                minWidth: '720px',
-              }}
-            >
-              <thead>
-                <tr>
-                  <th style={tableHeaderStyle}>Email</th>
-                  <th style={tableHeaderStyle}>Access Role</th>
-                  <th style={tableHeaderStyle}>Subscription Status</th>
-                  <th style={tableHeaderStyle}>Founder Status</th>
-                  <th style={tableHeaderStyle}>Premium Purchases</th>
-                  <th style={tableHeaderStyle}>Diamond Purchases</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td style={tableCellStyle}>{formatCell(user.email)}</td>
-                    <td style={tableCellStyle}>{formatCell(user.access_role || 'standard')}</td>
-                    <td style={tableCellStyle}>
-                      {formatSubscriptionStatus(user.subscription_active)}
-                    </td>
-                    <td style={tableCellStyle}>{formatCell(user.founder_trial_status)}</td>
-                    <td style={tableCellStyle}>{formatCell(user.premium_purchase_count)}</td>
-                    <td style={tableCellStyle}>{formatCell(user.diamond_purchase_count)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
+        </section>
+      ) : null}
+
+      {!loading && !error && loaded ? (
+        <>
+          <section>
+            <h3>Registered Users</h3>
+            <p>{formatCount(userDirectory?.registeredUsers)}</p>
+          </section>
+
+          <section>
+            <h3>Subscribers</h3>
+            <p>
+              Subscribers: {formatCount(userDirectory?.subscribers)} (
+              {formatCount(userDirectory?.subscriberPercentage)})
+            </p>
+          </section>
+
+          <section>
+            <h3>Founders</h3>
+            <p>
+              Founders: {formatCount(userDirectory?.founders)} (
+              {formatCount(userDirectory?.founderPercentage)})
+            </p>
+          </section>
+
+          <section>
+            <h3>Premium Users</h3>
+            <p>{formatCount(userDirectory?.premiumUsers)}</p>
+          </section>
+
+          <section>
+            <h3>Diamond Users</h3>
+            <p>{formatCount(userDirectory?.diamondUsers)}</p>
+          </section>
+
+          <section>
+            <h3>Owners</h3>
+            <p>{formatCount(userDirectory?.owners)}</p>
+          </section>
+
+          <section>
+            <h3>Admins</h3>
+            <p>{formatCount(userDirectory?.admins)}</p>
+          </section>
+
+          <section>
+            <h3>Users</h3>
+            {Array.isArray(users) && users.length === 0 ? (
+              <p style={{ color: '#94a3b8' }}>No admin-visible users found.</p>
+            ) : Array.isArray(users) && users.length > 0 ? (
+              <div style={{ overflowX: 'auto' }}>
+                <table
+                  style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    minWidth: '720px',
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      <th style={tableHeaderStyle}>Email</th>
+                      <th style={tableHeaderStyle}>Access Role</th>
+                      <th style={tableHeaderStyle}>Subscription Status</th>
+                      <th style={tableHeaderStyle}>Founder Status</th>
+                      <th style={tableHeaderStyle}>Premium Purchases</th>
+                      <th style={tableHeaderStyle}>Diamond Purchases</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user.id}>
+                        <td style={tableCellStyle}>{formatCell(user.email)}</td>
+                        <td style={tableCellStyle}>{formatCell(user.access_role || 'standard')}</td>
+                        <td style={tableCellStyle}>
+                          {formatSubscriptionStatus(user.subscription_active)}
+                        </td>
+                        <td style={tableCellStyle}>{formatCell(user.founder_trial_status)}</td>
+                        <td style={tableCellStyle}>{formatCell(user.premium_purchase_count)}</td>
+                        <td style={tableCellStyle}>{formatCell(user.diamond_purchase_count)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
+          </section>
+        </>
+      ) : null}
+
+      {!loading && !error && !loaded ? (
+        <section>
           <p style={{ color: '#94a3b8' }}>User data not available yet.</p>
-        )}
-      </section>
+        </section>
+      ) : null}
 
       <section>
         <h3>Recent Activity</h3>
@@ -175,11 +179,6 @@ export default function UserDirectory({ userDirectory = null }) {
       <section>
         <h3>Account Status</h3>
         <NotConnected />
-      </section>
-
-      <section>
-        <h3>Last Update</h3>
-        {marketplaceReady ? <p>Marketplace data ready</p> : <p>—</p>}
       </section>
     </section>
   )

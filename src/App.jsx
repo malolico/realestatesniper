@@ -1289,7 +1289,9 @@ function App() {
     pendingActions: {
       userDirectoryLoaded: adminUsers.length > 0,
       registeredUsersCount:
-        showAdminPanel && !adminLoading ? adminUsers.length : null,
+        (adminUsers.length > 0 || Boolean(adminError)) && !adminLoading
+          ? adminUsers.length
+          : null,
     },
     warnings: {
       marketplaceEmpty: !loading && deals.length === 0,

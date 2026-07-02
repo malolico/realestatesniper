@@ -22,9 +22,6 @@ export default function BusinessOverview({ businessOverview = null }) {
   const churn = businessOverview?.churn
   const revenueByProduct = businessOverview?.revenueByProduct
   const revenueByState = businessOverview?.revenueByState
-  const lastUpdate = businessOverview?.lastUpdate
-
-  const marketplaceReady = lastUpdate?.marketplaceReady === true
 
   return (
     <section>
@@ -44,16 +41,17 @@ export default function BusinessOverview({ businessOverview = null }) {
         {subscriptions?.available === true ? (
           <p>Subscription metrics will appear here.</p>
         ) : (
-          <NotConnected />
+          <ul>
+            <li>Purchase data loaded: {subscriptions?.loaded === true ? 'Yes' : 'No'}</li>
+            <li>
+              Founder spots: {formatMetric(subscriptions?.founderSpotsRemaining)} /{' '}
+              {formatMetric(subscriptions?.founderSpotsTotal)}
+            </li>
+            <li>
+              Founder cohort full: {subscriptions?.foundersCohortFull === true ? 'Yes' : 'No'}
+            </li>
+          </ul>
         )}
-        <p>Purchase data loaded: {subscriptions?.loaded === true ? 'Yes' : 'No'}</p>
-        <p>
-          Founder spots: {formatMetric(subscriptions?.founderSpotsRemaining)} /{' '}
-          {formatMetric(subscriptions?.founderSpotsTotal)}
-        </p>
-        <p>
-          Founder cohort full: {subscriptions?.foundersCohortFull === true ? 'Yes' : 'No'}
-        </p>
       </section>
 
       <section>
@@ -121,11 +119,6 @@ export default function BusinessOverview({ businessOverview = null }) {
         ) : (
           <NotConnected />
         )}
-      </section>
-
-      <section>
-        <h3>Last Update</h3>
-        {marketplaceReady ? <p>Marketplace data ready</p> : <p>—</p>}
       </section>
     </section>
   )
