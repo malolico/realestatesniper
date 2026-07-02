@@ -2,10 +2,7 @@ function NotConnected() {
   return <p>Not connected yet</p>
 }
 
-export default function OwnerReviewQueue({ ownerReviewQueue = null }) {
-  const lastUpdate = ownerReviewQueue?.lastUpdate
-  const marketplaceReady = lastUpdate?.marketplaceReady === true
-
+export default function OwnerReviewQueue() {
   return (
     <section>
       <h2 style={{ color: '#ff3b3b' }}>Owner Review Queue</h2>
@@ -26,7 +23,7 @@ export default function OwnerReviewQueue({ ownerReviewQueue = null }) {
       </section>
 
       <section>
-        <h3>Broker Risk Score</h3>
+        <h3>Broker Risk</h3>
         <NotConnected />
       </section>
 
@@ -53,11 +50,6 @@ export default function OwnerReviewQueue({ ownerReviewQueue = null }) {
       <section>
         <h3>Next Actions</h3>
         <NotConnected />
-      </section>
-
-      <section>
-        <h3>Last Update</h3>
-        {marketplaceReady ? <p>Marketplace data ready</p> : <p>—</p>}
       </section>
     </section>
   )
