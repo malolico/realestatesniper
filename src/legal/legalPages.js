@@ -3,6 +3,12 @@
  */
 
 export const LEGAL_PAGES = {
+  legalIndex: {
+    path: '/legal',
+    title: 'Legal Documentation',
+    subtitle: 'Complete index of legal documents governing the RealEstateSniper platform.',
+    isIndex: true,
+  },
   termsOfService: {
     path: '/legal/terms-of-service',
     title: 'Terms of Service',
@@ -52,6 +58,41 @@ export const LEGAL_PAGES = {
     path: '/legal/legal-notice',
     title: 'Legal Notice / Contact',
     subtitle: 'Company information and legal contact details.',
+  },
+  diamondAuthorizationAgreement: {
+    path: '/legal/diamond-authorization-agreement',
+    title: 'Diamond Authorization Agreement',
+    subtitle: 'Authorization terms for Diamond-tier owner contact and deal access.',
+  },
+  founderProgramTerms: {
+    path: '/legal/founder-program-terms',
+    title: 'Founder Program Terms',
+    subtitle: 'Terms governing participation in the RealEstateSniper Founder cohort.',
+  },
+  marketplaceRules: {
+    path: '/legal/marketplace-rules',
+    title: 'Marketplace Rules',
+    subtitle: 'Rules governing deal listings, scoring, and marketplace conduct.',
+  },
+  refundPolicy: {
+    path: '/legal/refund-policy',
+    title: 'Refund Policy',
+    subtitle: 'Conditions and procedures for purchase refunds.',
+  },
+  dataRetentionPolicy: {
+    path: '/legal/data-retention-policy',
+    title: 'Data Retention Policy',
+    subtitle: 'How long personal and platform data is stored and when it is deleted.',
+  },
+  aiAutomationDisclosure: {
+    path: '/legal/ai-automation-disclosure',
+    title: 'AI & Automation Disclosure',
+    subtitle: 'Transparency about automated systems used in the platform.',
+  },
+  legalDefinitions: {
+    path: '/legal/legal-definitions',
+    title: 'Legal Definitions',
+    subtitle: 'Glossary of defined terms used across all legal documents.',
   },
 }
 

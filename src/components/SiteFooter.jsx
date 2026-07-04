@@ -6,6 +6,7 @@ const FOOTER_LINKS = [
   { key: 'cookiePolicy', label: 'Cookie Policy' },
   { key: 'investmentDisclaimer', label: 'Investment Disclaimer' },
   { key: 'legalNotice', label: 'Contact' },
+  { key: 'legalIndex', label: 'Legal Index' },
 ]
 
 function SiteFooter() {
