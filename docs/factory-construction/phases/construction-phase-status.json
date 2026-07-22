@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "metadata": {
+    "directorApprovalRequired": true,
+    "constitutionalCommit": "35b9e2a",
+    "safetyBranch": "audit-master-ffo-pending-approval"
+  },
+  "phases": {
+    "CB-00": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T15:46:23.646Z",
+      "validationReport": "runCb00CanonValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-01": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T15:51:18.613Z",
+      "validationReport": "runCb01RegistryValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-02": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T15:55:57.474Z",
+      "validationReport": "runCb02DsoValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-03": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T15:59:57.546Z",
+      "validationReport": "runCb03ComplianceValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-04": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T16:10:49.759Z",
+      "validationReport": "runCb04MotorRuntimeValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-05": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T16:19:04.475Z",
+      "validationReport": "runCb05FoundationValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-06": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T16:26:05.867Z",
+      "validationReport": "runCb06EvidenceValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-07": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T16:54:49.117Z",
+      "validationReport": "runCb07LegitimacyValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-08": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T17:01:23.094Z",
+      "validationReport": "runCb08DistressValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-09": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T17:09:35.454Z",
+      "validationReport": "runCb09EconomyValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-10": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T17:16:53.791Z",
+      "validationReport": "runCb10EnvironmentValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-11": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T17:28:35.660Z",
+      "validationReport": "runCb11LoopEngineValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-12": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T17:49:35.274Z",
+      "validationReport": "runCb12SwarmValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-13": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T17:59:44.096Z",
+      "validationReport": "runCb13IntelligenceValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-14": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T18:05:39.055Z",
+      "validationReport": "runCb14AiAssistValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-15": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-09T18:14:31.612Z",
+      "validationReport": "runCb15OrchestrationValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    }
+  }
+}
