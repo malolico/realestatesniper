@@ -26,6 +26,7 @@ import {
   WARNING_SCOPES,
   WARNING_SEVERITIES,
 } from "./constants.js";
+import { collectDepthViolations } from "./depth.js";
 import { verifyChecksum } from "./integrity.js";
 import {
   collectInvariantViolations,
@@ -69,6 +70,12 @@ export function validateReadModelV2(candidate, options = {}) {
   // 1–2 parse / root type
   if (candidate === null || typeof candidate !== "object" || Array.isArray(candidate)) {
     return fail("PARSE", ["Payload must be a JSON object"]);
+  }
+
+  // Depth quotas on raw candidate (DoS / structure bounds)
+  const depthErrors = collectDepthViolations(candidate);
+  if (depthErrors.length > 0) {
+    return fail("DEPTH", depthErrors);
   }
 
   // Sanitization + unknown-field rejection (allowlist)
@@ -207,7 +214,7 @@ export function validateReadModelV2(candidate, options = {}) {
     errors.push("governance.approvedAt must be RFC3339 or null");
   }
 
-  // 9 invariants
+  // 9 invariants (incl. ownership/registry coherence, phases, warning catalog)
   errors.push(...collectInvariantViolations(value));
 
   // 11 quotas
@@ -247,13 +254,19 @@ export function validateReadModelV2(candidate, options = {}) {
     errors.push("observationStatus INVALID is not publishable");
   }
 
-  if (errors.length > 0) {
-    return fail("VALIDATION", errors);
-  }
-
+  // Freshness + SNAPSHOT_STALE requirement (§12)
   const freshness = evaluateFreshness(value, options.now);
   if (freshness === "invalid") {
-    return fail("FRESHNESS", ["Freshness evaluation invalid"]);
+    errors.push("Freshness evaluation invalid");
+  } else if (freshness === "stale") {
+    const hasStaleWarning = value.warnings.some((w) => w.code === "SNAPSHOT_STALE");
+    if (!hasStaleWarning) {
+      errors.push("stale snapshot requires warning code SNAPSHOT_STALE");
+    }
+  }
+
+  if (errors.length > 0) {
+    return fail("VALIDATION", errors);
   }
 
   return {

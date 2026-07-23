@@ -127,6 +127,9 @@ export const QUOTAS = Object.freeze({
   MAX_ARRAY_DEPTH: 8,
 });
 
+/** Approved Factory phase identifiers: CB-00 … CB-99. */
+export const PHASE_ID_RE = /^CB-(?:0\d|[1-9]\d)$/;
+
 export const PROHIBITED_ROOT_NAMES = Object.freeze([
   "contractName",
   "records",

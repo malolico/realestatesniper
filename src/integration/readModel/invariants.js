@@ -3,9 +3,11 @@
  */
 
 import {
+  BASELINE_WARNING_CODES,
   CONTRACT_ID,
   DATA_CLASSIFICATION,
   MODE,
+  PHASE_ID_RE,
   SCHEMA_VERSION,
 } from "./constants.js";
 
@@ -20,6 +22,14 @@ export function isRfc3339(value) {
   if (typeof value !== "string" || !RFC3339_RE.test(value)) return false;
   const ms = Date.parse(value);
   return Number.isFinite(ms);
+}
+
+/**
+ * @param {string} value
+ * @returns {boolean}
+ */
+export function isApprovedPhaseId(value) {
+  return typeof value === "string" && PHASE_ID_RE.test(value);
 }
 
 /**
@@ -88,9 +98,12 @@ export function collectInvariantViolations(payload) {
   }
 
   const warnings = Array.isArray(payload?.warnings) ? payload.warnings : [];
-  for (const w of warnings) {
+  for (const [i, w] of warnings.entries()) {
     if (w?.code === "RECORDS_TRUNCATED") {
       errors.push("RECORDS_TRUNCATED is prohibited");
+    }
+    if (typeof w?.code === "string" && !BASELINE_WARNING_CODES.includes(w.code)) {
+      errors.push(`warnings[${i}].code is not in the approved catalog: ${w.code}`);
     }
   }
 
@@ -108,7 +121,9 @@ export function collectInvariantViolations(payload) {
   }
 
   const ownership = payload?.ownership;
-  if (ownership) {
+  if (!ownership || typeof ownership !== "object") {
+    errors.push("ownership is required");
+  } else {
     if (ownership.factory !== "FACTORY") {
       errors.push("ownership.factory must be FACTORY");
     }
@@ -120,6 +135,39 @@ export function collectInvariantViolations(payload) {
     }
     if (!["REGISTRY", "ABSENT"].includes(ownership.registry)) {
       errors.push("ownership.registry must be REGISTRY or ABSENT");
+    }
+
+    if (ownership.registry === "ABSENT" && registry?.status !== "ABSENT") {
+      errors.push(
+        "ownership.registry ABSENT requires registryObservation.status ABSENT"
+      );
+    }
+    if (ownership.registry === "REGISTRY" && registry?.status === "ABSENT") {
+      errors.push(
+        "ownership.registry REGISTRY forbids registryObservation.status ABSENT"
+      );
+    }
+    if (registry?.status === "ABSENT" && ownership.registry !== "ABSENT") {
+      errors.push(
+        "registryObservation.status ABSENT requires ownership.registry ABSENT"
+      );
+    }
+  }
+
+  const fo = payload?.factoryObservation;
+  if (fo) {
+    const phaseIds = [
+      fo.phaseRange?.from,
+      fo.phaseRange?.to,
+      ...(Array.isArray(fo.implementedPhases) ? fo.implementedPhases : []),
+      ...(Array.isArray(fo.approvedPhases) ? fo.approvedPhases : []),
+      ...(Array.isArray(fo.blockedPhases) ? fo.blockedPhases : []),
+    ];
+    for (const phaseId of phaseIds) {
+      if (phaseId === undefined) continue;
+      if (!isApprovedPhaseId(phaseId)) {
+        errors.push(`factory phase id invalid (expected CB-00..CB-99): ${phaseId}`);
+      }
     }
   }
 

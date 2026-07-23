@@ -320,6 +320,114 @@ export function fixtureTruncationWarnings() {
   );
 }
 
+export function fixtureStaleMissingWarning() {
+  return buildBaseSnapshot(
+    {
+      snapshotId: "snap-stale-no-warning",
+      generatedAt: "2026-07-23T10:00:00.000Z",
+      staleAfter: "2026-07-23T10:30:00.000Z",
+      warnings: [],
+    },
+    { verified: true }
+  );
+}
+
+export function fixtureOwnershipRegistryMismatch() {
+  return buildBaseSnapshot(
+    {
+      snapshotId: "snap-own-reg-mismatch",
+      ownership: { registry: "ABSENT" },
+      registryObservation: {
+        status: "AVAILABLE",
+        registryVersion: "1.0.0",
+        entriesObserved: 1,
+        lastObservedAt: "2026-07-23T11:58:00.000Z",
+      },
+    },
+    { verified: true }
+  );
+}
+
+export function fixtureObjectDepthExceeded() {
+  const base = buildBaseSnapshot({ snapshotId: "snap-obj-depth" }, { verified: true });
+  let deep = { leaf: true };
+  for (let i = 0; i < QUOTAS.MAX_OBJECT_DEPTH + 1; i += 1) {
+    deep = { nested: deep };
+  }
+  return { ...base, deepNest: deep };
+}
+
+export function fixtureArrayDepthExceeded() {
+  const base = buildBaseSnapshot({ snapshotId: "snap-arr-depth" }, { verified: true });
+  let deep = ["leaf"];
+  for (let i = 0; i < QUOTAS.MAX_ARRAY_DEPTH + 1; i += 1) {
+    deep = [deep];
+  }
+  return { ...base, deepNest: deep };
+}
+
+export function fixtureUnknownWarningCode() {
+  return buildBaseSnapshot(
+    {
+      snapshotId: "snap-bad-warning-code",
+      warnings: [
+        {
+          code: "NOT_IN_CATALOG",
+          severity: "WARNING",
+          scope: "SNAPSHOT",
+          message: "unknown warning",
+          expedienteId: null,
+        },
+      ],
+    },
+    { verified: true }
+  );
+}
+
+export function fixtureInvalidPhaseId() {
+  return buildBaseSnapshot(
+    {
+      snapshotId: "snap-bad-phase",
+      factoryObservation: {
+        phaseRange: { from: "CB-00", to: "CB-100" },
+      },
+    },
+    { verified: true }
+  );
+}
+
+export function fixtureMissingRequiredField() {
+  const base = buildBaseSnapshot({ snapshotId: "snap-missing-required" }, {
+    verified: true,
+  });
+  const { ownership, ...rest } = base;
+  return rest;
+}
+
+export function fixturePayloadBytesExceeded() {
+  const pad = "x".repeat(QUOTAS.MAX_STRING_LENGTH);
+  const expedientes = Array.from({ length: QUOTAS.MAX_EXPEDIENTES }, (_, i) => ({
+    expedienteId: `exp-pad-${i}`,
+    classification: "DEAL",
+    status: "OBSERVED",
+    identityVerified: false,
+    valueVerified: false,
+    pricingVerified: false,
+    offMarket: false,
+    ownerVerified: false,
+    commercializationAuthorized: false,
+    evidenceRefs: [pad, pad, pad],
+    warningCodes: [],
+  }));
+  return buildBaseSnapshot(
+    {
+      snapshotId: "snap-payload-bytes",
+      expedientes,
+    },
+    { verified: true }
+  );
+}
+
 /** Determinism helper: recompute checksum for a fixture clone. */
 export function recompute(fixture) {
   const clone = structuredClone(fixture);
@@ -346,4 +454,12 @@ export const FIXTURE_CATALOG = Object.freeze({
   badDiamond: fixtureBadDiamond,
   prohibitedData: fixtureProhibitedData,
   quotaExceeded: fixtureQuotaExceeded,
+  staleMissingWarning: fixtureStaleMissingWarning,
+  ownershipRegistryMismatch: fixtureOwnershipRegistryMismatch,
+  objectDepthExceeded: fixtureObjectDepthExceeded,
+  arrayDepthExceeded: fixtureArrayDepthExceeded,
+  unknownWarningCode: fixtureUnknownWarningCode,
+  invalidPhaseId: fixtureInvalidPhaseId,
+  missingRequiredField: fixtureMissingRequiredField,
+  payloadBytesExceeded: fixturePayloadBytesExceeded,
 });

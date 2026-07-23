@@ -14,8 +14,10 @@ export {
 export {
   collectInvariantViolations,
   evaluateFreshness,
+  isApprovedPhaseId,
   isRfc3339,
   isTimestampOrderValid,
 } from "./invariants.js";
+export { collectDepthViolations, measureDepths } from "./depth.js";
 export { sanitizeToV2 } from "./sanitizer.js";
 export { isValidReadModelV2, validateReadModelV2 } from "./validator.js";

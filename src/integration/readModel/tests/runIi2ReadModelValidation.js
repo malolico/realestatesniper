@@ -214,6 +214,66 @@ test("exact enums enforced", () => {
   assert.equal(r.ok, false);
 });
 
+test("rejects stale without SNAPSHOT_STALE", () => {
+  const r = validateReadModelV2(FIXTURE_CATALOG.staleMissingWarning(), {
+    now: "2026-07-23T12:00:00.000Z",
+  });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => /SNAPSHOT_STALE/i.test(e)));
+});
+
+test("rejects ownership/registry incoherence", () => {
+  const r = validateReadModelV2(FIXTURE_CATALOG.ownershipRegistryMismatch(), {
+    now: "2026-07-23T12:30:00.000Z",
+  });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => /ownership\.registry|registryObservation/i.test(e)));
+});
+
+test("rejects object depth exceeded", () => {
+  const r = validateReadModelV2(FIXTURE_CATALOG.objectDepthExceeded());
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => /MAX_OBJECT_DEPTH|object depth/i.test(e)));
+});
+
+test("rejects array depth exceeded", () => {
+  const r = validateReadModelV2(FIXTURE_CATALOG.arrayDepthExceeded());
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => /MAX_ARRAY_DEPTH|array depth/i.test(e)));
+});
+
+test("rejects unknown warning code", () => {
+  const r = validateReadModelV2(FIXTURE_CATALOG.unknownWarningCode(), {
+    now: "2026-07-23T12:30:00.000Z",
+  });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => /approved catalog|NOT_IN_CATALOG/i.test(e)));
+});
+
+test("rejects invalid phase id", () => {
+  const r = validateReadModelV2(FIXTURE_CATALOG.invalidPhaseId(), {
+    now: "2026-07-23T12:30:00.000Z",
+  });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => /phase id|CB-100/i.test(e)));
+});
+
+test("rejects missing required field", () => {
+  const r = validateReadModelV2(FIXTURE_CATALOG.missingRequiredField(), {
+    now: "2026-07-23T12:30:00.000Z",
+  });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => /ownership|required|Missing/i.test(e)));
+});
+
+test("rejects MAX_PAYLOAD_BYTES exceeded", () => {
+  const r = validateReadModelV2(FIXTURE_CATALOG.payloadBytesExceeded(), {
+    now: "2026-07-23T12:30:00.000Z",
+  });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => /MAX_PAYLOAD_BYTES/i.test(e)));
+});
+
 const failed = results.filter((r) => !r.ok);
 console.log("");
 console.log("====================================================");

@@ -164,6 +164,7 @@ The canonical root envelope is:
   "environment": "development | test | staging | production | unknown",
   "dataClassification": "INTERNAL_OPS",
   "producer": {},
+  "ownership": {},
   "sourceProvenance": {},
   "integrity": {},
   "observationStatus": "HEALTHY | DEGRADED | PARTIAL | UNAVAILABLE | INVALID",
@@ -177,6 +178,8 @@ The canonical root envelope is:
   "diagnostics": {}
 }
 ```
+
+`ownership` is a required root field. Its canonical shape is defined in section 9.
 
 All root fields are required unless explicitly stated otherwise in this specification.
 
@@ -728,9 +731,18 @@ Exact numeric limits belong to II.2-IMPL and MUST not alter the semantics define
 
 The approved canonicalization identifier is `JCS`.
 
-The checksum algorithm is `SHA-256`.
+For II.2-IMPL the approved implementation scope is **JCS-subset II.2**:
 
-The implementation MUST document the exact checksum scope and MUST exclude the checksum value itself from the checksum input.
+- object keys sorted in lexicographic order;
+- UTF-8 encoding of the canonical string;
+- no insignificant whitespace;
+- JSON string escaping via standard JSON string serialization;
+- finite numbers only;
+- checksum algorithm `SHA-256` over the canonical UTF-8 bytes;
+- `integrity.checksum` MUST be excluded from the checksum input;
+- other `integrity` fields (including `verified`) participate in the digest.
+
+This subset is the approved II.2 scope. It does not claim full RFC 8785 Unicode edge-case coverage beyond the rules above.
 
 Equivalent semantic payloads MUST produce identical canonical bytes and identical checksums.
 
@@ -1003,7 +1015,7 @@ No PARKING / FUTURE item is authorized by this document.
 ## 40. Implementation Status
 
 - **II.2 Specification:** APPROVED
-- **II.2-IMPL:** NOT AUTHORIZED until explicit instruction
+- **II.2-IMPL:** IMPLEMENTED — PENDING FINAL VALIDATION
 - **II.3:** NOT AUTHORIZED
 - **Producer:** NOT AUTHORIZED
 - **Authenticated Boundary:** NOT AUTHORIZED

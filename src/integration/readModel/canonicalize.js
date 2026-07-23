@@ -1,5 +1,7 @@
 /**
- * II.2 JCS-style deterministic canonicalization (RFC 8785 subset for JSON values).
+ * II.2 JCS-subset II.2 deterministic canonicalization.
+ * Approved scope: sorted keys, UTF-8, no insignificant whitespace,
+ * JSON string escaping, finite numbers only (not full RFC 8785).
  */
 
 function escapeString(value) {
@@ -11,9 +13,8 @@ function canonicalizeValue(value) {
   if (typeof value === "boolean") return value ? "true" : "false";
   if (typeof value === "number") {
     if (!Number.isFinite(value)) {
-      throw new Error("JCS does not allow non-finite numbers");
+      throw new Error("JCS-subset II.2 does not allow non-finite numbers");
     }
-    // RFC 8785 uses ES6 NumberToJSON semantics via JSON.stringify for numbers.
     return JSON.stringify(value);
   }
   if (typeof value === "string") return escapeString(value);
@@ -27,7 +28,7 @@ function canonicalizeValue(value) {
       .join(",");
     return `{${body}}`;
   }
-  throw new Error(`Unsupported JCS value type: ${typeof value}`);
+  throw new Error(`Unsupported JCS-subset II.2 value type: ${typeof value}`);
 }
 
 /**
