@@ -1,0 +1,25 @@
+{
+  "contractId": "factory.observability.read_model",
+  "schemaVersion": "2.0.0",
+  "note": "Static catalog of fixture names required by II.2 §35. Concrete payloads are built in fixtures/index.js with deterministic checksums.",
+  "fixtures": [
+    "healthy",
+    "degraded",
+    "partial",
+    "registryAbsent",
+    "stale",
+    "zeroExpedientes",
+    "diamond",
+    "truncationWarnings",
+    "unknownRootField",
+    "unknownNestedField",
+    "contractName",
+    "records",
+    "recordsTruncated",
+    "badTimestampOrder",
+    "badChecksum",
+    "badDiamond",
+    "prohibitedData",
+    "quotaExceeded"
+  ]
+}
