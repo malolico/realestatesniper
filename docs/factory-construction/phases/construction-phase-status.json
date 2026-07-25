@@ -117,6 +117,35 @@
       "validationReport": "runCb15OrchestrationValidation",
       "approvedBy": "Manolo",
       "pendingDirectorApproval": false
+    },
+    "CB-16": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-23T05:45:44.053Z",
+      "validationReport": "runCb16DecisionValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-17": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-23T06:03:33.002Z",
+      "validationReport": "runCb17WatchValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-18": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-23T06:16:39.877Z",
+      "validationReport": "runCb18GovernanceValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false
+    },
+    "CB-19": {
+      "status": "APPROVED",
+      "completedAt": "2026-07-23T06:37:43.105Z",
+      "validationReport": "runCb19CompletionValidation",
+      "approvedBy": "Manolo",
+      "pendingDirectorApproval": false,
+      "factoryCompletionCertificate": "CB-19:FactoryCompletionCertificate"
     }
   }
 }
