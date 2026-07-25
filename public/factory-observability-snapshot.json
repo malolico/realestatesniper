@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0.0",
+  "mode": "READ_ONLY",
+  "generatedAt": "2026-07-23T11:25:29.342Z",
+  "factory": {
+    "available": true,
+    "constitutionalPhaseSpan": {
+      "from": "CB-00",
+      "to": "CB-19",
+      "approvedCount": 20,
+      "totalCount": 20
+    },
+    "constitutionalMetrics": {
+      "ppCount": 15,
+      "lffCount": 20,
+      "pConstCount": 10,
+      "ffoLawsCount": 16,
+      "omcMotorsConstitutional": 52
+    }
+  },
+  "elrHealth": {
+    "available": false,
+    "empty": true,
+    "expedienteCount": 0,
+    "status": "REGISTRY_ROOT_MISSING"
+  },
+  "expedientes": [],
+  "governance": {
+    "maturity": {},
+    "compliance": {},
+    "coverage": {},
+    "canonDrift": {}
+  },
+  "lineage": {
+    "eventKinds": []
+  },
+  "warnings": [
+    "ELR registry root directory is absent (empty-state)."
+  ]
+}
