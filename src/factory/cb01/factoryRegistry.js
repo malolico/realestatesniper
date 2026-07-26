@@ -184,6 +184,11 @@ export class FactoryRegistry {
       if (oldPath !== newPath && fs.existsSync(oldPath)) {
         fs.unlinkSync(oldPath);
       }
+      // Optional store lifecycle (P-INT-03 AtomicFileElrStore): clean sidecar/temps/bak.
+      // Absent on FileElrStore — backward-compatible no-op. Does not alter resolveFactoryKey semantics.
+      if (typeof this.store.removeArtifacts === "function") {
+        this.store.removeArtifacts(provisionalKey);
+      }
     }
 
     return record;
