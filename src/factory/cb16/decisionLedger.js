@@ -120,6 +120,61 @@ export function recordHandoffComplete(registry, factoryKey, summary) {
 }
 
 /**
+ * P-INT-04 Offline — local export reference only (after VERIFY).
+ * Not Delivery. Not II.6 HANDOFF_EXECUTED. Not DHI_PACKAGE_DELIVERED.
+ *
+ * @param {import('../cb01/factoryRegistry.js').FactoryRegistry} registry
+ * @param {string} factoryKey
+ * @param {{
+ *   packageId: string,
+ *   canonicalContentChecksum: string,
+ *   exportSchemaVersion: number,
+ *   relativeRef: string,
+ * }} meta
+ */
+export function recordOfflineLocalExport(registry, factoryKey, meta) {
+  const existing = findOfflineLocalExportAct(
+    registry.getExpediente(factoryKey)?.elr,
+    meta.canonicalContentChecksum
+  );
+  if (existing) {
+    return existing;
+  }
+  return registry.registerElrAct(
+    factoryKey,
+    "decision_handoffs",
+    {
+      kind: HANDOFF_ELR_KINDS.OFFLINE_LOCAL_EXPORT,
+      interfaceId: DECISION_HANDOFF_INTERFACE_ID,
+      packageId: meta.packageId,
+      canonicalContentChecksum: meta.canonicalContentChecksum,
+      exportSchemaVersion: meta.exportSchemaVersion,
+      exportMode: "OFFLINE_LOCAL",
+      relativeRef: meta.relativeRef,
+      message: "Offline local Decision Package export verified — not Delivery",
+      constitutionalPhase: "CB-16",
+      pint: "P-INT-04-OFFLINE",
+    },
+    { actor: DECISION_HANDOFF_ACTOR }
+  );
+}
+
+/**
+ * @param {object} elr
+ * @param {string} canonicalContentChecksum
+ */
+export function findOfflineLocalExportAct(elr, canonicalContentChecksum) {
+  const handoffs = elr?.decision_handoffs ?? [];
+  return (
+    handoffs.find(
+      (h) =>
+        h.kind === HANDOFF_ELR_KINDS.OFFLINE_LOCAL_EXPORT &&
+        h.canonicalContentChecksum === canonicalContentChecksum
+    ) ?? null
+  );
+}
+
+/**
  * @param {object} elr
  */
 export function collectDecisionHandoffLedger(elr) {

@@ -60,6 +60,8 @@ export const HANDOFF_ELR_KINDS = Object.freeze({
   FREEZE: "DHI_FACTORY_FREEZE",
   DELIVERED: "DHI_PACKAGE_DELIVERED",
   COMPLETE: "DHI_HANDOFF_COMPLETE",
+  /** P-INT-04 Offline local export reference — not Delivery / not II.6 */
+  OFFLINE_LOCAL_EXPORT: "DHI_OFFLINE_LOCAL_EXPORT",
 });
 
 /**
