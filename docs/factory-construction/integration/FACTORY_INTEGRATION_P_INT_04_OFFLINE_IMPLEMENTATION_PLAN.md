@@ -6,7 +6,8 @@
 **Phase:** Factory Integration — Operational Completeness (Arizona)  
 **Block:** P-INT-04 — Decision Package Export (**OFFLINE / LOCAL slice only**)  
 **Document Type:** Technical Implementation Plan  
-**Status:** PLAN ONLY — **NO IMPLEMENTATION AUTHORIZED BY THIS DOCUMENT**
+**Status:** PLAN ONLY — **NO IMPLEMENTATION AUTHORIZED BY THIS DOCUMENT**  
+**Constitutional closures:** H1–H4, M1–M3 **CLOSED** (Plan Update — micro-constitutional)
 
 **Repository:** RealEstateSniper  
 
@@ -30,10 +31,12 @@
 **Technological / architectural decision (binding):**
 
 1. **Reuse** the existing CB-16 Decision Package — **no second package model**.  
-2. Harden via **canonicalization + SHA-256 integrity + local auditable export**.  
-3. Persist **B + C**: local artifact under `data/factory-decision-packages/` **and** ELR handoff **reference** (not full package dump).  
-4. **Do not** classify Deal / Premium / Diamond.  
-5. **Do not** alter CB-16 `boundary` semantics.
+2. Harden via **canonicalización cerrada §15** + **sidecar físico + content checksum lógico §16** + export local auditable.  
+3. Persist **B + C**: artefacto local + act **`DHI_OFFLINE_LOCAL_EXPORT`** (no full package dump).  
+4. **`packageId`** = `dpkg-{factory_key}-{canonicalContentChecksum}`; export service **separado** de `prepareAndDeliver`.  
+5. Export v1 solo **`ST-RDY`** + readiness ready; **ST-DEC DEFERRED**.  
+6. Unknown fields → **REJECT**.  
+7. **Do not** classify Deal / Premium / Diamond; **do not** alter CB-16 `boundary`.
 
 ---
 
@@ -119,7 +122,7 @@ Preparar operativamente **P-INT-04 Offline** de modo que Factory pueda:
 | Integrity | SHA-256 over exact canonical bytes |
 | Export envelope | Versioned wrapper; CB-16 payload **intacto** |
 | Thin LocalExportPort / store | `data/factory-decision-packages/` |
-| ELR reference acts | Coherent with CB-16 `decision_handoffs` kinds |
+| ELR reference acts | **`DHI_OFFLINE_LOCAL_EXPORT` only** after VERIFY |
 | Runner + fixtures | Suites §32 |
 | Status note | Tras IMPL, mandato separado |
 
@@ -220,7 +223,7 @@ P-INT-04 Offline **no redefine** ese significado; solo lo **exporta** de forma a
 - `DECISION_PACKAGE_VERSION`, sections, `validateDecisionPackageShape`
 - `buildDecisionPackage` / `evaluateDecisionReadiness`
 - `BLOCKED_HANDOFF_OPERATIONS` / `assertHandoffBoundary`
-- `HANDOFF_ELR_KINDS` / ledger patterns
+- Existing `HANDOFF_ELR_KINDS` for CB-16 handoff lifecycle (**except** local export uses **new** `DHI_OFFLINE_LOCAL_EXPORT` only)
 - Required motors `MOT-DCN-01`, `MOT-EXE-01`
 - Required score `maturity_score`
 
@@ -229,7 +232,8 @@ P-INT-04 Offline **no redefine** ese significado; solo lo **exporta** de forma a
 - fork a parallel package schema;
 - weaken boundary flags;
 - reimplement readiness gates (consume CB-13 recorded eval only, as CB-16 does);
-- embed II.2 Read Model snapshots as competing package shape.
+- embed II.2 Read Model snapshots as competing package shape;
+- reuse `DHI_PACKAGE_DELIVERED` / `DHI_HANDOFF_COMPLETE` / `DHI_DECISION_HANDOFF` / II.6 states for offline export.
 
 ---
 
@@ -258,7 +262,8 @@ Cualquier IMPL que escriba `true` en estas flags o clasifique producto es **fall
 | Input | Clase | Notas |
 |-------|-------|-------|
 | `factory_key` | **REQUIRED** | Aislamiento |
-| Expediente state `ST-RDY` | **REQUIRED** | Pre-handoff; post-ST-DEC rules follow CB-16 |
+| Expediente state `ST-RDY` | **REQUIRED** | **v1 only** — `state === "ST-RDY"`; **ST-DEC re-export DEFERRED** |
+| `evaluateDecisionReadiness.ready === true` | **REQUIRED** | CB-16 readiness aggregate |
 | ELR (required sections) | **REQUIRED** | Via CB-16 completeness |
 | `DECISION_HANDOFF_PREP_CB16` | **REQUIRED** | CB-13 prep |
 | G0–G6 `EVF_READINESS_GATE_EVAL` allPass | **REQUIRED** | Recorded; not re-run |
@@ -316,20 +321,23 @@ Validado con `validateDecisionPackageShape` antes de envelope/export.
 
 ## 14. Envelope de export offline
 
-Wrapper **mínimo** versionado **alrededor** del package CB-16 (payload intacto):
+Wrapper **mínimo** versionado **alrededor** del package CB-16 (payload intacto en el campo `payload`):
 
 | Campo | Rol |
 |-------|-----|
 | `exportSchemaVersion` | Versión del envelope P-INT-04 Offline (v1 = `1`) |
 | `decisionPackageVersion` | Copia de `payload.meta.version` (CB-16) |
-| `packageId` | Derivado: `factory_key` + content checksum (§17) |
+| `packageId` | **Exacto:** `dpkg-{factory_key}-{canonicalContentChecksum}` (§17) |
 | `factory_key` | Aislamiento |
-| `generatedAt` | Metadata de **instancia** (no entra en hash del corpus) |
-| `canonicalContentChecksum` | SHA-256 hex del contenido canónico |
+| `generatedAt` | Metadata de **instancia** — **nunca** entra en el checksum lógico |
+| `canonicalContentChecksum` | SHA-256 hex **lowercase** del payload canónico (§15) — identidad lógica |
 | `exportMode` | `"OFFLINE_LOCAL"` |
-| `boundarySummary` | Snapshot de flags boundary (all false / non-deciding) |
+| `boundarySummary` | Snapshot de flags boundary (must equal `payload.boundary` flags) |
 | `inputSnapshotRefs` | Refs opcionales a evidencia/ELR acts usados |
-| `payload` | **CB-16 Decision Package object intacto** |
+| `payload` | **CB-16 Decision Package object** (como lo emite el builder; el hash usa la **vista canónica** §15) |
+
+**Allowlist envelope (unknown fields → REJECT):**  
+exactamente los campos de la tabla anterior. Sin strip silencioso.
 
 **MUST NOT** mutate CB-16 internal schema without separate Director mandate.
 
@@ -337,42 +345,67 @@ Wrapper **mínimo** versionado **alrededor** del package CB-16 (payload intacto)
 
 ## 15. Canonicalización
 
-Binding rules for **canonical content** (what is hashed):
+**Especificación cerrada — no hay decisiones abiertas para IMPL.**
 
-1. JSON UTF-8.  
-2. Stable key order (sorted object keys recursively) **or** an equivalent documented deterministic serializer — fixed in IMPL Status.  
-3. Arrays preserve **logical append order** (ELR sequences) — do not sort entry arrays by hash of contents if that would alter lineage meaning.  
-4. `undefined` omitted; `null` preserved only if present in CB-16 payload.  
-5. **Exclude from hashed corpus:** `generatedAt` of envelope; any ephemeral export-only timestamps not part of CB-16 logical payload.  
-6. **Include in hashed corpus:** CB-16 payload fields that constitute the decision corpus.  
-7. **Separate:** instance metadata (envelope) vs canonical content (payload normalized).
+Bytes canónicos del **corpus** (entrada a `canonicalContentChecksum`):
 
-**Note on CB-16 `meta.builtAt`:** IMPL **MUST** define whether `builtAt` is stripped/normalized before hash (recommended: hash a **canonical payload view** with ephemeral timestamps removed or replaced by input-derived constants) so that “same logical inputs ⇒ same checksum”. Document the exact rule in Status.
+1. **UTF-8.**  
+2. Partir del payload CB-16; construir **vista canónica** con `meta.builtAt` **eliminado** antes del hash.  
+3. Orden de claves: **sort recursivo** de keys en todos los objetos.  
+4. **Arrays conservan orden** (lineage / `elrSequence`) — no reordenar entradas.  
+5. `undefined` **omitido**; `null` **preservado**.  
+6. Números / strings: serialización JSON estándar (sin reformateo especial).  
+7. Serialización: **JSON compacto** (`JSON.stringify` sin pretty-print) + **newline final `\n`**.  
+8. `canonicalContentChecksum` = SHA-256 hex **lowercase** de esos bytes exactos.  
+9. Envelope `generatedAt` **nunca** participa en el checksum lógico.  
+10. Separación: metadata de instancia (envelope) ≠ contenido canónico (vista del payload).
+
+El builder CB-16 **MAY** seguir emitiendo `builtAt` en el objeto persistido dentro de `payload`; la identidad lógica **MUST** hashear la vista sin `builtAt`.
 
 ---
 
 ## 16. Integridad
 
-1. Algorithm: **SHA-256**.  
-2. Hash over **exact canonical bytes** written.  
-3. Authority: envelope field `canonicalContentChecksum` and/or sidecar `.sha256` — **not** embedded inside hashed payload (no circularity).  
-4. `read` **MUST** verify before return.  
-5. Checksum mismatch → fail-closed.  
-6. Corrupt JSON → fail-closed.  
-7. Unknown `exportSchemaVersion` or unsupported `decisionPackageVersion` → reject.  
-8. **No silent repair.**
+**Roles cerrados:**
+
+| Rol | Autoridad |
+|-----|-----------|
+| **Integridad física** del artefacto on-disk | **Sidecar** `{artifact}.sha256` — SHA-256 de los **bytes exactos del archivo envelope** |
+| **Identidad lógica** del corpus | Campo envelope `canonicalContentChecksum` (payload canónico §15) |
+
+**Read (orden obligatorio):**
+
+1. Verificar sidecar vs bytes del envelope → mismatch → **FAIL-CLOSED**.  
+2. Recomputar hash de la vista canónica del `payload` y comparar con `canonicalContentChecksum` → mismatch → **FAIL-CLOSED**.  
+
+Reglas adicionales:
+
+1. Algoritmo: **SHA-256**.  
+2. **No** checksum circular: el hash del corpus **no** se embebe dentro de los bytes hasheados del corpus.  
+3. JSON corrupto → fail-closed.  
+4. Unknown `exportSchemaVersion` / unsupported `decisionPackageVersion` → reject.  
+5. Unknown envelope fields → **reject** (no strip).  
+6. **No silent repair.**  
+7. No se promete atomicidad multi-file absoluta del filesystem.
 
 ---
 
-## 17. Idempotencia
+## 17. Idempotencia e identidades
 
-| Regla | Valor vinculante |
-|-------|------------------|
-| Mismo input snapshot lógico | → **mismo** `canonicalContentChecksum` |
-| `packageId` | Preferentemente `dpkg-{factory_key}-{checksumPrefix}` (or full hash) — **not** `Date.now()` alone |
-| `generatedAt` | MAY differ across export runs **without** changing logical identity / checksum |
-| Multiple export acts | MAY exist; MUST reference same corpus checksum when inputs unchanged |
-| `deliveryId` style `Date.now()` | **MUST NOT** be sole package identity for P-INT-04 Offline |
+| Identidad | Forma vinculante |
+|-----------|------------------|
+| **Corpus / `packageId`** | `dpkg-{factory_key}-{canonicalContentChecksum}` (checksum completo, hex lowercase) |
+| **Artefacto local** | Archivo nombrado por el mismo `packageId` (+ sidecar) |
+| **Acto ELR export** | kind `DHI_OFFLINE_LOCAL_EXPORT` + `packageId` + checksum (§22) |
+| **`deliveryId` CB-16** | Efímero (`Date.now` u otro) — **NO** es identidad del corpus |
+| **`packageId` handoff CB-16** (`{key}@{version}`) | ID de acto de frontera ST-RDY→ST-DEC — **NO** es el `packageId` del export offline |
+
+| Regla | Valor |
+|-------|-------|
+| Mismo input snapshot lógico | → **mismo** `canonicalContentChecksum` y **mismo** `packageId` |
+| `generatedAt` | MAY diferir entre runs **sin** cambiar identidad lógica |
+| Re-export mismo checksum (v1) | No nuevo corpus; local MAY no-op si artefacto verificado existe; ELR: **un** act `DHI_OFFLINE_LOCAL_EXPORT` por checksum (retry idempotente) |
+| P-INT-04 Offline | **Servicio de export explícito y separado** — **no** compuesto dentro de `prepareAndDeliver` en v1 |
 
 ---
 
@@ -381,15 +414,16 @@ Binding rules for **canonical content** (what is hashed):
 ### B — Artefacto local versionado
 
 - Root: `data/factory-decision-packages/` (tests: temp dirs).  
-- Layout aislado por `factory_key` (e.g. `expedientes/{factory_key}/{packageId}.json` + integrity).  
+- Layout aislado por `factory_key` (e.g. `{factory_key}/{packageId}.json` + `{packageId}.json.sha256`).  
 - Thin store — **not** constitutional ELR replacement.  
 - **Not** Supabase / cloud object storage.
 
 ### C — ELR reference
 
-- Reuse CB-16 `decision_handoffs` patterns / kinds.  
-- Store **metadata + reference** (packageId, checksum, local path or relative ref, exportMode) — **not** full package duplication in ELR.  
-- Export success ELR act **only after** local artifact verified (§22).
+- Sección: `decision_handoffs`.  
+- Kind **único** válido para este slice: **`DHI_OFFLINE_LOCAL_EXPORT`** (§22).  
+- Metadata + referencia únicamente (packageId, checksum, relativeRef, exportMode) — **not** full package dump.  
+- Registrar **solo después** de VERIFY local PASS (§22).
 
 ### Store nature
 
@@ -407,17 +441,20 @@ Binding rules for **canonical content** (what is hashed):
 FactoryRegistry / expediente ST-RDY
         │
         ▼
-CB-16 buildDecisionPackage + validateDecisionPackageShape
+evaluateDecisionReadiness → buildDecisionPackage → validateDecisionPackageShape
         │
         ▼
-P-INT-04 Offline
-  canonicalize → integrity → envelope
+P-INT-04 Offline Export Service (explicit; NOT inside prepareAndDeliver)
+  canonicalize → checksum → packageId → envelope
         │
-        ├─► LocalExportPort.write (verified)
-        └─► ELR decision_handoffs reference (after success)
+        ▼
+  PREPARE → COMMIT → VERIFY (sidecar + content checksum)
+        │
+        ▼
+  register DHI_OFFLINE_LOCAL_EXPORT  →  SUCCESS
 ```
 
-**Illustrative modules (names fixed at IMPL):**
+**Modules (nombres vinculantes para IMPL):**
 
 ```text
 src/factory/cb16/export/decisionPackageCanonicalize.js
@@ -428,8 +465,10 @@ src/factory/cb16/export/index.js
 src/runPInt04OfflineDecisionPackageValidation.js
 ```
 
-Minimal re-exports from `src/factory/cb16/index.js` if present.  
-**No classifier module.**
+Extensión **aditiva** permitida bajo IMPL: añadir `DHI_OFFLINE_LOCAL_EXPORT` a `HANDOFF_ELR_KINDS` + helper ledger — **sin** alterar boundary ni blocked ops.  
+Re-exports: crear `src/factory/cb16/index.js` mínimo **o** exportar solo desde `export/index.js`.  
+**No classifier module.**  
+**No** componer este flujo dentro de `prepareAndDeliver` en v1 (requiere mandato CB-16 aparte).
 
 ---
 
@@ -452,41 +491,80 @@ No unnecessary methods. Optional `removeArtifacts` only if required for tests/cl
 
 ## 21. Escritura y lectura local
 
-Adopt P-INT-03 lessons honestly:
+Adopt P-INT-03 lessons honestly (sidecar-backed artifact):
 
-1. PREPARE: temp write + fsync + checksum.  
-2. COMMIT: promote with order that never accepts new body + old checksum.  
-3. ABORT/RECOVERY: restore last intact pair if possible; else fail-closed.  
-4. Restart/reload must recover last verified artifact.  
-5. Isolation by `factory_key`.  
-6. **Do not** claim absolute multi-file FS atomicity.
+1. PREPARE: temp write envelope + fsync; write sidecar temp + fsync.  
+2. COMMIT: promote with order that never accepts new envelope + old sidecar.  
+3. VERIFY: sidecar + `canonicalContentChecksum` (§16).  
+4. ABORT/RECOVERY: restore last intact pair if possible; else fail-closed.  
+5. Restart/reload must recover last verified artifact; apply §22.3 reconcile if needed.  
+6. Isolation by `factory_key`.  
+7. **Do not** claim absolute multi-file FS atomicity.
 
-Guarantee: **logical artifact atomicity + pair/envelope integrity + fail-closed**.
+Guarantee: **logical artifact atomicity + sidecar file integrity + logical content checksum + fail-closed**.
 
 ---
 
-## 22. ELR integration
+## 22. ELR integration — kind, protocolo y reconciliación
 
-| Topic | Rule |
-|-------|------|
-| When to register success | **Only after** local write + integrity verify PASS |
-| What to store | packageId, checksum, exportMode, relative ref, actor, timestamps as ELR entry fields |
-| Kind | Prefer extend/reuse CB-16 `DHI_*` metadata or a dedicated export-ref field on an existing DHI act — **without** inventing Delivery semantics. Exact kind string fixed in IMPL Status; must not mean “cloud delivered” |
-| On local export failure | **MUST NOT** record successful export/handoff-complete for that attempt |
-| Coherence | ELR ref checksum **MUST** match local artifact |
-| Confusion ban | Local export ≠ Delivery ≠ II.6 `HANDOFF_EXECUTED` ≠ Marketplace publish |
+### 22.1 Kind vinculante
 
-If CB-16 `prepareAndDeliver` path is composed: IMPL **MUST** sequence **persist-verify → then ELR success marks**, or keep export service as explicit step with clear failure boundaries.
+**Único kind válido** para el registro de éxito de P-INT-04 Offline:
+
+`DHI_OFFLINE_LOCAL_EXPORT`
+
+Campos mínimos del act: `packageId`, `canonicalContentChecksum`, `exportSchemaVersion`, `exportMode: "OFFLINE_LOCAL"`, `relativeRef`, `interfaceId`, actor, timestamps de registro ELR.
+
+**Expresamente prohibido** reutilizar como sinónimo de export local:
+
+- `DHI_PACKAGE_DELIVERED`
+- `DHI_HANDOFF_COMPLETE`
+- `DHI_DECISION_HANDOFF`
+- `HANDOFF_EXECUTED` (u otros estados II.6)
+- cualquier kind que implique Delivery / cloud / Decision Engine ingest
+
+### 22.2 Protocolo de éxito (orden cerrado)
+
+```text
+evaluate readiness
+  → build package
+  → validate shape
+  → canonicalize
+  → checksum
+  → packageId
+  → build envelope
+  → PREPARE
+  → COMMIT
+  → VERIFY (sidecar + canonicalContentChecksum)
+  → register DHI_OFFLINE_LOCAL_EXPORT
+  → SUCCESS
+```
+
+### 22.3 Reconciliación / fallos
+
+| Situación | Acción vinculante |
+|-----------|-------------------|
+| Fallo antes de COMMIT local | No ELR export; limpiar temps; abort |
+| VERIFY local fail | No ELR; restore/fail-closed; **no** éxito |
+| Local OK + ELR write fail | Artefacto **permanece**; resultado **FAIL** (`LOCAL_OK_ELR_PENDING`); **no** fingir SUCCESS |
+| Crash entre VERIFY y ELR | Reopen: artefacto verificado sin act → `reconcilePendingElrRef` (escribe act) o estado PENDING fail-closed para consumidores |
+| Retry mismo checksum | Si artefacto verificado existe → no reescribir corpus; completar solo ELR si falta act para ese checksum |
+| Un act por checksum (v1) | No duplicar `DHI_OFFLINE_LOCAL_EXPORT` para el mismo `canonicalContentChecksum` |
+| Orphan: artefacto sin ELR | PENDING / reconcile — **no** inferir Delivery |
+| Orphan: ELR sin artefacto | Fail-closed; **no** Delivery; sin silent repair; intervención ops |
+| Confusión semántica | Local export ≠ Delivery ≠ II.6 `HANDOFF_EXECUTED` ≠ Marketplace publish ≠ `DHI_PACKAGE_DELIVERED` |
+
+Coherencia: el checksum en el act ELR **MUST** coincidir con `canonicalContentChecksum` del artefacto local verificado.
 
 ---
 
 ## 23. Readiness
 
-1. Only expediente meeting CB-16 readiness (`evaluateDecisionReadiness.ready === true`) may export.  
-2. Typically **ST-RDY** + G0–G6 allPass + required motors/evidence/score.  
+1. **v1:** `state === "ST-RDY"` **AND** `evaluateDecisionReadiness.ready === true`.  
+2. **ST-DEC re-export:** **DEFERRED** (mandato futuro).  
 3. Readiness fail → **no export**.  
 4. Missing evidence ref → fail-closed.  
-5. Unresolved blocker that CB-16 treats as not-ready → no export.  
+5. Unresolved blocker / not-ready CB-16 → no export.  
 6. **Never** convert blocker into Deal/Premium/Diamond label.
 
 ---
@@ -645,16 +723,16 @@ Runner ilustrativo: `node src/runPInt04OfflineDecisionPackageValidation.js`
 16. JSON corrupto → fail-closed.  
 17. `exportSchemaVersion` desconocida → reject.  
 18. `decisionPackageVersion` desconocida → reject.  
-19. Unknown field policy (reject or strip per documented allowlist — fail-closed preferred).  
+19. Unknown envelope/payload fields → **REJECT only** (no strip).  
 20. `boundary.decides` permanece `false`.  
 21. Classify Deal/Premium/Diamond prohibido / ausente.  
 22. AI advisory no puede override blockers.  
 23. No publish fields of authority.  
 24. No access tier assignment.  
 25. No pricing assignment.  
-26. ELR export reference coherente con checksum.  
-27. Fallo de export **no** registra handoff/export exitoso.  
-28. Restart / reload.  
+26. ELR `DHI_OFFLINE_LOCAL_EXPORT` coherente con checksum.  
+27. Fallo de export / VERIFY **no** registra éxito; local OK + ELR fail → PENDING/FAIL no SUCCESS.  
+28. Restart / reload + reconcile orphan local→ELR.  
 29. list / isolation.  
 30. Regress CB-01.  
 31. Regress CB-02.  
@@ -669,7 +747,10 @@ Runner ilustrativo: `node src/runPInt04OfflineDecisionPackageValidation.js`
 40. Regress CB-16.  
 41. Regress P-INT-02 Offline.  
 42. Regress P-INT-03 Offline.  
-43. Static audit: no Web/Supabase/HTTP/APIs/cloud/SQLite/new deps/classifier/Delivery.
+43. Static audit: no Web/Supabase/HTTP/APIs/cloud/SQLite/new deps/classifier/Delivery.  
+44. Prohibido registrar `DHI_PACKAGE_DELIVERED` / II.6 `HANDOFF_EXECUTED` como export local.  
+45. `packageId` exacto `dpkg-{factory_key}-{canonicalContentChecksum}`.  
+46. Sidecar + content checksum dual verify en read.
 
 ---
 
@@ -735,9 +816,10 @@ Runner ilustrativo: `node src/runPInt04OfflineDecisionPackageValidation.js`
 | Ítem | Estado |
 |------|--------|
 | Master Plan P-INT-04 | Documented — cloud/Decision Engine **not** implemented |
-| P-INT-04 Offline Implementation Plan (this file) | **CREATED — PLAN ONLY** |
+| P-INT-04 Offline Implementation Plan (this file) | **UPDATED — H1–H4 / M1–M3 CLOSED — PLAN ONLY** |
 | P-INT-04-OFFLINE-IMPL | **NOT AUTHORIZED** |
 | CB-16 Decision Package | **EXISTS — reuse** |
+| Kind export offline | **`DHI_OFFLINE_LOCAL_EXPORT`** (aditivo en IMPL) |
 | Deal/Premium/Diamond in Factory export | **PROHIBITED** |
 | Delivery / Web / Supabase | **NOT AUTHORIZED** |
 | P-INT-05 | **NOT OPENED** |
@@ -756,6 +838,20 @@ This Plan authorizes **only** the existence of an audited planning document for 
 It does **not** authorize implementation, runners, fixtures, dependency changes, Deal/Premium/Diamond classification, Delivery, Web, Supabase, Decision Engine integration, II.7, or P-INT-05 until a separate Director mandate is issued.
 
 Until that mandate, CB-16 remains the sole Decision Package authority; commercial decision and publication remain outside Factory.
+
+---
+
+## Appendix B — Micro-constitutional closures (H1–H4 / M1–M3)
+
+| ID | Decisión | Estado |
+|----|----------|--------|
+| H1 | Kind `DHI_OFFLINE_LOCAL_EXPORT` only | **CLOSED** |
+| H2 | Canonicalización §15 cerrada | **CLOSED** |
+| H3 | Protocolo + reconciliación §22 | **CLOSED** |
+| H4 | `packageId` + export service separado §17 | **CLOSED** |
+| M1 | Sidecar físico + content checksum lógico §16 | **CLOSED** |
+| M2 | Solo ST-RDY v1; ST-DEC DEFERRED §23 | **CLOSED** |
+| M3 | Unknown fields REJECT §14/§16 | **CLOSED** |
 
 ---
 
