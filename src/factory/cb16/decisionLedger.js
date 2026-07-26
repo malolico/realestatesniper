@@ -175,6 +175,69 @@ export function findOfflineLocalExportAct(elr, canonicalContentChecksum) {
 }
 
 /**
+ * P-INT-04 Live — versioned sink reference only (after remote VERIFY).
+ * Not Delivery. Not II.6 HANDOFF_EXECUTED. Not Decision Engine ingest.
+ *
+ * @param {import('../cb01/factoryRegistry.js').FactoryRegistry} registry
+ * @param {string} factoryKey
+ * @param {{
+ *   packageId: string,
+ *   canonicalContentChecksum: string,
+ *   exportSchemaVersion: number,
+ *   remoteKey: string,
+ *   contentSha256: string,
+ *   remoteRef: string,
+ *   liveAttemptId: string,
+ * }} meta
+ */
+export function recordLiveVersionedExport(registry, factoryKey, meta) {
+  const existing = findLiveVersionedExportAct(
+    registry.getExpediente(factoryKey)?.elr,
+    meta.canonicalContentChecksum
+  );
+  if (existing) {
+    return existing;
+  }
+  return registry.registerElrAct(
+    factoryKey,
+    "decision_handoffs",
+    {
+      kind: HANDOFF_ELR_KINDS.LIVE_VERSIONED_EXPORT,
+      interfaceId: DECISION_HANDOFF_INTERFACE_ID,
+      packageId: meta.packageId,
+      canonicalContentChecksum: meta.canonicalContentChecksum,
+      exportSchemaVersion: meta.exportSchemaVersion,
+      exportMode: "LIVE_VERSIONED",
+      remoteKey: meta.remoteKey,
+      contentSha256: meta.contentSha256,
+      remoteRef: meta.remoteRef,
+      offlineExportPresent: true,
+      offlinePrerequisite: "ARTIFACT_AND_ACT",
+      liveAttemptId: meta.liveAttemptId,
+      message: "Live versioned Decision Package export verified — not Delivery",
+      constitutionalPhase: "CB-16",
+      pint: "P-INT-04-LIVE",
+    },
+    { actor: DECISION_HANDOFF_ACTOR }
+  );
+}
+
+/**
+ * @param {object} elr
+ * @param {string} canonicalContentChecksum
+ */
+export function findLiveVersionedExportAct(elr, canonicalContentChecksum) {
+  const handoffs = elr?.decision_handoffs ?? [];
+  return (
+    handoffs.find(
+      (h) =>
+        h.kind === HANDOFF_ELR_KINDS.LIVE_VERSIONED_EXPORT &&
+        h.canonicalContentChecksum === canonicalContentChecksum
+    ) ?? null
+  );
+}
+
+/**
  * @param {object} elr
  */
 export function collectDecisionHandoffLedger(elr) {

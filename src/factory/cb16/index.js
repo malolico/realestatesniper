@@ -20,7 +20,9 @@ export { evaluateDecisionReadiness } from "./decisionReadiness.js";
 export { DecisionHandoffService } from "./decisionHandoffService.js";
 export {
   collectDecisionHandoffLedger,
+  findLiveVersionedExportAct,
   findOfflineLocalExportAct,
+  recordLiveVersionedExport,
   recordOfflineLocalExport,
 } from "./decisionLedger.js";
 export { runCb16Validation } from "./validateCb16.js";

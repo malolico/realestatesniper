@@ -37,3 +37,27 @@ export {
   exportOfflineDecisionPackage,
   reconcilePendingElrRef,
 } from "./decisionPackageExportService.js";
+
+export {
+  DEFAULT_LIVE_MAX_BYTES,
+  DecisionPackageLiveSinkPort,
+  EXPORT_MODE_LIVE_VERSIONED,
+  LIVE_EXPECTED_ALLOWLIST,
+  LIVE_PUT_META_ALLOWLIST,
+  assertLiveExpectedAllowlist,
+  assertLivePutMetaAllowlist,
+  buildDecisionPackageConsumerLocator,
+  buildRemoteRef,
+  buildStableLiveEnvelopeBytes,
+  resolveRemoteKey,
+  verifyLiveEnvelopeBytes,
+} from "./decisionPackageLiveSinkPort.js";
+
+export { InMemoryDecisionPackageLiveSink } from "./inMemoryDecisionPackageLiveSink.js";
+
+export {
+  detectOrphanLiveElrExports,
+  exportLiveDecisionPackage,
+  liveExportMetrics,
+  reconcilePendingLiveElrRef,
+} from "./decisionPackageLiveExportService.js";
