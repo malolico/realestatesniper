@@ -1,0 +1,14 @@
+{
+  "schemaId": "maricopa.assessor.payload.v1",
+  "parcelId": "MC-SYN-PARCEL-001",
+  "apn": "123-45-678",
+  "situsAddress": {
+    "line1": "100 Synthetic Pilot Way",
+    "city": "Phoenix",
+    "state": "AZ",
+    "postalCode": "85001"
+  },
+  "landUseCode": "R1",
+  "assessedYear": 2024,
+  "notes": "Synthetic Maricopa assessor pack — no live data, no PII"
+}

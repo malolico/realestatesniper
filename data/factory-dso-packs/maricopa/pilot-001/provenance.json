@@ -1,0 +1,6 @@
+{
+  "prohibitedFlags": [],
+  "lowConfidenceFlags": [],
+  "conflictDetected": false,
+  "notes": "Default provenance for pilot-001 — no FP flags, no unresolved conflict"
+}

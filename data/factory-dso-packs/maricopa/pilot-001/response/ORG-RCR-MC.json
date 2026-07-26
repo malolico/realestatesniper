@@ -1,0 +1,8 @@
+{
+  "schemaId": "maricopa.recorder.payload.v1",
+  "documentId": "MC-REC-SYN-2024-0001",
+  "documentType": "DEED_INDEX_ENTRY",
+  "recordedDate": "2024-03-15",
+  "parcelRef": "MC-SYN-PARCEL-001",
+  "notes": "Synthetic Maricopa recorder index entry — redacted, no grantor/grantee PII"
+}

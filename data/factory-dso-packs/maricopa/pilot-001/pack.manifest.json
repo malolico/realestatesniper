@@ -1,0 +1,43 @@
+{
+  "packId": "maricopa-pilot-001",
+  "schemaVersion": "pint02.offline.pack.v1",
+  "jurisdiction": "Maricopa County, AZ",
+  "pilotId": "pilot-001",
+  "factoryKey": "prov-pint02-pilot001",
+  "organisms": [
+    {
+      "organismId": "ORG-ASR-MC",
+      "familyId": "REGISTRAL_ASSESSOR",
+      "responsePath": "response/ORG-ASR-MC.json",
+      "payloadSchemaId": "maricopa.assessor.payload.v1",
+      "vintageAt": "2024-06-01T00:00:00.000Z",
+      "contentChecksum": "64e9b0b8abcd0157d129cced293e80a63588d42e59155ac5388c7886db5c65e8"
+    },
+    {
+      "organismId": "ORG-GIS-MC",
+      "familyId": "GIS_OFFICIAL",
+      "responsePath": "response/ORG-GIS-MC.json",
+      "payloadSchemaId": "maricopa.gis.payload.v1",
+      "vintageAt": "2024-05-15T00:00:00.000Z",
+      "contentChecksum": "b868f37e1af0df7c0e543a41675ce64de77db3d8489a275b3ddbfd43ffc648b5"
+    },
+    {
+      "organismId": "ORG-RCR-MC",
+      "familyId": "REGISTRAL_RECORDER",
+      "responsePath": "response/ORG-RCR-MC.json",
+      "payloadSchemaId": "maricopa.recorder.payload.v1",
+      "contentChecksum": "e9693641b308ea7cbacdbc7baf827e233e967c56ae07a41f60155472c3f0d875"
+    }
+  ],
+  "acquiredAt": "2026-07-26T00:00:00.000Z",
+  "vintageAt": "2024-01-01T00:00:00.000Z",
+  "sourceMode": "RECORDED",
+  "liveFetch": false,
+  "contractIds": [
+    "maricopa.assessor.recorded.v1",
+    "maricopa.gis.recorded.v1",
+    "maricopa.recorder.recorded.v1"
+  ],
+  "createdBy": "factory-ops-pilot",
+  "notes": "P-INT-02 offline pilot pack — synthetic Maricopa ASR/GIS/RCR"
+}

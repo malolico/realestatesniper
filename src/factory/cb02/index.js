@@ -48,3 +48,6 @@ export { IngestionLegitimacyGate } from "./ingestionLegitimacyGate.js";
 export { SourceIngestionLedger, DEFAULT_INGESTION_ROOT } from "./sourceIngestionLedger.js";
 export { DsoIngestionService } from "./dsoIngestionService.js";
 export { runCb02Validation } from "./validateCb02.js";
+
+/** P-INT-02 Offline — recorded packs + RECORDED_ONLY contracts */
+export * from "./connectors/index.js";

@@ -1,0 +1,11 @@
+{
+  "schemaId": "maricopa.gis.payload.v1",
+  "parcelId": "MC-SYN-PARCEL-001",
+  "geometryType": "Point",
+  "centroid": {
+    "lat": 33.4484,
+    "lon": -112.074
+  },
+  "crs": "EPSG:4326",
+  "notes": "Synthetic Maricopa GIS pack — approximate public centroid, no live fetch"
+}
