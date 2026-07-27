@@ -7,14 +7,16 @@
 |-------|-------|
 | **Document ID** | `FACTORY_2_0_COMPLETE_CONTINUITY_DOSSIER.md` |
 | **Path** | `docs/factory-construction/FACTORY_2_0_COMPLETE_CONTINUITY_DOSSIER.md` |
-| **Status** | **RECONCILED POST–ADMIN LIVE WIRING / DOCUMENTARY RE-AUDIT PASS** |
+| **Status** | **RECONCILED POST–P-INT-09 / POST–P-INT-10 / FASE I COMPLETED — PENDING INDEPENDENT DOCUMENTARY RE-AUDIT** |
 | **Nature** | Documentation only — **does not authorize implementation, Slice B, further FCC/Web changes without mandate, Supabase, Product, Marketplace, II.7, other P-INT IMPL, or push** |
 | **Baseline HEAD (at creation)** | `5a86b0d296a948bfaadb2457e1760e886348af6d` |
 | **Reconciliation tip HEAD (Slice A closed)** | `2622c29d9489aa7a14987be915d40c0aeb1856e8` |
 | **Reconciliation tip HEAD (Admin Live Wiring closed)** | `ab5a4ec63250c1d2b95285759876f8d62b103601` |
+| **Reconciliation tip HEAD (P-INT-10 Status closed)** | `c98fe0631683c5490487da299d41d212c7ff356a` |
+| **Reconciliation tip HEAD (P-INT-09 Status / Fase I closed)** | `983ee75a2491ccffd71e06bad6d7171c1bf91195` |
 | **Baseline branch** | `integration/factory-complete-20260725` |
 | **Forensic Discovery** | COMPLETE CONTINUITY FORENSIC DISCOVERY (session, READ_ONLY) |
-| **Reconciliation** | POST–ADMIN LIVE WIRING — Admin Live Wiring Status COMMITTED prevails for delivery |
+| **Reconciliation** | POST–P-INT-09 / POST–P-INT-10 — P-INT-09 and P-INT-10 Status COMMITTED prevail for Fase I delivery |
 
 ---
 
@@ -93,16 +95,21 @@ Authority is separated into three planes. **This Continuity Dossier consolidates
 |-------|-------|
 | Repository | `C:\Users\Malolico\realestatesniper` |
 | Current branch | `integration/factory-complete-20260725` |
-| HEAD (post–Admin Live Wiring Status Commit) | `ab5a4ec63250c1d2b95285759876f8d62b103601` |
-| Subject | `docs(integration): finalize Admin Live Wiring implementation status` |
+| HEAD (post–P-INT-09 Status Commit / Fase I closed) | `983ee75a2491ccffd71e06bad6d7171c1bf91195` |
+| Subject | `docs(integration): finalize P-INT-09 DealPipeline reconciliation implementation status` |
+| Prior P-INT-09 Implementation Commit | `58eeb75d8aacfaac6cf5af1dbd763e584ee168dd` — `feat(integration): implement P-INT-09 DealPipeline reconciliation labels` |
+| Prior P-INT-09 Plan Documentary Commit | `c402a06843e2affcf1c0e47b7c82a15b0bf2043b` — `docs(integration): add P-INT-09 DealPipeline Reconciliation implementation plan` |
+| Prior P-INT-10 Status Commit | `c98fe0631683c5490487da299d41d212c7ff356a` — `docs(integration): finalize P-INT-10 CI Canon Gate implementation status` |
+| Prior P-INT-10 Implementation Commit | `1b440c7f9a13d6872ce81aeaf0c5f159b480c70b` — `feat(integration): implement P-INT-10 CI Canon Gate` |
+| Prior Admin Live Wiring Status Commit | `ab5a4ec63250c1d2b95285759876f8d62b103601` — `docs(integration): finalize Admin Live Wiring implementation status` |
 | Prior Admin Live Wiring Implementation Commit | `b97b2b0390b0dc8ee49c04d5e46f841532dd8f52` — `feat(integration): wire Admin FCC to Factory Service Edge` |
 | Prior Admin Live Wiring Plan Commit | `e5123a4f0680af2cb679256bd46d782e8059a306` — `docs(integration): add Admin Live Wiring implementation plan` |
 | Prior Slice A Status Commit | `2622c29d9489aa7a14987be915d40c0aeb1856e8` — `docs(integration): finalize P-INT-01 Slice A implementation status` |
 | Prior Slice A Implementation Commit | `4f9221f37f51822a4bb2cf833e1629f761bd366b` — `feat(integration): implement P-INT-01 Slice A service edge` |
 | Upstream | `origin/integration/factory-complete-20260725` |
-| Ahead / Behind (vs upstream) | **MUST be re-verified READ_ONLY with Git** — prior forensic “ahead 15” is **stale** after Continuity Dossier + Slice A commits |
+| Ahead / Behind (vs upstream) | **MUST be re-verified READ_ONLY with Git** — prior forensic “ahead 15” is **stale** |
 | vs `origin/main` | prior forensic “ahead 33 / behind 0” — **WARNING:** informational baseline only; **potentially stale**; **MUST NOT** be used for push, merge, rebase, reconciliation, or branch decisions; **MUST** be re-verified READ_ONLY with Git before any such operation |
-| Tracked modified | **none** at tip `ab5a4ec` (this reconciliation edit may be uncommitted until Director orders Documentary Commit) |
+| Tracked modified | **none** at tip `983ee75` (this reconciliation edit may be uncommitted until Director orders Documentary Commit) |
 | Staged | **none** (unless Director orders staging) |
 | Untracked residuals | `estructura_repo.txt`; `ersMalolico…` (exclude from Factory commits) |
 | Push performed | **NO** — tip commits exist **only locally** vs upstream |
@@ -281,7 +288,7 @@ Primary catalogs: `docs/auditoria-maestra/OFFICIAL_MOTOR_CATALOG.md`, Loop/Swarm
 | **TD-AUTH-PROD** | Production AuthN/AuthZ Admin | HIGH | **OPEN** | Required for real Slice A deploy; InMemory OK for first IMPL validation |
 | **TD-PHASE-STATUS-META** | `construction-phase-status.json` metadata may be stale vs HEAD | LOW | **OPEN** | Always verify Git |
 
-Closed examples (do not re-open as open): II.6 COMPLETE; P-INT-02/03 Offline COMPLETE; P-INT-04 Offline + Live InMemory COMPLETE; **P-INT-01 Slice A FULLY CLOSED**; **Admin Live Wiring FULLY CLOSED**; CB-00…19 construction APPROVED.
+Closed examples (do not re-open as open): II.6 COMPLETE; P-INT-02/03 Offline COMPLETE; P-INT-04 Offline + Live InMemory COMPLETE; **P-INT-01 Slice A FULLY CLOSED**; **Admin Live Wiring FULLY CLOSED**; **P-INT-10 FULLY CLOSED**; **P-INT-09 FULLY CLOSED**; Master Plan **Fase I COMPLETED**; CB-00…19 construction APPROVED.
 
 ---
 
@@ -304,7 +311,15 @@ Closed examples (do not re-open as open): II.6 COMPLETE; P-INT-02/03 Offline COM
 **NOT CONFIRMED** as a formal named integration block.  
 There was a **static snapshot** path and partial Admin consumption during integration sequencing — distinguish that from a formal documentary phase. **Do not invent I.2.**
 
-Master Plan “Fase I” (observability / Admin connect) remains **PARTIAL**: I.1 + snapshot exist; **P-INT-01 Slice A Service Edge (READ_ONLY HTTP)** is **FULLY CLOSED**; **Admin Live Wiring (FCC → Slice A)** is **FULLY CLOSED** (Master Plan Fase I ítem 1 delivered); Fase I ítems 2–3 (canon drift gate / dealPipeline labeling) remain **OPEN** — next engineering block per Master Plan §5: **P-INT-10 — CI Canon Gate**.
+Master Plan **Fase I — Observabilidad** is **COMPLETED**:
+
+| Ítem | Contenido | Estado |
+|------|-----------|--------|
+| **1** | Factory Registry read API + Admin FCC wiring | **CLOSED** (P-INT-01 Slice A + Admin Live Wiring) |
+| **2** | Canon drift gate / CI Canon Gate (**P-INT-10**) | **FULLY CLOSED / STATUS COMMITTED** |
+| **3** | Etiquetar `dealPipeline` non-canon / provisional (**P-INT-09**) | **FULLY CLOSED / STATUS COMMITTED** |
+
+I.1 + snapshot remain; dual-path / Auth debt may remain OPEN as technical debt (does not reopen Fase I).
 
 ---
 
@@ -382,8 +397,8 @@ II.1 Trust
 | **06** | Marketplace Sync | **NOT OPENED** |
 | **07** | Black Box Emitters | **NOT OPENED** (BB docs exist; runtime emitters not) |
 | **08** | ACT-V / Anti-Degradation Live | **NOT OPENED** |
-| **09** | dealPipeline Reconciliation | **NOT OPENED** |
-| **10** | CI Canon Gate | **NOT OPENED** |
+| **09** | dealPipeline Reconciliation | **FULLY CLOSED** (Status COMMITTED `983ee75…`; Implementation `58eeb75…`; Plan `c402a06…`) — Fase I label only; Fase IV retire/isolate remains OPEN |
+| **10** | CI Canon Gate | **FULLY CLOSED** (Status COMMITTED `c98fe06…`; Implementation `1b440c7…`) |
 
 Source catalog: Master Plan §3.2.
 
@@ -588,6 +603,79 @@ Source catalog: Master Plan §3.2.
 
 ---
 
+## 16b. P-INT-10 — CI Canon Gate
+
+| Field | Value |
+|-------|-------|
+| Final state | **FULLY CLOSED / STATUS COMMITTED** |
+| Master Plan | Fase I ítem 2 |
+| Scope delivered | Process adapter: CB-00→CB-19 dry-run + canon drift fail-closed; no Factory semantic change |
+| Paths | `src/integration/ciCanonGate/ciCanonGateAdapter.js`; `src/runCiCanonGate.js`; `src/runPInt10CiCanonGateValidation.js` |
+
+### Closure record (binding)
+
+| Step | State |
+|------|-------|
+| Discovery | **COMPLETE** |
+| Implementation Plan | **COMMITTED** |
+| Documentary Audit | **PASS** |
+| Implementation | **COMPLETE** |
+| Independent Technical Audit | **PASS** |
+| Implementation Commit | `1b440c7f9a13d6872ce81aeaf0c5f159b480c70b` |
+| Implementation Status | **STATUS COMMITTED** |
+| Status Commit | `c98fe0631683c5490487da299d41d212c7ff356a` |
+| Validation | Suite P-INT-10 PASS (per Status) |
+
+### Explicitly not delivered / not authorized
+
+- Canon Gate HTTP API  
+- GitHub Actions / remote CI (without §28 mandate)  
+- Factory CB semantic fixes (e.g. CB-00 dry-run post-APPROVED self-test — RR-01 preserved)  
+
+**Status path:**  
+`docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_10_CI_CANON_GATE_IMPL_STATUS.md`
+
+---
+
+## 16c. P-INT-09 — DealPipeline Reconciliation
+
+| Field | Value |
+|-------|-------|
+| Final state | **FULLY CLOSED / STATUS COMMITTED** |
+| Master Plan | Fase I ítem 3 |
+| Scope delivered | Document + label `dealPipeline` as **non-canon / provisional / pre-Factory**; scoring semantic **unchanged** |
+| Documentary Commit (Plan) | `c402a06843e2affcf1c0e47b7c82a15b0bf2043b` |
+| Implementation Commit | `58eeb75d8aacfaac6cf5af1dbd763e584ee168dd` |
+| Status Commit | `983ee75a2491ccffd71e06bad6d7171c1bf91195` |
+
+### Closure record (binding)
+
+| Step | State |
+|------|-------|
+| Discovery | **COMPLETE** |
+| Implementation Plan | **COMMITTED** (`c402a06…`) |
+| Documentary Audit | **PASS** |
+| Implementation | **COMPLETE** (labels + frontier doc + suite) |
+| Independent Technical Audit | **PASS** (0 CRITICAL / 0 MAJOR / 0 MINOR / 2 OBS) |
+| Implementation Commit | `58eeb75d8aacfaac6cf5af1dbd763e584ee168dd` |
+| Implementation Status | **STATUS COMMITTED** |
+| Status Commit | `983ee75a2491ccffd71e06bad6d7171c1bf91195` |
+| Validation | **12/12 PASS** (`runPInt09DealPipelineReconciliationValidation.js`) |
+
+### Explicitly not delivered / not authorized
+
+- Scoring algorithm / `SCORE_WEIGHTS` changes  
+- Full retirement / isolation of `dealPipeline` (**Fase IV ítem 13** remains OPEN)  
+- Factory / Service Edge / Web / Supabase / Marketplace / Product mutation  
+
+**Frontier path:**  
+`docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_09_DEALPIPELINE_FRONTIER.md`
+
+**Status path:**  
+`docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_09_DEALPIPELINE_RECONCILIATION_IMPL_STATUS.md`
+
+---
+
 ## 17. P-INT-01 v1 endpoints
 
 Binding catalog (Plan §5 / §5.1):
@@ -774,7 +862,8 @@ Strategic mandatory capabilities (roadmap):
 | Future reinvestments | PWA (after PWA reactivation conditions); expanded/recurring professional legal review (post-launch, funded by revenue) | **Does not** replace mandatory **pre-launch** cybersecurity/legal reviews (§25) |
 | Trading bot | **Separate future project** | **Do not mix** with RealEstateSniper |
 | II.7 Delivery | **NOT OPENED** | |
-| P-INT-05…10 | **NOT OPENED** | |
+| P-INT-05…08 | **NOT OPENED** | |
+| P-INT-09 / P-INT-10 | **FULLY CLOSED** (Fase I) | Do not re-open as pending IMPL |
 | Decision Engine / Product / Marketplace insides | Outside Factory IMPL | |
 
 **Not part of present work.**
@@ -839,13 +928,14 @@ This section is **continuity guidance only**. It is **not** automatic authorizat
 
 **Construction:** CB-00 → CB-19 **COMPLETE**.
 
-**Integration completed:** I.1; II.1→II.6; P-INT-02 Offline; P-INT-03 Offline; P-INT-04 Offline + Live InMemory; **P-INT-01 Slice A FULLY CLOSED**; **Admin Live Wiring FULLY CLOSED**.
+**Integration completed:** I.1; II.1→II.6; P-INT-02 Offline; P-INT-03 Offline; P-INT-04 Offline + Live InMemory; **P-INT-01 Slice A FULLY CLOSED**; **Admin Live Wiring FULLY CLOSED**; **Master Plan Fase I COMPLETED** (**P-INT-10 FULLY CLOSED**; **P-INT-09 FULLY CLOSED**).
 
-**Active engineering IMPL block:** **NONE** — no implementation is authorized by this dossier until a new explicit Director mandate for **P-INT-10 — CI Canon Gate** (or successor block per Master Plan gates).
+**Active engineering IMPL block:** **NONE** — no implementation is authorized by this dossier until a new explicit Director mandate under Master Plan gates (Fase I is closed; later Fase II+ items remain subject to separate authorization).
 
 **Indicative afterwards (not authorized by listing here):**
 
-possible Slice B (Gate C + `P-INT-01-SLICE-B-IMPL`) → possible FCC wiring (separate mandate) → P-INT-02 Live → P-INT-03 cloud → P-INT-04 cloud sink → P-INT-05…10 → II.7 → production Auth → DSO live → Product → Marketplace → **mandatory pre-launch professional cybersecurity + US legal reviews** → Arizona production launch → optional post-launch expanded legal review / future PWA (when PWA reactivation conditions are met).
+possible Slice B (Gate C + `P-INT-01-SLICE-B-IMPL`) → possible FCC wiring (separate mandate) → P-INT-02 Live → P-INT-03 cloud → P-INT-04 cloud sink → P-INT-05…08 → II.7 → production Auth → DSO live → Product → Marketplace → **mandatory pre-launch professional cybersecurity + US legal reviews** → Arizona production launch → optional post-launch expanded legal review / future PWA (when PWA reactivation conditions are met).  
+*(Fase IV ítem 13 — retire/isolate `dealPipeline` — remains OPEN / not performed by P-INT-09.)*
 
 ---
 
@@ -872,36 +962,44 @@ possible Slice B (Gate C + `P-INT-01-SLICE-B-IMPL`) → possible FCC wiring (sep
 | Admin Live Wiring Status | **STATUS COMMITTED** (`ab5a4ec…`) |
 | **Admin Live Wiring** | **FULLY CLOSED** |
 | Slice B | **FUTURE / NOT AUTHORIZED** |
-| **This Continuity Dossier (post–Admin Live Wiring reconciliation)** | **RECONCILED / DOCUMENTARY RE-AUDIT PASS** |
-| **P-INT-10 — CI Canon Gate** | **NEXT ENGINEERING BLOCK** (Master Plan Fase I ítem 2) — **NOT AUTHORIZED** until Director mandate + Implementation Plan |
+| **P-INT-10 — CI Canon Gate** | **FULLY CLOSED / STATUS COMMITTED** (`c98fe06…` / IMPL `1b440c7…`) |
+| **P-INT-09 — DealPipeline Reconciliation** | **FULLY CLOSED / STATUS COMMITTED** (`983ee75…` / IMPL `58eeb75…` / Plan `c402a06…`) |
+| **Master Plan Fase I** | **COMPLETED** (ítems 1–3 CLOSED) |
+| **This Continuity Dossier (post–P-INT-09 / P-INT-10 reconciliation)** | **RECONCILED / PENDING INDEPENDENT DOCUMENTARY RE-AUDIT** |
 
 PASS / PASS WITH OBSERVATIONS for the Plan refer to the **P-INT-01 Implementation Plan** audit and re-audit.  
 PASS WITH OBSERVATIONS for Slice A refers to the **Independent Technical Audit** recorded in the Slice A Status.  
-Admin Live Wiring audits are recorded in the Admin Live Wiring Status.  
-Neither automatically approves **this Continuity Dossier**.
+Admin Live Wiring, P-INT-10, and P-INT-09 audits are recorded in their respective Status documents.  
+Neither automatically approves **this Continuity Dossier** reconciliation until Independent Documentary Re-Audit PASSes.
 
 ### Exact next step
 
-**This Continuity Dossier has been reconciled** to reflect the **full closure of Admin Live Wiring (FCC → P-INT-01 Slice A Service Edge)**.
+**This Continuity Dossier has been reconciled** to reflect:
 
-**Documentary gate:** **COMPLETE** — Independent Documentary Re-Audit **PASS**.
+- **P-INT-10 — CI Canon Gate** — **FULLY CLOSED / STATUS COMMITTED**  
+- **P-INT-09 — DealPipeline Reconciliation** — **FULLY CLOSED / STATUS COMMITTED**  
+- **Master Plan Fase I** — **COMPLETED**
 
-**Next official engineering block (after explicit Director mandate + Implementation Plan):**  
-**`P-INT-10 — CI Canon Gate`** (Master Plan Fase I, ítem 2 — canon drift gate in release process, CB-18; without changing Factory core)
+**Documentary gate (immediate):**  
+**`INDEPENDENT DOCUMENTARY RE-AUDIT OF THIS RECONCILED CONTINUITY DOSSIER`**
 
-Until a Director mandate is issued for P-INT-10:
+**Next official engineering block:**  
+**NONE authorized** by this dossier. Later Master Plan gates (Fase II+) require a **new explicit Director mandate** + Implementation Plan. This dossier does **not** reorder Master Plan.
 
-- **no** P-INT-10 IMPL is authorized;  
+Until a new explicit Director mandate is issued:
+
+- **no** engineering IMPL;  
 - **no** Slice B;  
 - **no** further FCC/Web changes without mandate;  
 - **no** Supabase;  
 - **no** Product;  
 - **no** Marketplace;  
 - **no** II.7;  
-- **no** other P-INT IMPL;  
+- **no** P-INT-05…08 IMPL;  
+- **no** Fase IV `dealPipeline` retire/isolate;  
 - **no** push / merge / deploy from this dossier.
 
-`P-INT-01-SLICE-A-IMPL` and **Admin Live Wiring** are **closed** — do **not** treat them as the exact next engineering step.
+`P-INT-01-SLICE-A-IMPL`, **Admin Live Wiring**, **P-INT-10**, and **P-INT-09** are **closed** — do **not** treat them as the exact next engineering step.
 
 ---
 
@@ -932,6 +1030,11 @@ Until a Director mandate is issued for P-INT-10:
 | `e5123a4f0680af2cb679256bd46d782e8059a306` | Admin Live Wiring plan |
 | `b97b2b0390b0dc8ee49c04d5e46f841532dd8f52` | Admin Live Wiring implementation |
 | `ab5a4ec63250c1d2b95285759876f8d62b103601` | Admin Live Wiring Status Commit |
+| `1b440c7f9a13d6872ce81aeaf0c5f159b480c70b` | P-INT-10 CI Canon Gate implementation |
+| `c98fe0631683c5490487da299d41d212c7ff356a` | P-INT-10 Status Commit |
+| `c402a06843e2affcf1c0e47b7c82a15b0bf2043b` | P-INT-09 DealPipeline Reconciliation plan |
+| `58eeb75d8aacfaac6cf5af1dbd763e584ee168dd` | P-INT-09 DealPipeline Reconciliation implementation |
+| `983ee75a2491ccffd71e06bad6d7171c1bf91195` | P-INT-09 Status Commit |
 
 Dates/stats: verify with `git show` / `git log` — do not invent.
 
@@ -962,14 +1065,17 @@ Dates/stats: verify with `git show` / `git log` — do not invent.
 4. **Operational protocol** Discovery→…→Status Commit (§27).  
 5. **P-INT-01 Slice A** is **FULLY CLOSED** (mandate `P-INT-01-SLICE-A-IMPL` executed; Status COMMITTED). Do **not** re-open as pending IMPL.  
 6. **Admin Live Wiring** is **FULLY CLOSED** (Status COMMITTED `ab5a4ec…`). Do **not** re-open as pending IMPL.  
-7. **Slice B** FUTURE until Gate C + separate mandate `P-INT-01-SLICE-B-IMPL`.  
-8. **Parking:** Agents Towards Production; Computer Use / autonomous agents; PWA only when Web 100% + product launched + paying investors; trading bot separate.  
-9. **Team:** Director Manolo; Developer Carlos; single-person independence via documents.  
-10. **Product/Diamond/Broker/Owner Verification** objectives (§23–24) — not all live-complete.  
-11. **Mandatory pre-launch** professional cybersecurity + US legal reviews; post-launch expanded review is separate (§25).  
-12. **No push** from this dossier; **TD-AHEAD-15** remains open.  
-13. Factory official construction span is **CB-00→CB-19**.  
-14. **No P-INT-10 (or other) engineering IMPL** until a new explicit Director mandate is issued for the target block (Documentary Re-Audit of this reconciliation: **PASS**).
+7. **P-INT-10 — CI Canon Gate** is **FULLY CLOSED** (Status COMMITTED `c98fe06…`; Implementation `1b440c7…`). Do **not** re-open as pending IMPL.  
+8. **P-INT-09 — DealPipeline Reconciliation** is **FULLY CLOSED** (Status COMMITTED `983ee75…`; Implementation `58eeb75…`; Plan `c402a06…`). Do **not** re-open as pending IMPL. Fase IV retire/isolate remains OPEN.  
+9. **Master Plan Fase I** is **COMPLETED** (ítems 1–3).  
+10. **Slice B** FUTURE until Gate C + separate mandate `P-INT-01-SLICE-B-IMPL`.  
+11. **Parking:** Agents Towards Production; Computer Use / autonomous agents; PWA only when Web 100% + product launched + paying investors; trading bot separate.  
+12. **Team:** Director Manolo; Developer Carlos; single-person independence via documents.  
+13. **Product/Diamond/Broker/Owner Verification** objectives (§23–24) — not all live-complete.  
+14. **Mandatory pre-launch** professional cybersecurity + US legal reviews; post-launch expanded review is separate (§25).  
+15. **No push** from this dossier; **TD-AHEAD-*** remains open.  
+16. Factory official construction span is **CB-00→CB-19**.  
+17. **No engineering IMPL** until a new explicit Director mandate is issued for the next target block (Documentary Re-Audit of this reconciliation: **PENDING**).
 
 **Class 2 — Secondary conversational context:** useful handoff narrative only; not automatic authority.
 
@@ -997,7 +1103,7 @@ Ready for **Independent Documentary Re-Audit** when it:
 - [x] Does not authorize push  
 - [x] Resolves audit observations MAJOR-01 / MINOR-01…05 (this correction pass)
 
-**Status after post–Admin Live Wiring reconciliation:** **RECONCILED POST–ADMIN LIVE WIRING / DOCUMENTARY RE-AUDIT PASS**  
+**Status after post–P-INT-09 / P-INT-10 reconciliation:** **RECONCILED POST–P-INT-09 / POST–P-INT-10 / FASE I COMPLETED / PENDING INDEPENDENT DOCUMENTARY RE-AUDIT**  
 **Not** APPROVED as implementation authority. **No engineering implementation authorized** by this document. **Push NOT AUTHORIZED** by this document.
 
 Preserved open (do **not** close here): Slice A technical MINOR-01…04, OBS-01…03, RR-01…04; **TD-AUTH-PROD**, **TD-DUAL-SNAPSHOT**, **TD-OMC-52-56**, **TD-LIEN-01**, **TD-HANDLERS**, **TD-AHEAD-***, **TD-PINT04-***, **TD-DSO-LIVE**, **TD-ELR-CLOUD**.
@@ -1012,20 +1118,26 @@ This Continuity Dossier does NOT authorize:
   - P-INT-01 Slice B;
   - further FCC/Web changes without mandate;
   - Web / Supabase / Product / Marketplace changes;
-  - II.7 or P-INT-05…09 IMPL;
+  - II.7 or P-INT-05…08 IMPL;
+  - Fase IV dealPipeline retire/isolate;
   - push / merge / deploy.
 
 P-INT-01-SLICE-A-IMPL is CLOSED (FULLY CLOSED / STATUS COMMITTED).
 Admin Live Wiring is CLOSED (FULLY CLOSED / STATUS COMMITTED).
+P-INT-10 — CI Canon Gate is CLOSED (FULLY CLOSED / STATUS COMMITTED).
+P-INT-09 — DealPipeline Reconciliation is CLOSED (FULLY CLOSED / STATUS COMMITTED).
+Master Plan Fase I is COMPLETED.
 
-This dossier has been reconciled post–Admin Live Wiring closure.
+This dossier has been reconciled post–P-INT-09 / post–P-INT-10 / Fase I closure.
 
-Documentary gate: COMPLETE — Independent Documentary Re-Audit PASS.
+Documentary gate (immediate):
+  INDEPENDENT DOCUMENTARY RE-AUDIT OF THIS RECONCILED CONTINUITY DOSSIER
 
-Next official engineering block (after explicit Director mandate + Implementation Plan):
-  P-INT-10 — CI Canon Gate
+Next official engineering block:
+  NONE authorized by this dossier
+  (later Master Plan gates require a new explicit Director mandate + Implementation Plan)
 
-Until a new explicit Director mandate is issued for P-INT-10,
+Until a new explicit Director mandate is issued,
 no implementation block is authorized.
 ```
 
@@ -1033,11 +1145,11 @@ no implementation block is authorized.
 
 ## 37. Final continuity statement
 
-Factory 2.0 **construction** is closed through **CB-19**. Arizona **integration** has closed I.1, II.1–II.6, P-INT-02/03/04 Offline (+ P-INT-04 Live InMemory), **P-INT-01 Slice A (FULLY CLOSED)**, and **Admin Live Wiring (FULLY CLOSED)**.
+Factory 2.0 **construction** is closed through **CB-19**. Arizona **integration** has closed I.1, II.1–II.6, P-INT-02/03/04 Offline (+ P-INT-04 Live InMemory), **P-INT-01 Slice A (FULLY CLOSED)**, **Admin Live Wiring (FULLY CLOSED)**, **P-INT-10 (FULLY CLOSED)**, and **P-INT-09 (FULLY CLOSED)**. **Master Plan Fase I is COMPLETED**.
 
-There is **no** active authorized engineering IMPL block. Slice B, further FCC/Web changes without mandate, Supabase, Product, Marketplace, II.7, and other P-INT IMPL remain **NOT AUTHORIZED**. **P-INT-10 — CI Canon Gate** is the **next official engineering block** per Master Plan Fase I (pending Re-Audit PASS + Director mandate).
+There is **no** active authorized engineering IMPL block. Slice B, further FCC/Web changes without mandate, Supabase, Product, Marketplace, II.7, P-INT-05…08, and Fase IV `dealPipeline` retire/isolate remain **NOT AUTHORIZED**.
 
-Resume work by reading: latest Status (`FACTORY_INTEGRATION_ADMIN_LIVE_WIRING_IMPL_STATUS.md`) → HEAD commit → **this dossier** → restrictions → await **explicit Director mandate for P-INT-10** + Implementation Plan before any implementation.
+Resume work by reading: latest Status (`FACTORY_INTEGRATION_P_INT_09_DEALPIPELINE_RECONCILIATION_IMPL_STATUS.md` and `FACTORY_INTEGRATION_P_INT_10_CI_CANON_GATE_IMPL_STATUS.md`) → HEAD commit → **this dossier** → restrictions → await **Independent Documentary Re-Audit PASS** of this reconciled Continuity Dossier → then await **explicit Director mandate** for the next Master Plan gate before any implementation.
 
 ---
 
