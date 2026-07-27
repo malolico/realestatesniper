@@ -6,7 +6,9 @@
 **Phase:** Factory Integration — Operational Completeness / Master Plan Fase I–II Control Plane  
 **Block:** P-INT-01 — Factory Service Edge  
 **Document Type:** Technical Implementation Plan  
-**Status:** **DRAFT / PENDING DOCUMENTARY AUDIT** — **NO IMPLEMENTATION AUTHORIZED BY THIS DOCUMENT**
+**Status:** **COMMITTED / UPDATED PENDING RE-AUDIT** — **NO IMPLEMENTATION AUTHORIZED BY THIS DOCUMENT**  
+**Documentary commit (initial Plan):** `a69d6439a84e05372488b4dc8ad5f3544c96d645`  
+**Plan Update:** Gate B closure corrections (II.1↔P-INT-01, endpoint schemas, Admin sequencing, refs, CB-15 read-only, health/readiness, FACTORY_DIRECTOR)
 
 **Repository:** RealEstateSniper  
 
@@ -20,8 +22,9 @@
 6. CB-01 Registry / ELR; CB-15 Orchestration Bus + `factoryBoundaryGuard`; CB-18 Governance Dashboard  
 7. `services/factory-observability/**` — Block I.1 Observability Reader (read-only; **no HTTP server**)  
 8. Director Discovery READ_ONLY — P-INT-01 (session): PLANIFICACIÓN YES / IMPLEMENTACIÓN NO  
+9. Documentary Audit — PASS WITH OBSERVATIONS; Gate B closure Plan Update (this revision)
 
-**Director authorization (this Plan document):** **approved** to exist as planning artifact pending Documentary Audit.  
+**Director authorization (this Plan document):** **approved** as planning artifact (Documentary Commit done; this Update pending Re-Audit).  
 **Director authorization (P-INT-01-SLICE-A-IMPL code):** **NOT AUTHORIZED** by this document.  
 **Director authorization (P-INT-01-SLICE-B-IMPL code):** **NOT AUTHORIZED** by this document.  
 **Director authorization (Handoff/Lifecycle/Canon Gate HTTP, Admin live wiring, cloud deploy):** **NOT AUTHORIZED**.
@@ -81,10 +84,67 @@ Static snapshot JSON              ≠  live Service Edge API (dual path risk —
 | Investor exposure | **FORBIDDEN** |
 | Constitutional owner of Factory truth | **Factory CB-00…CB-19** (unchanged) |
 | Integration role | **Adapter / Control Plane edge** — does not rewrite Factory |
-| Dependencies (binding) | **CB-01, CB-15, CB-18, AuthN/AuthZ Admin** |
+| Dependencies (binding) | **CB-01, CB-15 (read-only subset in Slice A), CB-18, AuthN/AuthZ Admin** |
 | Discovery | **COMPLETE** (READ_ONLY) |
-| This Plan | **DRAFT / PENDING DOCUMENTARY AUDIT** |
-| Implementation | **NOT AUTHORIZED** |
+| This Plan | **COMMITTED / UPDATED PENDING RE-AUDIT** |
+| Slice A Implementation | **NOT AUTHORIZED** |
+| Slice B | **FUTURE / NOT AUTHORIZED** |
+
+---
+
+## 1.1 Normative relationship — II.1 ↔ P-INT-01 (CLOSED)
+
+II.1 / II.2 leave `authenticated GET`, AuthN/AuthZ runtime, and Producer as **PARKING / NOT AUTHORIZED** under those documents alone. This Plan closes the activation path **only** as follows:
+
+| Rule | Binding |
+|------|---------|
+| Sole authorized vehicle | **P-INT-01 Slice A** is the **only** vehicle authorized to activate an **authenticated Admin-only** boundary over Factory observation |
+| Scope of authorization | Limited strictly to the **P-INT-01 internal Control Plane** (Service Edge read APIs) |
+| AuthN / AuthZ | **Server-side only**; **deny-by-default**; UI gating never authoritative (II.1 SBP-08) |
+| Implementation | Requires **separate** Director mandate **`P-INT-01-SLICE-A-IMPL`** (this Plan does not authorize code) |
+
+**P-INT-01 Slice A does NOT reactivate or generally authorize:**
+
+| Surface | Status under this clause |
+|---------|--------------------------|
+| II.2 Producer deployment (generic) | **NOT AUTHORIZED** |
+| Authenticated transport genérico (non–Control-Plane / non–Admin) | **NOT AUTHORIZED** |
+| II.3 Publication Eligibility runtime expansion | **NOT AUTHORIZED / NOT REOPENED** |
+| II.4 Publication Unit | **NOT AUTHORIZED / NOT REOPENED** |
+| II.5 Handoff Readiness | **NOT AUTHORIZED / NOT REOPENED** |
+| II.6 Handoff Execution | **NOT AUTHORIZED / NOT REOPENED** |
+| II.7 Delivery | **NOT OPENED** |
+| Product | **NOT AUTHORIZED** |
+| Marketplace | **NOT AUTHORIZED** |
+| Investor API | **PROHIBITED** |
+
+```text
+II.1 PARKING (Auth / authenticated GET / Producer)
+        │
+        ▼
+P-INT-01 Slice A  =  ONLY Admin Control Plane activation path
+        │
+        ├── DOES NOT open II.3–II.7
+        ├── DOES NOT open Product / Marketplace / Investor
+        └── REQUIRES P-INT-01-SLICE-A-IMPL for code
+```
+
+---
+
+## 1.2 Admin / FactoryControlCenter sequencing (CLOSED)
+
+Master Plan Fase I mentions connecting Admin `FactoryControlCenter` to Factory reads. Sequencing under this Plan is **binding**:
+
+1. **First:** implement and validate **Service Edge Slice A** (in-process / local HTTP harness; no Web touch).  
+2. **After** Slice A COMPLETE (impl + independent audit + Status) and a **separate Director authorization**, evaluate live wiring of `FactoryControlCenter` to the Service Edge.  
+3. **First Slice A implementation commit(s) MUST NOT** modify Web, React, Admin UI, or `FactoryControlCenter.jsx`.  
+4. The existing static snapshot artifact (`/factory-observability-snapshot.json` / I.1 offline path) **MUST NOT** be deleted or modified by Slice A. It remains an offline/dev dual path until a later mandate.
+
+| Action | Slice A first IMPL | Later (separate mandate) |
+|--------|--------------------|--------------------------|
+| Service Edge core + HTTP adapter | YES (when Gate B + mandate) | — |
+| Web / Admin / FCC live wiring | **FORBIDDEN** | MAY be evaluated |
+| Modify/delete static snapshot | **FORBIDDEN** | NOT by Slice A |
 
 ---
 
@@ -133,9 +193,25 @@ Slice A **MUST** define and (when authorized) implement:
 | Sanitized responses | YES |
 | Prohibit direct consumer access to internal stores | YES |
 | Factory writes | **FORBIDDEN** |
-| CB-15 orchestration | **FORBIDDEN** in Slice A |
+| CB-15 orchestration / command / mutation | **FORBIDDEN** in Slice A |
+| CB-15 read-only subset | **ALLOWED** — pure functions only (e.g. `aggregateElr`); see §3.1.1 |
 | Decision Package delivery | **FORBIDDEN** |
 | Web / Admin live wiring in first IMPL commits | **FORBIDDEN** |
+
+#### 3.1.1 CB-15 in Slice A (CLOSED)
+
+| Rule | Binding |
+|------|---------|
+| Orchestration | Slice A **MUST NOT** execute `OrchestrationBusService.orchestrateExpediente` or any CB-15 command path |
+| Allowed CB-15 | **Pure read-only** functions already validated (e.g. `aggregateElr` section counts) — same spirit as I.1 import allowlist |
+| Forbidden CB-15 | `recordBusEvent`, `recordElrAggregation`, bus writes, state transitions, any mutation |
+| Commands / mutations | Belong **exclusively** to **Slice B** |
+| Slice B status | Remains **FUTURE / NOT AUTHORIZED** until Gate C + `P-INT-01-SLICE-B-IMPL` |
+
+```text
+Slice A  →  CB-15 read-only subset only (aggregateElr, …)
+Slice B  →  CB-15 orchestrate / command (NOT AUTHORIZED)
+```
 
 ### 3.2 Slice B — COMMAND / ORCHESTRATION EDGE
 
@@ -235,10 +311,10 @@ Slice B **MUST** be specified here for architectural completeness and **MUST NOT
 | `GET` | `/v1/factory/governance/compliance` | Compliance panel | CB-18 |
 | `GET` | `/v1/factory/governance/maturity` | Maturity metrics | CB-18 |
 
-**Names are binding for Plan v1** unless Documentary Audit renames them before Gate A commit.  
+**Names are binding for Slice A v1** (§5.1 schemas are vinculantes).  
 **No endpoints are implemented by this document.**
 
-**Explicitly out of Slice A catalog:** POST/PUT/PATCH/DELETE; orchestrate; handoff; lifecycle; any path returning full ELR or Decision Package.
+**Explicitly out of Slice A catalog:** POST/PUT/PATCH/DELETE; orchestrate; handoff; lifecycle; any path returning full ELR or Decision Package; elevated Director audit export.
 
 ### D6 — Request / response schemas
 
@@ -311,19 +387,23 @@ Fail-closed: prefer **deny / unavailable** over partial sensitive leakage.
 
 ### D9 — AuthZ roles and capabilities
 
-| Role | Capabilities (Slice A) |
-|------|------------------------|
-| `FACTORY_OPS` | All Slice A read endpoints |
-| `FACTORY_DIRECTOR` | All Slice A read endpoints + future elevated audit export (not in v1) |
+| Role | Capabilities (Slice A v1) |
+|------|---------------------------|
+| `FACTORY_OPS` | All Slice A **authenticated** read capabilities listed below |
+| `FACTORY_DIRECTOR` | **Same** Slice A authenticated read capabilities as `FACTORY_OPS` (no elevated export in v1) |
 | *(any other)* | **DENIED** |
 
 | Rule | Binding |
 |------|---------|
 | Default | **Deny-by-default** |
 | Allowlist | Explicit roles above only |
-| Capability checks | Per-route capability IDs: `factory.read.registry`, `factory.read.elr_summary`, `factory.read.governance`, `factory.read.health_auth` |
+| Capability IDs (v1 binding) | `factory.read.readiness`, `factory.read.registry`, `factory.read.elr_summary`, `factory.read.governance` |
+| `GET /health` | **No** AuthZ capability — unauthenticated liveness only |
+| Elevated audit export / Director-only export endpoint | **FUTURE / NOT AUTHORIZED** — not in v1 catalog; **MUST NOT** be implied by `FACTORY_DIRECTOR` |
 | UI gating | **Never** authoritative |
 | Slice B (future) | Separate capabilities e.g. `factory.command.orchestrate` — **not granted** by Slice A roles alone without Gate C policy update |
+
+Ambiguous capability `factory.read.health_auth` is **REMOVED** — not part of this Plan.
 
 ### D10 — Rate limiting baseline
 
@@ -413,15 +493,21 @@ Static file `/factory-observability-snapshot.json` (if present) is **not** the l
 
 Consumers **MUST NOT** receive filesystem paths to Registry roots.
 
-### D17 — Health and readiness
+### D17 — Health and readiness (CLOSED)
 
-| Endpoint | Semantics |
-|----------|-----------|
-| `health` | Process alive; returns `{ status: "ok" }` minimal; **no** Factory reads; unauthenticated |
-| `readiness` | AuthN+AuthZ required; probes FactoryReadPort (registry root readable or explicit empty-state OK); returns ready/not-ready |
+| Endpoint | AuthN | AuthZ | Semantics |
+|----------|-------|-------|-----------|
+| `GET /v1/factory/health` | **Not required** | **None** | Minimal process liveness only |
+| `GET /v1/factory/readiness` | **Required** (Admin) | `FACTORY_OPS` or `FACTORY_DIRECTOR` + capability `factory.read.readiness` | Dependency probe via FactoryReadPort |
 
-Empty Registry is **valid ready** (`empty: true`) — matches I.1 empty-state philosophy.  
-Corrupt unreadable store → **NOT_READY** / fail-closed.
+| Rule | Binding |
+|------|---------|
+| `health` response | Minimal `{ "status": "ok" }` (or equivalent) — **MUST NOT** return detailed internal Factory state, Registry paths, ELR, governance, secrets, or diagnostics beyond liveness |
+| `health` Factory reads | **FORBIDDEN** |
+| `readiness` | Applies AuthN/AuthZ, **sanitization**, **audit**, **fail-closed** |
+| Empty Registry | **Valid ready** (`empty: true`) — matches I.1 empty-state philosophy |
+| Corrupt / unreadable store | **NOT_READY** / fail-closed (`503`) |
+| Capability `factory.read.health_auth` | **Does not exist** — do not invent |
 
 ### D18 — Idempotency / timeout / retry
 
@@ -465,7 +551,7 @@ HttpAdapter
 | Unit | AuthZ deny/allow; sanitizer; schema allowlists; rate limiter |
 | Contract | Response envelope; II.2 fragment compatibility; I.1 empty-state |
 | Integration (local) | InMemory Auth + fake FactoryReadPort + HTTP handler |
-| Negative | See §20 validation matrix |
+| Negative | See **§11** validation matrix |
 | Regress | CB-01/15/18 validators unchanged; I.1 CLI still runnable; II.2 suite green |
 | Forbidden | Hitting real Supabase; requiring cloud |
 
@@ -509,7 +595,7 @@ No PII in metric labels. Advanced APM platforms = **FUTURE**.
 
 ### D25 — Definition of Done
 
-See §21 (DoD Slice A / Slice B). Binding separation: Slice B DoD **not** part of first cut.
+See **§13** (DoD Slice A / Slice B). Binding separation: Slice B DoD **not** part of first cut.
 
 ---
 
@@ -524,7 +610,129 @@ See §21 (DoD Slice A / Slice B). Binding separation: Slice B DoD **not** part o
 | `governance/dashboard` | Maps to CB-18 dashboard aggregate |
 | `governance/drift|compliance|maturity` | Maps to CB-18 panels used by I.1 |
 
-Alternative names (e.g. `/api/admin/factory/v1/...`) are acceptable **only** if Documentary Audit renames before Gate A; semantics must remain identical.
+**Names are binding for Slice A v1.** Semantics must remain identical if a later documentary rename is ordered.
+
+---
+
+## 5.1 Binding endpoint schemas / allowlists (Slice A v1)
+
+These schemas are **vinculantes** for Slice A. Unknown response fields **MUST NOT** be emitted. Global prohibited fields for all data endpoints:
+
+- full ELR document / raw ELR sections  
+- unsanitized internal payloads  
+- Decision Package (any form)  
+- Product / Marketplace / pricing / `access_tier` data  
+- secrets, tokens, credentials, env vars  
+- absolute filesystem paths / Registry root paths  
+- stack traces / source code  
+
+Common authenticated success envelope (except `health`): D6 root fields + `payload` as defined per endpoint. Classification for all Factory-data responses: **`INTERNAL_OPS`**.
+
+### 5.1.1 `GET /v1/factory/health`
+
+| Attribute | Binding |
+|-----------|---------|
+| Capability | **None** (no AuthZ) |
+| Roles | N/A — unauthenticated |
+| AuthN | **Not required** |
+| Internal source | Edge process self only — **no** Factory reads |
+| Allowed response fields | `status` (`"ok"` only when alive) |
+| Forbidden | Any Factory/Registry/ELR/governance/diagnostic detail; secrets; paths; stack traces |
+| Classification | Not a Factory observation payload — minimal ops liveness (no `INTERNAL_OPS` Factory data) |
+| Fail-closed | If process cannot answer → no response / connection fail (ops concern) |
+| Errors | N/A body model beyond possible plain failure; **MUST NOT** leak internals on error |
+
+### 5.1.2 `GET /v1/factory/readiness`
+
+| Attribute | Binding |
+|-----------|---------|
+| Capability | `factory.read.readiness` |
+| Roles | `FACTORY_OPS`, `FACTORY_DIRECTOR` |
+| AuthN / AuthZ | **Required** — deny-by-default |
+| Internal source | `FactoryReadPort` probe (registry root readable **or** explicit empty-state); I.1-style list without mkdir |
+| Allowed `payload` fields | `ready` (boolean), `empty` (boolean), `observationStatus` (`HEALTHY`\|`DEGRADED`\|`UNAVAILABLE`\|`INVALID`), `warnings` (string[] sanitized) |
+| Forbidden | Full ELR; Decision Package; Registry paths; raw store internals; Product/Marketplace |
+| Classification | `INTERNAL_OPS` |
+| Fail-closed | Unreadable/corrupt → `ready: false` + HTTP `503` `NOT_READY`; audit append failure → deny data plane |
+| Errors | `401`, `403`, `429`, `503`, `500` (no secrets) |
+
+### 5.1.3 `GET /v1/factory/registry/summary`
+
+| Attribute | Binding |
+|-----------|---------|
+| Capability | `factory.read.registry` |
+| Roles | `FACTORY_OPS`, `FACTORY_DIRECTOR` |
+| Internal source | CB-01 via I.1-style read (`getExpediente` / read-only key listing) — **no** mutating list APIs |
+| Allowed `payload` fields | `available` (boolean), `empty` (boolean), `expedienteCount` (number), `keysTruncated` (boolean), `keySample` (string[] max length bound), `warnings` (string[]) |
+| Forbidden | Full expediente bodies; ELR dumps; Decision Package; absolute paths; Product/Marketplace |
+| Classification | `INTERNAL_OPS` |
+| Fail-closed | Invalid/unsanitizable → `400`/`503`/`observationStatus: INVALID|UNAVAILABLE`; no partial sensitive fill |
+| Errors | `401`, `403`, `400`, `429`, `503`, `500` |
+
+### 5.1.4 `GET /v1/factory/elr/summary`
+
+| Attribute | Binding |
+|-----------|---------|
+| Capability | `factory.read.elr_summary` |
+| Roles | `FACTORY_OPS`, `FACTORY_DIRECTOR` |
+| Internal source | CB-01 records + CB-15 **pure** `aggregateElr` (counts only) — **no** orchestration |
+| Allowed `payload` fields | `available` (boolean), `empty` (boolean), `expedienteCount` (number), `status` (enum string e.g. `OK`\|`MISSING_OR_EMPTY`\|`DEGRADED`), `sectionCounts` (object of numeric counts only), `eventKindCounts` (object of numeric counts only), `warnings` (string[]) |
+| Forbidden | Full ELR JSON; raw section payloads; evidence blobs; Decision Package; secrets; paths |
+| Classification | `INTERNAL_OPS` |
+| Fail-closed | Aggregate failure → `DEGRADED`/`UNAVAILABLE` or `503`; never emit raw ELR to “help debug” |
+| Errors | `401`, `403`, `400`, `429`, `503`, `500` |
+
+### 5.1.5 `GET /v1/factory/governance/dashboard`
+
+| Attribute | Binding |
+|-----------|---------|
+| Capability | `factory.read.governance` |
+| Roles | `FACTORY_OPS`, `FACTORY_DIRECTOR` |
+| Internal source | CB-18 **pure** panels via I.1-style composition (`buildMaturityMetrics`, `buildCompliancePanel`, `buildCoveragePanel`, `detectCanonDrift`, `buildConstitutionalMetrics`) — **MUST NOT** call mutating `GovernanceDashboard.buildDashboard` / `listExpedientes` paths that mkdir |
+| Allowed `payload` fields | `maturity` (sanitized object allowlist), `compliance` (sanitized), `coverage` (sanitized), `canonDrift` (sanitized), `constitutional` (sanitized metrics), `warnings` (string[]) |
+| Forbidden | Full ELR; Decision Package; deploy gate side effects; Product/Marketplace; paths; stack traces |
+| Classification | `INTERNAL_OPS` |
+| Fail-closed | Panel build failure → omit panel with warning **or** `503` if integrity cannot be established — prefer fail-closed over inventing values |
+| Errors | `401`, `403`, `400`, `429`, `503`, `500` |
+
+### 5.1.6 `GET /v1/factory/governance/drift`
+
+| Attribute | Binding |
+|-----------|---------|
+| Capability | `factory.read.governance` |
+| Roles | `FACTORY_OPS`, `FACTORY_DIRECTOR` |
+| Internal source | CB-18 `detectCanonDrift` (pure) |
+| Allowed `payload` fields | `driftDetected` (boolean), `findings` (array of `{ code, severity, message }` sanitized), `warnings` (string[]) |
+| Forbidden | Full ELR; Decision Package; raw file paths; Product/Marketplace; secrets |
+| Classification | `INTERNAL_OPS` |
+| Fail-closed | Detector failure → `503` / `UNAVAILABLE` |
+| Errors | `401`, `403`, `400`, `429`, `503`, `500` |
+
+### 5.1.7 `GET /v1/factory/governance/compliance`
+
+| Attribute | Binding |
+|-----------|---------|
+| Capability | `factory.read.governance` |
+| Roles | `FACTORY_OPS`, `FACTORY_DIRECTOR` |
+| Internal source | CB-18 `buildCompliancePanel` (pure) |
+| Allowed `payload` fields | `summary` (sanitized object), `items` (array of allowlisted summary rows), `warnings` (string[]) |
+| Forbidden | Full ELR; Decision Package; unsanitized internals; Product/Marketplace |
+| Classification | `INTERNAL_OPS` |
+| Fail-closed | Build failure → `503` / `UNAVAILABLE` |
+| Errors | `401`, `403`, `400`, `429`, `503`, `500` |
+
+### 5.1.8 `GET /v1/factory/governance/maturity`
+
+| Attribute | Binding |
+|-----------|---------|
+| Capability | `factory.read.governance` |
+| Roles | `FACTORY_OPS`, `FACTORY_DIRECTOR` |
+| Internal source | CB-18 `buildMaturityMetrics` (pure) |
+| Allowed `payload` fields | `maturityScore` (number\|null), `bands` (sanitized object), `coverageHints` (sanitized), `warnings` (string[]) |
+| Forbidden | Full ELR; Decision Package; Product classification Deal/Premium/Diamond; Marketplace; secrets; paths |
+| Classification | `INTERNAL_OPS` |
+| Fail-closed | Build failure → `503` / `UNAVAILABLE` |
+| Errors | `401`, `403`, `400`, `429`, `503`, `500` |
 
 ---
 
@@ -541,7 +749,7 @@ Slice A **MUST** impose:
 7. No full ELR read to clients  
 8. No Decision Package delivery  
 9. No Factory writes from Slice A  
-10. No CB-15 execution from Slice A  
+10. No CB-15 **orchestration / command / mutation** from Slice A (read-only subset only — §3.1.1)  
 11. Sanitize before respond  
 12. Logging without secrets  
 13. Replay protection where credentials apply (short TTL / rotation)  
@@ -549,6 +757,8 @@ Slice A **MUST** impose:
 15. Body size limits (GET: reject bodies > 0 bytes or > tiny cap)  
 16. Input validation  
 17. Fail-closed  
+18. No elevated Director audit-export endpoint in v1 (**FUTURE / NOT AUTHORIZED**)  
+19. II.1 PARKING surfaces (Producer genérico, authenticated transport genérico, II.3–II.7, Product, Marketplace, Investor API) remain **not** generally authorized by Slice A (§1.1) 
 
 ---
 
@@ -585,10 +795,10 @@ P-INT-01 (this Plan / Slice A / Slice B when later authorized) **does NOT implem
 | Master Plan Fase I | P-INT-01 Slice A is the Control Plane realization of “Factory Registry read API + CB-18” |
 | Master Plan Fase II | Slice B aligns with “Job runner + Orchestration API” |
 | I.1 Observability | **Reusable read adapter**; CLI remains; Service Edge adds HTTP+Auth+audit |
-| II.1–II.6 | Trust law + Read Model + publication governance preserved; Service Edge ≠ Delivery |
+| II.1–II.6 | Trust law + Read Model + publication governance preserved; Service Edge ≠ Delivery; §1.1 closes Admin Auth activation without reopening II.3–II.7 |
 | P-INT-02/03/04 | Independent COMPLETE slices; may be observed via summaries; not replaced |
 | CB-16 / P-INT-04 export | Remains in-process / Live sink; **Handoff HTTP** is later Control Plane slice |
-| Web / Admin | Future consumer only; **not** wired in first IMPL commits |
+| Web / Admin / FCC | Sequenced after Slice A (§1.2); **not** wired in first IMPL commits; static snapshot untouched |
 | Product / Marketplace / Supabase | Parallel product plane — **no** coupling |
 
 ---
@@ -599,9 +809,9 @@ P-INT-01 (this Plan / Slice A / Slice B when later authorized) **does NOT implem
 
 | Criterion | Required |
 |-----------|----------|
-| This Plan complete | YES |
-| Documentary Audit PASS (or PASS WITH OBSERVATIONS closed) | YES |
-| Documentary Commit of this Plan | YES |
+| Initial Plan complete + Documentary Audit | **DONE** (PASS WITH OBSERVATIONS) |
+| Documentary Commit of initial Plan | **DONE** (`a69d643…`) |
+| Gate B closure Plan Update + **Re-Audit** | **REQUIRED** before Slice A IMPL |
 | Implementation | Still **NOT AUTHORIZED** |
 
 ### GATE B — SLICE A IMPLEMENTATION
@@ -609,10 +819,11 @@ P-INT-01 (this Plan / Slice A / Slice B when later authorized) **does NOT implem
 | Criterion | Required |
 |-----------|----------|
 | Gate A complete | YES |
+| Plan Update observations closed (§1.1, §1.2, §5.1, CB-15, health/readiness, Director export) | YES — this Update; **Re-Audit REQUIRED** |
 | AuthN/AuthZ adapter **defined** (port + at least InMemory) | YES |
-| Contracts closed (this Plan + audit) | YES |
+| Endpoint schemas / allowlists binding (§5.1) | YES |
 | Threat model closed | YES |
-| Test plan approved | YES |
+| Test plan approved (§11) | YES |
 | **Explicit Director mandate** `P-INT-01-SLICE-A-IMPL` | YES |
 
 ### GATE C — SLICE B IMPLEMENTATION
@@ -634,11 +845,12 @@ When Gate B is granted:
 1. Create edge module **outside** `src/factory/cb**` (e.g. `services/factory-service-edge/` or `src/integration/serviceEdge/`) — exact path chosen at IMPL without rewriting CB.  
 2. Implement **core + ports** first; **InMemory adapters**; HTTP adapter last.  
 3. **No** `package.json` cloud SDKs; prefer Node built-ins.  
-4. **No** Web / Supabase / Marketplace file changes in Slice A commits.  
-5. **No** Admin live wiring in first commits.  
+4. **No** Web / Supabase / Marketplace / Admin UI / `FactoryControlCenter` file changes in Slice A commits (§1.2).  
+5. **No** modification or deletion of static observability snapshot in Slice A.  
 6. Local executable validation runner + deterministic fixtures.  
 7. Fail-closed defaults.  
-8. Separate commits: (1) core+ports+tests, (2) HTTP adapter, (3) Status doc — or as Director orders.
+8. Separate commits: (1) core+ports+tests, (2) HTTP adapter, (3) Status doc — or as Director orders.  
+9. CB-15: import **only** read-only pure symbols allowed by §3.1.1 / I.1 spirit.
 
 Vendor-neutral: no AWS API Gateway / Supabase Edge / Cloudflare Workers as required runtime.
 
@@ -702,8 +914,9 @@ Regress: II.2 validator suite; sample CB-18 pure panels; I.1 CLI smoke.
 | Risk | Mitigation |
 |------|------------|
 | Endpoint naming bikeshed | Binding catalog + audit rename window before Gate A |
-| Cosmetic Admin wiring | Explicitly out of first IMPL |
+| Cosmetic Admin wiring | Explicitly sequenced after Slice A (§1.2); out of first IMPL |
 | Advanced metrics | FUTURE |
+| Elevated Director audit export | **FUTURE / NOT AUTHORIZED** — not in v1 |
 
 ---
 
@@ -737,13 +950,15 @@ Regress: II.2 validator suite; sample CB-18 pure panels; I.1 CLI smoke.
 | Step | Action | Auth |
 |------|--------|------|
 | S0 | Discovery | COMPLETE |
-| S1 | This Plan | THIS DOCUMENT |
-| S2 | Documentary Audit | REQUIRED before commit |
-| S3 | Documentary Commit | Gate A |
-| S4 | Slice A IMPL | Gate B + mandate |
+| S1 | Initial Plan | COMMITTED (`a69d643…`) |
+| S2 | Documentary Audit | DONE — PASS WITH OBSERVATIONS |
+| S3 | Documentary Commit | DONE — Gate A |
+| S3b | Gate B closure Plan Update | THIS REVISION — **Re-Audit REQUIRED** |
+| S4 | Slice A IMPL | Gate B + Re-Audit PASS + mandate |
 | S5 | Slice A Independent Audit + Status | REQUIRED |
 | S6 | Slice B design freeze / IMPL | Gate C + separate mandate |
-| S7+ | Handoff/Lifecycle/Admin wiring/cloud | FUTURE mandates |
+| S7 | Admin / FCC live wiring evaluation | Separate mandate after Slice A COMPLETE |
+| S8+ | Handoff/Lifecycle/cloud | FUTURE mandates |
 
 ---
 
@@ -752,12 +967,12 @@ Regress: II.2 validator suite; sample CB-18 pure panels; I.1 CLI smoke.
 | Item | State |
 |------|-------|
 | **P-INT-01 Discovery** | **COMPLETE** |
-| **P-INT-01 Plan** | **DRAFT / PENDING DOCUMENTARY AUDIT** |
-| **P-INT-01 Implementation** | **NOT AUTHORIZED** |
-| **Slice A** | **PLANNED** |
-| **Slice B** | **FUTURE / NOT AUTHORIZED** |
+| **P-INT-01 Plan** | **COMMITTED / UPDATED PENDING RE-AUDIT** |
+| **P-INT-01 Slice A Implementation** | **NOT AUTHORIZED** |
+| **P-INT-01 Slice B** | **FUTURE / NOT AUTHORIZED** |
 | Handoff / Lifecycle / Canon Gate HTTP | **FUTURE / NOT AUTHORIZED** |
 | Admin live wiring / cloud deploy | **FUTURE / NOT AUTHORIZED** |
+| Elevated Director audit export | **FUTURE / NOT AUTHORIZED** |
 | P-INT-05 / II.7 | **NOT OPENED** |
 
 ---
@@ -794,14 +1009,18 @@ Until those mandates:
 
 | Ítem | Estado |
 |------|--------|
-| This Implementation Plan | **CREATED — DRAFT / PENDING DOCUMENTARY AUDIT** |
+| This Implementation Plan | **COMMITTED / UPDATED PENDING RE-AUDIT** |
 | Transport v1 | **CLOSED** — HTTP JSON |
 | Runtime v1 | **CLOSED** — Node application service |
 | Hosting | **CLOSED** — hosting-neutral ports/adapters |
 | First cut | **CLOSED** — Slice A read-only only |
 | Slice B | **SPECIFIED / NOT AUTHORIZED** |
-| Endpoint catalog v1 | **PROPOSED BINDING** pending Documentary Audit |
-| Auth roles | **CLOSED** — FACTORY_OPS / FACTORY_DIRECTOR |
+| Endpoint catalog + schemas v1 | **BINDING** (§5 / §5.1) |
+| II.1 ↔ P-INT-01 Auth activation | **CLOSED** (§1.1) |
+| Admin / FCC sequencing | **CLOSED** (§1.2) |
+| CB-15 Slice A | **CLOSED** — read-only subset only (§3.1.1) |
+| Health / readiness | **CLOSED** (§D17 / §5.1.1–5.1.2) |
+| Auth roles | **CLOSED** — FACTORY_OPS / FACTORY_DIRECTOR (parity in v1; no elevated export) |
 | Classification | **CLOSED** — INTERNAL_OPS |
 | Implementation | **NOT AUTHORIZED** |
 
@@ -824,9 +1043,9 @@ Until those mandates:
 
 ## 19. Final clause
 
-This Plan defines **P-INT-01 Factory Service Edge** as the Admin-only Control Plane entry to Factory, with **Slice A read-only HTTP** as the sole first implementable cut, reusing I.1 and II.2 without rewriting them, and holding **Slice B orchestration** and all later HTTP surfaces as **FUTURE / NOT AUTHORIZED**.
+This Plan defines **P-INT-01 Factory Service Edge** as the Admin-only Control Plane entry to Factory, with **Slice A read-only HTTP** as the sole first implementable cut, reusing I.1 and II.2 without rewriting them, activating authenticated Admin observation **only** under §1.1, and holding **Slice B orchestration**, Admin live wiring, and all later HTTP surfaces as **FUTURE / NOT AUTHORIZED**.
 
-It does **not** authorize implementation until Documentary Audit and an explicit Director IMPL mandate.
+It does **not** authorize implementation until **Re-Audit** of this Update and an explicit Director mandate **`P-INT-01-SLICE-A-IMPL`**.
 
 ---
 
