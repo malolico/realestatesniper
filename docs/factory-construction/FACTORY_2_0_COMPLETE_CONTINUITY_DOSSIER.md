@@ -7,7 +7,8 @@
 |-------|-------|
 | **Document ID** | `FACTORY_2_0_COMPLETE_CONTINUITY_DOSSIER.md` |
 | **Path** | `docs/factory-construction/FACTORY_2_0_COMPLETE_CONTINUITY_DOSSIER.md` |
-| **Status** | **RECONCILED POST–P-INT-09 / POST–P-INT-10 / FASE I COMPLETED — PENDING INDEPENDENT DOCUMENTARY RE-AUDIT** |
+| **Status** | **RECONCILED POST–P-INT-09 / POST–P-INT-10 / FASE I COMPLETED — INDEPENDENT DOCUMENTARY RE-AUDIT: PASS WITH OBSERVATIONS — DOCUMENTARY COMMITTED** |
+| **Independent Documentary Re-Audit Status** | `docs/factory-construction/integration/FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md` |
 | **Nature** | Documentation only — **does not authorize implementation, Slice B, further FCC/Web changes without mandate, Supabase, Product, Marketplace, II.7, other P-INT IMPL, or push** |
 | **Baseline HEAD (at creation)** | `5a86b0d296a948bfaadb2457e1760e886348af6d` |
 | **Reconciliation tip HEAD (Slice A closed)** | `2622c29d9489aa7a14987be915d40c0aeb1856e8` |
@@ -965,12 +966,12 @@ possible Slice B (Gate C + `P-INT-01-SLICE-B-IMPL`) → possible FCC wiring (sep
 | **P-INT-10 — CI Canon Gate** | **FULLY CLOSED / STATUS COMMITTED** (`c98fe06…` / IMPL `1b440c7…`) |
 | **P-INT-09 — DealPipeline Reconciliation** | **FULLY CLOSED / STATUS COMMITTED** (`983ee75…` / IMPL `58eeb75…` / Plan `c402a06…`) |
 | **Master Plan Fase I** | **COMPLETED** (ítems 1–3 CLOSED) |
-| **This Continuity Dossier (post–P-INT-09 / P-INT-10 reconciliation)** | **RECONCILED / PENDING INDEPENDENT DOCUMENTARY RE-AUDIT** |
+| **This Continuity Dossier (post–P-INT-09 / P-INT-10 reconciliation)** | **RECONCILED / INDEPENDENT DOCUMENTARY RE-AUDIT: PASS WITH OBSERVATIONS — DOCUMENTARY COMMITTED** |
 
 PASS / PASS WITH OBSERVATIONS for the Plan refer to the **P-INT-01 Implementation Plan** audit and re-audit.  
 PASS WITH OBSERVATIONS for Slice A refers to the **Independent Technical Audit** recorded in the Slice A Status.  
 Admin Live Wiring, P-INT-10, and P-INT-09 audits are recorded in their respective Status documents.  
-Neither automatically approves **this Continuity Dossier** reconciliation until Independent Documentary Re-Audit PASSes.
+**Independent Documentary Re-Audit** of **this Continuity Dossier:** **PASS WITH OBSERVATIONS** — Status: `docs/factory-construction/integration/FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md` — **DOCUMENTARY COMMITTED**.
 
 ### Exact next step
 
@@ -980,8 +981,9 @@ Neither automatically approves **this Continuity Dossier** reconciliation until 
 - **P-INT-09 — DealPipeline Reconciliation** — **FULLY CLOSED / STATUS COMMITTED**  
 - **Master Plan Fase I** — **COMPLETED**
 
-**Documentary gate (immediate):**  
-**`INDEPENDENT DOCUMENTARY RE-AUDIT OF THIS RECONCILED CONTINUITY DOSSIER`**
+**Documentary gate (Continuity Independent Documentary Re-Audit):**  
+**COMPLETE** — **INDEPENDENT DOCUMENTARY RE-AUDIT: PASS WITH OBSERVATIONS — DOCUMENTARY COMMITTED**  
+Status: `FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md`
 
 **Next official engineering block:**  
 **NONE authorized** by this dossier. Later Master Plan gates (Fase II+) require a **new explicit Director mandate** + Implementation Plan. This dossier does **not** reorder Master Plan.
@@ -1075,7 +1077,7 @@ Dates/stats: verify with `git show` / `git log` — do not invent.
 14. **Mandatory pre-launch** professional cybersecurity + US legal reviews; post-launch expanded review is separate (§25).  
 15. **No push** from this dossier; **TD-AHEAD-*** remains open.  
 16. Factory official construction span is **CB-00→CB-19**.  
-17. **No engineering IMPL** until a new explicit Director mandate is issued for the next target block (Documentary Re-Audit of this reconciliation: **PENDING**).
+17. **No engineering IMPL** until a new explicit Director mandate is issued for the next target block (Documentary Re-Audit of this reconciliation: **PASS WITH OBSERVATIONS — DOCUMENTARY COMMITTED** — see `FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md`).
 
 **Class 2 — Secondary conversational context:** useful handoff narrative only; not automatic authority.
 
@@ -1085,7 +1087,7 @@ Dates/stats: verify with `git show` / `git log` — do not invent.
 
 ## 35. Definition of Done — this dossier
 
-Ready for **Independent Documentary Re-Audit** when it:
+Definition of Done checklist (dossier content) — used for Independent Documentary Re-Audit:
 
 - [x] Includes CB-00→CB-19  
 - [x] Includes I.x, II.x, P-INT  
@@ -1103,7 +1105,8 @@ Ready for **Independent Documentary Re-Audit** when it:
 - [x] Does not authorize push  
 - [x] Resolves audit observations MAJOR-01 / MINOR-01…05 (this correction pass)
 
-**Status after post–P-INT-09 / P-INT-10 reconciliation:** **RECONCILED POST–P-INT-09 / POST–P-INT-10 / FASE I COMPLETED / PENDING INDEPENDENT DOCUMENTARY RE-AUDIT**  
+**Status after post–P-INT-09 / P-INT-10 reconciliation:** **RECONCILED POST–P-INT-09 / POST–P-INT-10 / FASE I COMPLETED / INDEPENDENT DOCUMENTARY RE-AUDIT: PASS WITH OBSERVATIONS — DOCUMENTARY COMMITTED**  
+Status path: `docs/factory-construction/integration/FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md`  
 **Not** APPROVED as implementation authority. **No engineering implementation authorized** by this document. **Push NOT AUTHORIZED** by this document.
 
 Preserved open (do **not** close here): Slice A technical MINOR-01…04, OBS-01…03, RR-01…04; **TD-AUTH-PROD**, **TD-DUAL-SNAPSHOT**, **TD-OMC-52-56**, **TD-LIEN-01**, **TD-HANDLERS**, **TD-AHEAD-***, **TD-PINT04-***, **TD-DSO-LIVE**, **TD-ELR-CLOUD**.
@@ -1130,8 +1133,10 @@ Master Plan Fase I is COMPLETED.
 
 This dossier has been reconciled post–P-INT-09 / post–P-INT-10 / Fase I closure.
 
-Documentary gate (immediate):
-  INDEPENDENT DOCUMENTARY RE-AUDIT OF THIS RECONCILED CONTINUITY DOSSIER
+Documentary gate (Continuity Independent Documentary Re-Audit):
+  INDEPENDENT DOCUMENTARY RE-AUDIT: PASS WITH OBSERVATIONS
+  DOCUMENTARY COMMITTED
+  Status: FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md
 
 Next official engineering block:
   NONE authorized by this dossier
@@ -1149,7 +1154,7 @@ Factory 2.0 **construction** is closed through **CB-19**. Arizona **integration*
 
 There is **no** active authorized engineering IMPL block. Slice B, further FCC/Web changes without mandate, Supabase, Product, Marketplace, II.7, P-INT-05…08, and Fase IV `dealPipeline` retire/isolate remain **NOT AUTHORIZED**.
 
-Resume work by reading: latest Status (`FACTORY_INTEGRATION_P_INT_09_DEALPIPELINE_RECONCILIATION_IMPL_STATUS.md` and `FACTORY_INTEGRATION_P_INT_10_CI_CANON_GATE_IMPL_STATUS.md`) → HEAD commit → **this dossier** → restrictions → await **Independent Documentary Re-Audit PASS** of this reconciled Continuity Dossier → then await **explicit Director mandate** for the next Master Plan gate before any implementation.
+Resume work by reading: latest Status (`FACTORY_INTEGRATION_P_INT_09_DEALPIPELINE_RECONCILIATION_IMPL_STATUS.md` and `FACTORY_INTEGRATION_P_INT_10_CI_CANON_GATE_IMPL_STATUS.md`) → Continuity Independent Documentary Re-Audit Status (`FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md`) → HEAD commit → **this dossier** → restrictions → (**Independent Documentary Re-Audit: PASS WITH OBSERVATIONS — DOCUMENTARY COMMITTED**) → then await **explicit Director mandate** for the next Master Plan gate before any implementation.
 
 ---
 
