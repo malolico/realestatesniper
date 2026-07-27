@@ -1,13 +1,23 @@
 import { useEffect, useState } from 'react'
+import {
+  FactoryEdgeHttpError,
+  FETCH_TIMEOUT_MS,
+  fetchFactoryEdgeHealth,
+  fetchFactoryEdgeLiveReads,
+  fetchObservabilitySnapshot,
+  getDevBearer,
+  isOfflineOnlyMode,
+  isSnapshotFallbackEnabled,
+} from './factoryEdgeClient.js'
+import {
+  clipText,
+  hasCanonDrift,
+  mapLiveEnvelopesToView,
+  mapSnapshotToView,
+  resolveUiPhase,
+} from './factoryEdgeMapper.js'
 
-const SNAPSHOT_URL = '/factory-observability-snapshot.json'
-const FETCH_TIMEOUT_MS = 5000
 const STALE_MS = 24 * 60 * 60 * 1000
-const MAX_EXPEDIENTES = 20
-const MAX_WARNINGS = 12
-const MAX_EVENT_KINDS = 24
-const EXPECTED_SCHEMA = '1.0.0'
-const EXPECTED_MODE = 'READ_ONLY'
 
 function NotConnected() {
   return <p>Not connected yet</p>
@@ -29,44 +39,6 @@ function PanelNote({ children, tone = 'neutral' }) {
   return <p style={{ margin: '6px 0', color, fontSize: '0.9rem', fontWeight: 600 }}>{children}</p>
 }
 
-function isPlainObject(value) {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
-
-function validateObservabilityContract(payload) {
-  if (!isPlainObject(payload)) {
-    return { ok: false, reason: 'Payload is not an object.' }
-  }
-  if (payload.schemaVersion !== EXPECTED_SCHEMA) {
-    return { ok: false, reason: 'Incompatible schemaVersion.' }
-  }
-  if (payload.mode !== EXPECTED_MODE) {
-    return { ok: false, reason: 'mode must be READ_ONLY.' }
-  }
-  if (!isPlainObject(payload.factory)) {
-    return { ok: false, reason: 'factory must be an object.' }
-  }
-  if (!isPlainObject(payload.elrHealth)) {
-    return { ok: false, reason: 'elrHealth must be an object.' }
-  }
-  if (!Array.isArray(payload.expedientes)) {
-    return { ok: false, reason: 'expedientes must be an array.' }
-  }
-  if (!Array.isArray(payload.warnings)) {
-    return { ok: false, reason: 'warnings must be an array.' }
-  }
-  if (!isPlainObject(payload.governance)) {
-    return { ok: false, reason: 'governance must be an object.' }
-  }
-  if (!isPlainObject(payload.lineage)) {
-    return { ok: false, reason: 'lineage must be an object.' }
-  }
-  if (!Array.isArray(payload.lineage.eventKinds)) {
-    return { ok: false, reason: 'lineage.eventKinds must be an array.' }
-  }
-  return { ok: true, reason: null }
-}
-
 function parseGeneratedAt(value) {
   if (typeof value !== 'string' || value.trim() === '') {
     return { valid: false, date: null, stale: false }
@@ -80,11 +52,6 @@ function parseGeneratedAt(value) {
   return { valid: true, date, stale }
 }
 
-function clipText(value, max = 160) {
-  if (typeof value !== 'string') return ''
-  return value.length > max ? `${value.slice(0, max)}…` : value
-}
-
 function formatScalar(value) {
   if (value === null || value === undefined) return '—'
   if (typeof value === 'boolean') return value ? 'yes' : 'no'
@@ -93,20 +60,15 @@ function formatScalar(value) {
   return '—'
 }
 
-function hasCanonDrift(governance) {
-  const drift = governance?.canonDrift
-  if (!isPlainObject(drift)) return false
-  return drift.hasDrift === true || (typeof drift.driftCount === 'number' && drift.driftCount > 0)
-}
-
 /**
- * Factory Integration I.2 — Admin consumer of static I.1 snapshot (READ_ONLY).
- * Does not import Factory or services/factory-observability (Node/fs).
+ * Factory Integration — Admin Live Wiring (FCC → P-INT-01 Slice A).
+ * Dual-path: live Control Plane preferred; I.1 snapshot fallback/offline.
+ * Does not import Factory modules or the Service Edge package.
  */
 export default function FactoryControlCenter() {
   const [phase, setPhase] = useState('loading')
   const [errorMessage, setErrorMessage] = useState('')
-  const [contract, setContract] = useState(null)
+  const [view, setView] = useState(null)
   const [freshness, setFreshness] = useState({
     valid: false,
     stale: false,
@@ -115,125 +77,182 @@ export default function FactoryControlCenter() {
 
   useEffect(() => {
     let cancelled = false
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+    // MAJOR-01: live abort must never be reused for snapshot fallback/offline.
+    const liveController = new AbortController()
+    const liveTimer = setTimeout(() => liveController.abort(), FETCH_TIMEOUT_MS)
+    const snapshotHandles = []
 
-    async function loadSnapshot() {
+    function beginSnapshotAbort() {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+      const handle = { controller, timer }
+      snapshotHandles.push(handle)
+      return handle
+    }
+
+    function clearSnapshotHandle(handle) {
+      if (!handle) return
+      clearTimeout(handle.timer)
+    }
+
+    function applyView(nextView, { applyStale = false } = {}) {
+      const generated = parseGeneratedAt(nextView.generatedAt)
+      const freshnessState = generated.valid
+        ? {
+            valid: true,
+            stale: applyStale ? generated.stale : false,
+            label: generated.date.toISOString(),
+          }
+        : {
+            valid: false,
+            stale: false,
+            label: 'unknown',
+          }
+      const nextPhase = resolveUiPhase(nextView, applyStale ? freshnessState : { stale: false })
+      setFreshness(freshnessState)
+      setView(nextView)
+      setPhase(nextPhase)
+      setErrorMessage('')
+    }
+
+    async function loadSnapshotView({ fallback, signal }) {
+      const payload = await fetchObservabilitySnapshot({ signal })
+      const mapped = mapSnapshotToView(payload, { fallback })
+      if (!mapped.ok) {
+        throw new Error(mapped.reason || 'Incompatible observability contract.')
+      }
+      return mapped.view
+    }
+
+    async function load() {
       setPhase('loading')
       setErrorMessage('')
-      setContract(null)
+      setView(null)
 
       try {
-        const response = await fetch(SNAPSHOT_URL, {
-          method: 'GET',
-          signal: controller.signal,
-          headers: { Accept: 'application/json' },
-        })
-
-        if (!response.ok) {
-          throw new Error('Snapshot unavailable.')
+        const bearer = getDevBearer()
+        // Offline-only config, or Edge not provisioned (no DEV Bearer) → static snapshot.
+        if (isOfflineOnlyMode() || !bearer) {
+          const snap = beginSnapshotAbort()
+          try {
+            const snapshotView = await loadSnapshotView({
+              fallback: false,
+              signal: snap.controller.signal,
+            })
+            if (cancelled) return
+            applyView(snapshotView, { applyStale: true })
+          } finally {
+            clearSnapshotHandle(snap)
+          }
+          return
         }
 
-        let payload
         try {
-          payload = await response.json()
-        } catch {
-          throw new Error('Snapshot is not valid JSON.')
-        }
+          // Optional health first — non-fatal; live-only signal.
+          const healthProbe = await fetchFactoryEdgeHealth({ signal: liveController.signal })
+          const correlationIdBundle = await fetchFactoryEdgeLiveReads({
+            bearer,
+            signal: liveController.signal,
+          })
+          if (cancelled) return
+          const liveView = mapLiveEnvelopesToView(correlationIdBundle)
+          if (healthProbe.ok === false) {
+            liveView.warnings = [
+              ...(liveView.warnings ?? []),
+              'Health probe unreachable; authenticated reads succeeded.',
+            ].slice(0, 12)
+          }
+          applyView(liveView, { applyStale: false })
+        } catch (err) {
+          if (cancelled) return
 
-        const validation = validateObservabilityContract(payload)
-        if (!validation.ok) {
-          throw new Error(validation.reason || 'Incompatible observability contract.')
-        }
+          const authFailure = err instanceof FactoryEdgeHttpError && err.authFailure === true
+          if (authFailure) {
+            setView(null)
+            setPhase('read_error')
+            setErrorMessage(
+              'Factory Edge auth failed (DEV Bearer). Snapshot fallback suppressed for auth failures.'
+            )
+            return
+          }
 
-        if (cancelled) return
-
-        const generated = parseGeneratedAt(payload.generatedAt)
-        const freshnessState = generated.valid
-          ? {
-              valid: true,
-              stale: generated.stale,
-              label: generated.date.toISOString(),
+          // 5xx / network / live timeout → labeled snapshot fallback on a fresh signal.
+          if (isSnapshotFallbackEnabled()) {
+            const snap = beginSnapshotAbort()
+            try {
+              const snapshotView = await loadSnapshotView({
+                fallback: true,
+                signal: snap.controller.signal,
+              })
+              if (cancelled) return
+              applyView(snapshotView, { applyStale: true })
+              return
+            } catch {
+              /* fall through to read_error */
+            } finally {
+              clearSnapshotHandle(snap)
             }
-          : {
-              valid: false,
-              stale: false,
-              label: 'unknown',
-            }
+          }
 
-        const factoryAvailable = payload.factory.available === true
-        const empty =
-          factoryAvailable &&
-          (payload.elrHealth.empty === true ||
-            payload.elrHealth.expedienteCount === 0 ||
-            payload.expedientes.length === 0)
-
-        let nextPhase = 'available'
-        if (!factoryAvailable) {
-          nextPhase = 'unavailable'
-        } else if (empty) {
-          nextPhase = 'empty'
+          const aborted = err?.name === 'AbortError' || err?.code === 'TIMEOUT'
+          setView(null)
+          setPhase('read_error')
+          setErrorMessage(
+            aborted
+              ? 'Factory observability read timed out.'
+              : err?.message === 'DEV Bearer missing (VITE_FACTORY_EDGE_DEV_BEARER).'
+                ? 'DEV Bearer missing — set VITE_FACTORY_EDGE_DEV_BEARER for live Control Plane.'
+                : 'Unable to load Factory observability (live and snapshot).'
+          )
         }
-        if (freshnessState.stale) {
-          nextPhase = 'stale'
-        }
-
-        setFreshness(freshnessState)
-        setContract(payload)
-        setPhase(nextPhase)
-      } catch (err) {
-        if (cancelled) return
-        const aborted = err?.name === 'AbortError'
-        setContract(null)
-        setPhase('read_error')
-        setErrorMessage(
-          aborted ? 'Snapshot read timed out.' : 'Unable to load Factory observability snapshot.'
-        )
       } finally {
-        clearTimeout(timer)
+        clearTimeout(liveTimer)
       }
     }
 
-    loadSnapshot()
+    load()
 
     return () => {
       cancelled = true
-      clearTimeout(timer)
-      controller.abort()
+      clearTimeout(liveTimer)
+      liveController.abort()
+      for (const handle of snapshotHandles) {
+        clearTimeout(handle.timer)
+        handle.controller.abort()
+      }
     }
   }, [])
 
-  const span = contract?.factory?.constitutionalPhaseSpan
-  const elr = contract?.elrHealth
-  const expedientes = Array.isArray(contract?.expedientes)
-    ? contract.expedientes.slice(0, MAX_EXPEDIENTES)
-    : []
-  const warnings = Array.isArray(contract?.warnings)
-    ? contract.warnings.slice(0, MAX_WARNINGS).map((w) => clipText(String(w), 200))
-    : []
-  const eventKinds = Array.isArray(contract?.lineage?.eventKinds)
-    ? contract.lineage.eventKinds
-        .filter((k) => typeof k === 'string')
-        .slice(0, MAX_EVENT_KINDS)
-        .map((k) => clipText(k, 64))
-    : []
-  const governance = isPlainObject(contract?.governance) ? contract.governance : {}
-  const driftWarning = contract ? hasCanonDrift(governance) : false
+  const span = view?.factory?.constitutionalPhaseSpan
+  const constitutional = view?.factory?.constitutional
+  const elr = view?.elrHealth
+  const expedientes = Array.isArray(view?.expedientes) ? view.expedientes : []
+  const warnings = Array.isArray(view?.warnings) ? view.warnings : []
+  const eventKinds = Array.isArray(view?.lineage?.eventKinds) ? view.lineage.eventKinds : []
+  const governance =
+    view?.governance && typeof view.governance === 'object' ? view.governance : {}
+  const driftWarning = view ? hasCanonDrift(governance) : false
+  const sourceLabel = view?.sourceLabel ?? null
+  const isLive = view?.dataSource === 'live'
 
   return (
     <section>
       <h2 style={{ color: '#ff3b3b' }}>Factory Control Center</h2>
 
-      {phase === 'loading' ? <PanelNote>Loading Factory observability snapshot…</PanelNote> : null}
+      {phase === 'loading' ? <PanelNote>Loading Factory observability…</PanelNote> : null}
 
       {phase === 'read_error' ? (
         <PanelNote tone="error">Read error — {errorMessage}</PanelNote>
       ) : null}
 
-      {contract && phase !== 'read_error' ? (
+      {view && phase !== 'read_error' ? (
         <>
+          <PanelNote tone={isLive ? 'ok' : 'warn'}>
+            Source: {sourceLabel}
+            {view.correlationId ? ` — correlation: ${view.correlationId}` : ''}
+          </PanelNote>
           {driftWarning ? (
-            <PanelNote tone="warn">Canon drift warning — review governance.canonDrift aggregates.</PanelNote>
+            <PanelNote tone="warn">Canon drift warning — review governance aggregates.</PanelNote>
           ) : null}
           {!freshness.valid ? (
             <PanelNote tone="warn">Freshness warning — generatedAt missing or invalid.</PanelNote>
@@ -249,11 +268,11 @@ export default function FactoryControlCenter() {
         {phase === 'loading' ? (
           <PanelLine>Loading…</PanelLine>
         ) : phase === 'read_error' ? (
-          <PanelNote tone="error">Snapshot not loaded.</PanelNote>
-        ) : contract ? (
+          <PanelNote tone="error">Observability not loaded.</PanelNote>
+        ) : view ? (
           <>
-            <PanelNote tone={contract.factory.available ? 'ok' : 'warn'}>
-              Mode: {EXPECTED_MODE}
+            <PanelNote tone={view.factory.available ? 'ok' : 'warn'}>
+              Mode: {view.mode}
               {' — '}
               {phase === 'unavailable'
                 ? 'unavailable'
@@ -263,23 +282,48 @@ export default function FactoryControlCenter() {
                     ? 'stale'
                     : 'available'}
             </PanelNote>
-            <PanelLine>Factory available: {formatScalar(contract.factory.available)}</PanelLine>
-            <PanelLine>
-              Constitutional span:{' '}
-              {formatScalar(span?.from)} → {formatScalar(span?.to)} (
-              {formatScalar(span?.approvedCount)}/{formatScalar(span?.totalCount)} approved)
-            </PanelLine>
+            <PanelLine>Factory available: {formatScalar(view.factory.available)}</PanelLine>
+            {span ? (
+              <PanelLine>
+                Constitutional span:{' '}
+                {formatScalar(span?.from)} → {formatScalar(span?.to)} (
+                {formatScalar(span?.approvedCount)}/{formatScalar(span?.totalCount)} approved)
+              </PanelLine>
+            ) : constitutional ? (
+              <PanelLine>
+                Constitutional counts (live): pp={formatScalar(constitutional.ppCount)}; lff=
+                {formatScalar(constitutional.lffCount)}; pConst=
+                {formatScalar(constitutional.pConstCount)}; ffoLaws=
+                {formatScalar(constitutional.ffoLawsCount)}; omc=
+                {formatScalar(constitutional.omcMotorsConstitutional)}
+              </PanelLine>
+            ) : (
+              <PanelLine>Constitutional span: — (not exposed on live Control Plane)</PanelLine>
+            )}
             <PanelLine>
               ELR — available: {formatScalar(elr?.available)}; empty: {formatScalar(elr?.empty)};
               count: {formatScalar(elr?.expedienteCount)}; status: {formatScalar(elr?.status)}
             </PanelLine>
 
             <h4 style={{ color: '#ffffff', marginBottom: 4 }}>Expedientes (summary)</h4>
+            {view.expedientesDegraded ? (
+              <PanelNote tone="warn">
+                Live keySample only — state/maturity not available via Slice A (
+                {view.keysTruncated ? 'sample truncated' : 'full sample'}).
+              </PanelNote>
+            ) : null}
             {expedientes.length === 0 ? (
-              <PanelLine>No expedientes in snapshot.</PanelLine>
+              <PanelLine>No expedientes.</PanelLine>
             ) : (
               expedientes.map((item, index) => {
                 const keyLabel = formatScalar(item?.factory_key)
+                if (view.expedientesDegraded) {
+                  return (
+                    <PanelLine key={`${keyLabel}-${index}`}>
+                      {keyLabel} | state: — | keyStatus: — | maturity_score: —
+                    </PanelLine>
+                  )
+                }
                 const maturitySource =
                   typeof item?.maturity?.source === 'string' ? item.maturity.source : null
                 const observational =
@@ -308,13 +352,16 @@ export default function FactoryControlCenter() {
               Coverage keys: {Object.keys(governance.coverage || {}).join(', ') || '—'}
             </PanelLine>
             <PanelLine>
-              Canon drift: hasDrift={formatScalar(governance.canonDrift?.hasDrift)}; driftCount=
-              {formatScalar(governance.canonDrift?.driftCount)}
+              Canon drift: driftDetected=
+              {formatScalar(
+                governance.canonDrift?.driftDetected ?? governance.canonDrift?.hasDrift
+              )}
+              ; driftCount={formatScalar(governance.canonDrift?.driftCount)}
             </PanelLine>
 
             <h4 style={{ color: '#ffffff', marginBottom: 4 }}>Lineage event kinds</h4>
             {eventKinds.length === 0 ? (
-              <PanelLine>No FFO event kinds in snapshot.</PanelLine>
+              <PanelLine>No FFO event kinds.</PanelLine>
             ) : (
               <PanelLine>{eventKinds.join(', ')}</PanelLine>
             )}
@@ -349,14 +396,14 @@ export default function FactoryControlCenter() {
         {phase === 'loading' ? (
           <PanelLine>Loading…</PanelLine>
         ) : phase === 'read_error' ? (
-          <PanelNote tone="error">Snapshot warnings unavailable.</PanelNote>
-        ) : contract ? (
+          <PanelNote tone="error">Warnings unavailable.</PanelNote>
+        ) : view ? (
           <>
             {driftWarning ? (
-              <PanelNote tone="warn">Canon drift indicated by observability contract.</PanelNote>
+              <PanelNote tone="warn">Canon drift indicated by observability data.</PanelNote>
             ) : null}
             {warnings.length === 0 ? (
-              <PanelLine>No warnings in snapshot.</PanelLine>
+              <PanelLine>No warnings.</PanelLine>
             ) : (
               warnings.map((warning, index) => (
                 <PanelLine key={`warn-${index}`}>{warning}</PanelLine>
@@ -389,8 +436,9 @@ export default function FactoryControlCenter() {
           <PanelLine>Loading…</PanelLine>
         ) : phase === 'read_error' ? (
           <PanelNote tone="error">Synchronization unknown (read error).</PanelNote>
-        ) : contract ? (
+        ) : view ? (
           <>
+            <PanelLine>Source: {sourceLabel}</PanelLine>
             <PanelLine>generatedAt: {freshness.label}</PanelLine>
             <PanelLine>
               Freshness:{' '}
