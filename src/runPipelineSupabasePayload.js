@@ -1,3 +1,15 @@
+/**
+ * P-INT-09 — DealPipeline Reconciliation (Master Plan Fase I ítem 3)
+ *
+ * BOUNDARY (binding):
+ * - dealPipeline is NOT Canon Factory.
+ * - dealPipeline does NOT substitute the ELR.
+ * - dealPipeline does NOT substitute maturity_score / Factory governance metrics.
+ * - Status: non-canon / provisional / pre-Factory.
+ * - Payload preview for product `deals` — NOT ELR / Canon Factory.
+ * - Full retirement/isolation is deferred to Master Plan Fase IV item 13 (NOT this block).
+ */
+
 import { pipelinePreviewDeals } from './lib/pipelinePreview.js'
 import { mapPipelineBatchToSupabase } from './lib/mapPipelineDealToSupabase.js'
 

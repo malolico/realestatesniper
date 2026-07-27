@@ -1,3 +1,16 @@
+/**
+ * P-INT-09 — DealPipeline Reconciliation (Master Plan Fase I ítem 3)
+ *
+ * BOUNDARY (binding):
+ * - dealPipeline is NOT Canon Factory.
+ * - dealPipeline does NOT substitute the ELR.
+ * - dealPipeline does NOT substitute maturity_score / Factory governance metrics.
+ * - Status: non-canon / provisional / pre-Factory.
+ * - Optional product insert into Supabase `deals` — NOT Factory ELR writes.
+ * - P-INT-09 does NOT authorize or require running this script; labeling only.
+ * - Full retirement/isolation is deferred to Master Plan Fase IV item 13 (NOT this block).
+ */
+
 import dotenv from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
 import { pipelinePreviewDeals } from './lib/pipelinePreview.js'
