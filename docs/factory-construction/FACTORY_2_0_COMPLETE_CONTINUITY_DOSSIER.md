@@ -7,13 +7,14 @@
 |-------|-------|
 | **Document ID** | `FACTORY_2_0_COMPLETE_CONTINUITY_DOSSIER.md` |
 | **Path** | `docs/factory-construction/FACTORY_2_0_COMPLETE_CONTINUITY_DOSSIER.md` |
-| **Status** | **RECONCILED POST–P-INT-01 SLICE A / PENDING INDEPENDENT DOCUMENTARY RE-AUDIT** |
-| **Nature** | Documentation only — **does not authorize implementation, Slice B, FCC wiring, Web, Supabase, Product, Marketplace, II.7, other P-INT, or push** |
+| **Status** | **RECONCILED POST–ADMIN LIVE WIRING / DOCUMENTARY RE-AUDIT PASS** |
+| **Nature** | Documentation only — **does not authorize implementation, Slice B, further FCC/Web changes without mandate, Supabase, Product, Marketplace, II.7, other P-INT IMPL, or push** |
 | **Baseline HEAD (at creation)** | `5a86b0d296a948bfaadb2457e1760e886348af6d` |
 | **Reconciliation tip HEAD (Slice A closed)** | `2622c29d9489aa7a14987be915d40c0aeb1856e8` |
+| **Reconciliation tip HEAD (Admin Live Wiring closed)** | `ab5a4ec63250c1d2b95285759876f8d62b103601` |
 | **Baseline branch** | `integration/factory-complete-20260725` |
 | **Forensic Discovery** | COMPLETE CONTINUITY FORENSIC DISCOVERY (session, READ_ONLY) |
-| **Reconciliation** | POST–P-INT-01 SLICE A — Status COMMITTED prevails for delivery |
+| **Reconciliation** | POST–ADMIN LIVE WIRING — Admin Live Wiring Status COMMITTED prevails for delivery |
 
 ---
 
@@ -92,13 +93,16 @@ Authority is separated into three planes. **This Continuity Dossier consolidates
 |-------|-------|
 | Repository | `C:\Users\Malolico\realestatesniper` |
 | Current branch | `integration/factory-complete-20260725` |
-| HEAD (post–Slice A Status Commit) | `2622c29d9489aa7a14987be915d40c0aeb1856e8` |
-| Subject | `docs(integration): finalize P-INT-01 Slice A implementation status` |
+| HEAD (post–Admin Live Wiring Status Commit) | `ab5a4ec63250c1d2b95285759876f8d62b103601` |
+| Subject | `docs(integration): finalize Admin Live Wiring implementation status` |
+| Prior Admin Live Wiring Implementation Commit | `b97b2b0390b0dc8ee49c04d5e46f841532dd8f52` — `feat(integration): wire Admin FCC to Factory Service Edge` |
+| Prior Admin Live Wiring Plan Commit | `e5123a4f0680af2cb679256bd46d782e8059a306` — `docs(integration): add Admin Live Wiring implementation plan` |
+| Prior Slice A Status Commit | `2622c29d9489aa7a14987be915d40c0aeb1856e8` — `docs(integration): finalize P-INT-01 Slice A implementation status` |
 | Prior Slice A Implementation Commit | `4f9221f37f51822a4bb2cf833e1629f761bd366b` — `feat(integration): implement P-INT-01 Slice A service edge` |
 | Upstream | `origin/integration/factory-complete-20260725` |
 | Ahead / Behind (vs upstream) | **MUST be re-verified READ_ONLY with Git** — prior forensic “ahead 15” is **stale** after Continuity Dossier + Slice A commits |
 | vs `origin/main` | prior forensic “ahead 33 / behind 0” — **WARNING:** informational baseline only; **potentially stale**; **MUST NOT** be used for push, merge, rebase, reconciliation, or branch decisions; **MUST** be re-verified READ_ONLY with Git before any such operation |
-| Tracked modified | **none** at tip `2622c29` (this reconciliation edit may be uncommitted until Director orders Documentary Commit) |
+| Tracked modified | **none** at tip `ab5a4ec` (this reconciliation edit may be uncommitted until Director orders Documentary Commit) |
 | Staged | **none** (unless Director orders staging) |
 | Untracked residuals | `estructura_repo.txt`; `ersMalolico…` (exclude from Factory commits) |
 | Push performed | **NO** — tip commits exist **only locally** vs upstream |
@@ -277,7 +281,7 @@ Primary catalogs: `docs/auditoria-maestra/OFFICIAL_MOTOR_CATALOG.md`, Loop/Swarm
 | **TD-AUTH-PROD** | Production AuthN/AuthZ Admin | HIGH | **OPEN** | Required for real Slice A deploy; InMemory OK for first IMPL validation |
 | **TD-PHASE-STATUS-META** | `construction-phase-status.json` metadata may be stale vs HEAD | LOW | **OPEN** | Always verify Git |
 
-Closed examples (do not re-open as open): II.6 COMPLETE; P-INT-02/03 Offline COMPLETE; P-INT-04 Offline + Live InMemory COMPLETE; **P-INT-01 Slice A FULLY CLOSED**; CB-00…19 construction APPROVED.
+Closed examples (do not re-open as open): II.6 COMPLETE; P-INT-02/03 Offline COMPLETE; P-INT-04 Offline + Live InMemory COMPLETE; **P-INT-01 Slice A FULLY CLOSED**; **Admin Live Wiring FULLY CLOSED**; CB-00…19 construction APPROVED.
 
 ---
 
@@ -300,7 +304,7 @@ Closed examples (do not re-open as open): II.6 COMPLETE; P-INT-02/03 Offline COM
 **NOT CONFIRMED** as a formal named integration block.  
 There was a **static snapshot** path and partial Admin consumption during integration sequencing — distinguish that from a formal documentary phase. **Do not invent I.2.**
 
-Master Plan “Fase I” (observability / Admin connect) remains **PARTIAL**: I.1 + snapshot exist; **P-INT-01 Slice A Service Edge (READ_ONLY HTTP)** is **FULLY CLOSED**; live FCC wiring = **FUTURE / NOT AUTHORIZED** (requires **separate** Director mandate — **not** opened by Slice A closure).
+Master Plan “Fase I” (observability / Admin connect) remains **PARTIAL**: I.1 + snapshot exist; **P-INT-01 Slice A Service Edge (READ_ONLY HTTP)** is **FULLY CLOSED**; **Admin Live Wiring (FCC → Slice A)** is **FULLY CLOSED** (Master Plan Fase I ítem 1 delivered); Fase I ítems 2–3 (canon drift gate / dealPipeline labeling) remain **OPEN** — next engineering block per Master Plan §5: **P-INT-10 — CI Canon Gate**.
 
 ---
 
@@ -315,7 +319,7 @@ Master Plan “Fase I” (observability / Admin connect) remains **PARTIAL**: I.
 - Spec: `FACTORY_INTEGRATION_II_1_SECURITY_BOUNDARY_SPECIFICATION.md`  
 - Trust domains; Integration **READ_ONLY**; `INTERNAL_OPS`; UI ≠ security (SBP-08).  
 - Auth / authenticated GET / Producer initially **PARKING**.  
-- **P-INT-01 Slice A** was the **sole authorized vehicle** for the first **Admin-only authenticated Control Plane** edge (Plan §1.1) and is now **FULLY CLOSED** — does **not** reopen II.3–II.7, Product, Marketplace, Investor API, Slice B, or FCC live wiring.
+- **P-INT-01 Slice A** was the **sole authorized vehicle** for the first **Admin-only authenticated Control Plane** edge (Plan §1.1) and is now **FULLY CLOSED** — does **not** reopen II.3–II.7, Product, Marketplace, Investor API, or Slice B. **Admin Live Wiring** (FCC consumer) is **FULLY CLOSED** — does **not** reopen Service Edge contract, Factory core, or Slice B.
 
 ### II.2 — Read Model Contract v2
 
@@ -370,7 +374,7 @@ II.1 Trust
 
 | P-INT | Name | State |
 |-------|------|-------|
-| **01** | Factory Service Edge | **Slice A FULLY CLOSED** (Status COMMITTED); **Slice B FUTURE / NOT AUTHORIZED** (Gate C + separate mandate) |
+| **01** | Factory Service Edge | **Slice A FULLY CLOSED** (Status COMMITTED); **Admin Live Wiring FULLY CLOSED** (Status COMMITTED); **Slice B FUTURE / NOT AUTHORIZED** (Gate C + separate mandate) |
 | **02** | DSO Live Ingest | Offline **COMPLETE**; Live **OPEN / NOT AUTHORIZED** |
 | **03** | ELR Persistence Bridge | Offline AtomicFile **COMPLETE**; Cloud/Supabase **OPEN**; SQLite **DEFERRED** |
 | **04** | Decision Package Export | Offline **COMPLETE**; Live InMemory **COMPLETE**; Cloud vendor **OPEN / NOT AUTHORIZED** |
@@ -536,6 +540,54 @@ Source catalog: Master Plan §3.2.
 
 ---
 
+## 16a. Admin Live Wiring — FCC → P-INT-01 Slice A
+
+| Field | Value |
+|-------|-------|
+| Final state | **FULLY CLOSED** |
+| Mandate executed | **ADMIN-FCC-LIVE-WIRING-IMPL** (completed) |
+| Scope delivered | Admin `FactoryControlCenter` live READ_ONLY consumer of Slice A; dual-path; Vite proxy; DEV Bearer |
+| Paths | `src/components/admin/factory/FactoryControlCenter.jsx`; `factoryEdgeClient.js`; `factoryEdgeMapper.js`; `vite.config.js`; `src/runAdminLiveWiringValidation.js` |
+
+### Closure record (binding)
+
+| Step | State |
+|------|-------|
+| Discovery | **COMPLETE** |
+| Implementation Plan | **COMMITTED** (`e5123a4…`) |
+| Plan Documentary Audit | **PASS** |
+| Implementation | **COMPLETE** |
+| Independent Technical Audit | **FAIL** (MAJOR-01 — shared AbortController) |
+| MAJOR-01 correction | **COMPLETE** |
+| Technical Re-Audit | **PASS** |
+| Implementation Commit | `b97b2b0390b0dc8ee49c04d5e46f841532dd8f52` |
+| Implementation Status | **STATUS COMMITTED** |
+| Status Commit | `ab5a4ec63250c1d2b95285759876f8d62b103601` |
+| Validation | **13/13 PASS** (`runAdminLiveWiringValidation.js`) |
+
+### Delivered (authorized surface)
+
+- Live consumption of 8 Slice A endpoints (GET-only; Bearer DEV; `X-Correlation-Id`)  
+- Dual-path: live Control Plane + snapshot fallback/offline  
+- Mapper with honest `keySample` degradation  
+- Jobs/Engines/Queue panels remain `Not connected yet`  
+- No Service Edge / Factory / Supabase / Product / Marketplace changes  
+
+### Explicitly not delivered / not authorized
+
+- Slice B / Job Runner / Auth productiva  
+- Retiro canónico del snapshot I.1  
+- `AdminDashboard.jsx` changes (OUT OF SCOPE)  
+- Continuity Dossier / Master Plan update (separate mandate — this reconciliation excepted)  
+
+**Normative plan path:**  
+`docs/factory-construction/integration/FACTORY_INTEGRATION_ADMIN_LIVE_WIRING_IMPLEMENTATION_PLAN.md`
+
+**Status path:**  
+`docs/factory-construction/integration/FACTORY_INTEGRATION_ADMIN_LIVE_WIRING_IMPL_STATUS.md`
+
+---
+
 ## 17. P-INT-01 v1 endpoints
 
 Binding catalog (Plan §5 / §5.1):
@@ -584,11 +636,12 @@ Capability **`factory.read.health_auth`:** **REMOVED** — does not exist.
 
 **Director rule:** Do **not** touch Web except extreme necessity.
 
-**Under P-INT-01:**
+**Under P-INT-01 / Admin Live Wiring:**
 
 1. **Service Edge Slice A** — **FULLY CLOSED** (do not re-open as pending IMPL).  
-2. Only with a **separate mandate**, evaluate live FCC wiring.  
-3. Slice A implementation commit(s) did **not** modify Web, Admin UI, `FactoryControlCenter`, or the static snapshot.
+2. **Admin Live Wiring (FCC → Slice A)** — **FULLY CLOSED** (do not re-open as pending IMPL).  
+3. Further Web / Admin UI / FCC changes require **separate mandate** and §20 STOP report.  
+4. Slice A and Admin Live Wiring implementation commits did **not** modify Factory core (`src/factory/**`) or Service Edge contract.
 
 Before any future intervention in Web / Admin UI / FactoryControlCenter / Marketplace / CRM / Owner Portal / Projection / Product:
 
@@ -786,9 +839,9 @@ This section is **continuity guidance only**. It is **not** automatic authorizat
 
 **Construction:** CB-00 → CB-19 **COMPLETE**.
 
-**Integration completed:** I.1; II.1→II.6; P-INT-02 Offline; P-INT-03 Offline; P-INT-04 Offline + Live InMemory; **P-INT-01 Slice A FULLY CLOSED**.
+**Integration completed:** I.1; II.1→II.6; P-INT-02 Offline; P-INT-03 Offline; P-INT-04 Offline + Live InMemory; **P-INT-01 Slice A FULLY CLOSED**; **Admin Live Wiring FULLY CLOSED**.
 
-**Active engineering IMPL block:** **NONE** — no implementation is authorized by this dossier until after Independent Documentary Re-Audit PASS **and** a new explicit Director mandate.
+**Active engineering IMPL block:** **NONE** — no implementation is authorized by this dossier until a new explicit Director mandate for **P-INT-10 — CI Canon Gate** (or successor block per Master Plan gates).
 
 **Indicative afterwards (not authorized by listing here):**
 
@@ -811,32 +864,44 @@ possible Slice B (Gate C + `P-INT-01-SLICE-B-IMPL`) → possible FCC wiring (sep
 | Slice A Independent Technical Audit | **PASS WITH OBSERVATIONS** |
 | Slice A Status | **STATUS COMMITTED** (`2622c29…`) |
 | **P-INT-01 Slice A** | **FULLY CLOSED** |
+| Admin Live Wiring Discovery | **COMPLETE** |
+| Admin Live Wiring Plan | **COMMITTED** (`e5123a4…`) |
+| Admin Live Wiring Plan Documentary Audit | **PASS** |
+| Admin Live Wiring Implementation | **COMPLETE** (`b97b2b0…`) |
+| Admin Live Wiring Technical Audit | **FAIL** → MAJOR-01 corrected → Re-Audit **PASS** |
+| Admin Live Wiring Status | **STATUS COMMITTED** (`ab5a4ec…`) |
+| **Admin Live Wiring** | **FULLY CLOSED** |
 | Slice B | **FUTURE / NOT AUTHORIZED** |
-| FCC live wiring | **FUTURE / NOT AUTHORIZED** |
-| **This Continuity Dossier (post–Slice A reconciliation)** | **PENDING INDEPENDENT DOCUMENTARY RE-AUDIT** |
+| **This Continuity Dossier (post–Admin Live Wiring reconciliation)** | **RECONCILED / DOCUMENTARY RE-AUDIT PASS** |
+| **P-INT-10 — CI Canon Gate** | **NEXT ENGINEERING BLOCK** (Master Plan Fase I ítem 2) — **NOT AUTHORIZED** until Director mandate + Implementation Plan |
 
 PASS / PASS WITH OBSERVATIONS for the Plan refer to the **P-INT-01 Implementation Plan** audit and re-audit.  
 PASS WITH OBSERVATIONS for Slice A refers to the **Independent Technical Audit** recorded in the Slice A Status.  
+Admin Live Wiring audits are recorded in the Admin Live Wiring Status.  
 Neither automatically approves **this Continuity Dossier**.
 
 ### Exact next step
 
-**`INDEPENDENT DOCUMENTARY RE-AUDIT OF THE UPDATED CONTINUITY DOSSIER`**
+**This Continuity Dossier has been reconciled** to reflect the **full closure of Admin Live Wiring (FCC → P-INT-01 Slice A Service Edge)**.
 
-Until that re-audit emits **PASS**:
+**Documentary gate:** **COMPLETE** — Independent Documentary Re-Audit **PASS**.
 
-- **no** next implementation is authorized;  
+**Next official engineering block (after explicit Director mandate + Implementation Plan):**  
+**`P-INT-10 — CI Canon Gate`** (Master Plan Fase I, ítem 2 — canon drift gate in release process, CB-18; without changing Factory core)
+
+Until a Director mandate is issued for P-INT-10:
+
+- **no** P-INT-10 IMPL is authorized;  
 - **no** Slice B;  
-- **no** FCC live wiring;  
+- **no** further FCC/Web changes without mandate;  
 - **no** Supabase;  
-- **no** Web;  
 - **no** Product;  
 - **no** Marketplace;  
 - **no** II.7;  
 - **no** other P-INT IMPL;  
 - **no** push / merge / deploy from this dossier.
 
-`P-INT-01-SLICE-A-IMPL` is **closed** — do **not** treat it as the exact next engineering step.
+`P-INT-01-SLICE-A-IMPL` and **Admin Live Wiring** are **closed** — do **not** treat them as the exact next engineering step.
 
 ---
 
@@ -863,6 +928,10 @@ Until that re-audit emits **PASS**:
 | `da2874a13c847e2b3e69c05583fdf3f47ffb3e6f` | Continuity Dossier (documentary) |
 | `4f9221f37f51822a4bb2cf833e1629f761bd366b` | P-INT-01 Slice A implementation |
 | `2622c29d9489aa7a14987be915d40c0aeb1856e8` | P-INT-01 Slice A Status Commit |
+| `690bffb…` | Continuity Dossier reconcile (post–Slice A) |
+| `e5123a4f0680af2cb679256bd46d782e8059a306` | Admin Live Wiring plan |
+| `b97b2b0390b0dc8ee49c04d5e46f841532dd8f52` | Admin Live Wiring implementation |
+| `ab5a4ec63250c1d2b95285759876f8d62b103601` | Admin Live Wiring Status Commit |
 
 Dates/stats: verify with `git show` / `git log` — do not invent.
 
@@ -892,14 +961,15 @@ Dates/stats: verify with `git show` / `git log` — do not invent.
 3. **Git/GitHub prohibitions** (§28) unless express order.  
 4. **Operational protocol** Discovery→…→Status Commit (§27).  
 5. **P-INT-01 Slice A** is **FULLY CLOSED** (mandate `P-INT-01-SLICE-A-IMPL` executed; Status COMMITTED). Do **not** re-open as pending IMPL.  
-6. **Slice B** FUTURE until Gate C + separate mandate `P-INT-01-SLICE-B-IMPL`.  
-7. **Parking:** Agents Towards Production; Computer Use / autonomous agents; PWA only when Web 100% + product launched + paying investors; trading bot separate.  
-8. **Team:** Director Manolo; Developer Carlos; single-person independence via documents.  
-9. **Product/Diamond/Broker/Owner Verification** objectives (§23–24) — not all live-complete.  
-10. **Mandatory pre-launch** professional cybersecurity + US legal reviews; post-launch expanded review is separate (§25).  
-11. **No push** from this dossier; **TD-AHEAD-15** remains open.  
-12. Factory official construction span is **CB-00→CB-19**.  
-13. **No next engineering IMPL** until Independent Documentary Re-Audit of this updated Continuity Dossier emits **PASS** **and** a new explicit Director mandate is issued.
+6. **Admin Live Wiring** is **FULLY CLOSED** (Status COMMITTED `ab5a4ec…`). Do **not** re-open as pending IMPL.  
+7. **Slice B** FUTURE until Gate C + separate mandate `P-INT-01-SLICE-B-IMPL`.  
+8. **Parking:** Agents Towards Production; Computer Use / autonomous agents; PWA only when Web 100% + product launched + paying investors; trading bot separate.  
+9. **Team:** Director Manolo; Developer Carlos; single-person independence via documents.  
+10. **Product/Diamond/Broker/Owner Verification** objectives (§23–24) — not all live-complete.  
+11. **Mandatory pre-launch** professional cybersecurity + US legal reviews; post-launch expanded review is separate (§25).  
+12. **No push** from this dossier; **TD-AHEAD-15** remains open.  
+13. Factory official construction span is **CB-00→CB-19**.  
+14. **No P-INT-10 (or other) engineering IMPL** until a new explicit Director mandate is issued for the target block (Documentary Re-Audit of this reconciliation: **PASS**).
 
 **Class 2 — Secondary conversational context:** useful handoff narrative only; not automatic authority.
 
@@ -927,8 +997,8 @@ Ready for **Independent Documentary Re-Audit** when it:
 - [x] Does not authorize push  
 - [x] Resolves audit observations MAJOR-01 / MINOR-01…05 (this correction pass)
 
-**Status after post–Slice A reconciliation:** **RECONCILED POST–P-INT-01 SLICE A / PENDING INDEPENDENT DOCUMENTARY RE-AUDIT**  
-**Not** APPROVED. **Not** audit COMPLETE. **No engineering implementation authorized** by this document. **Commit/push NOT AUTHORIZED by this document** (Documentary Commit of this reconciliation requires separate Director order).
+**Status after post–Admin Live Wiring reconciliation:** **RECONCILED POST–ADMIN LIVE WIRING / DOCUMENTARY RE-AUDIT PASS**  
+**Not** APPROVED as implementation authority. **No engineering implementation authorized** by this document. **Push NOT AUTHORIZED** by this document.
 
 Preserved open (do **not** close here): Slice A technical MINOR-01…04, OBS-01…03, RR-01…04; **TD-AUTH-PROD**, **TD-DUAL-SNAPSHOT**, **TD-OMC-52-56**, **TD-LIEN-01**, **TD-HANDLERS**, **TD-AHEAD-***, **TD-PINT04-***, **TD-DSO-LIVE**, **TD-ELR-CLOUD**.
 
@@ -940,29 +1010,34 @@ Preserved open (do **not** close here): Slice A technical MINOR-01…04, OBS-01�
 This Continuity Dossier does NOT authorize:
   - any new engineering implementation;
   - P-INT-01 Slice B;
-  - FCC live wiring;
+  - further FCC/Web changes without mandate;
   - Web / Supabase / Product / Marketplace changes;
-  - II.7 or P-INT-05…10;
+  - II.7 or P-INT-05…09 IMPL;
   - push / merge / deploy.
 
 P-INT-01-SLICE-A-IMPL is CLOSED (FULLY CLOSED / STATUS COMMITTED).
+Admin Live Wiring is CLOSED (FULLY CLOSED / STATUS COMMITTED).
 
-Exact next step (documentary only):
-  INDEPENDENT DOCUMENTARY RE-AUDIT OF THE UPDATED CONTINUITY DOSSIER
+This dossier has been reconciled post–Admin Live Wiring closure.
 
-Until that re-audit PASSes and a new explicit Director mandate is issued,
-no next implementation block is authorized.
+Documentary gate: COMPLETE — Independent Documentary Re-Audit PASS.
+
+Next official engineering block (after explicit Director mandate + Implementation Plan):
+  P-INT-10 — CI Canon Gate
+
+Until a new explicit Director mandate is issued for P-INT-10,
+no implementation block is authorized.
 ```
 
 ---
 
 ## 37. Final continuity statement
 
-Factory 2.0 **construction** is closed through **CB-19**. Arizona **integration** has closed I.1, II.1–II.6, P-INT-02/03/04 Offline (+ P-INT-04 Live InMemory), and **P-INT-01 Slice A (FULLY CLOSED)**.
+Factory 2.0 **construction** is closed through **CB-19**. Arizona **integration** has closed I.1, II.1–II.6, P-INT-02/03/04 Offline (+ P-INT-04 Live InMemory), **P-INT-01 Slice A (FULLY CLOSED)**, and **Admin Live Wiring (FULLY CLOSED)**.
 
-There is **no** active authorized engineering IMPL block. Slice B, FCC live wiring, Web, Supabase, Product, Marketplace, II.7, and other P-INT remain **NOT AUTHORIZED**.
+There is **no** active authorized engineering IMPL block. Slice B, further FCC/Web changes without mandate, Supabase, Product, Marketplace, II.7, and other P-INT IMPL remain **NOT AUTHORIZED**. **P-INT-10 — CI Canon Gate** is the **next official engineering block** per Master Plan Fase I (pending Re-Audit PASS + Director mandate).
 
-Resume work by reading: latest Status (`FACTORY_INTEGRATION_P_INT_01_SLICE_A_IMPL_STATUS.md`) → HEAD commit → **this dossier** → restrictions → await **Independent Documentary Re-Audit PASS** of this updated Continuity Dossier → then await a **new explicit Director mandate** before any implementation.
+Resume work by reading: latest Status (`FACTORY_INTEGRATION_ADMIN_LIVE_WIRING_IMPL_STATUS.md`) → HEAD commit → **this dossier** → restrictions → await **explicit Director mandate for P-INT-10** + Implementation Plan before any implementation.
 
 ---
 
