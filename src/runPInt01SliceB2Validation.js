@@ -249,7 +249,8 @@ async function run() {
         `${name} imports factory-service-edge`
       );
     }
-    assert.equal(fs.existsSync(path.join(EDGE_DIR, "httpAdapter.js")), false);
+    assert.equal(fs.existsSync(path.join(EDGE_DIR, "supabaseAdapter.js")), false);
+    assert.equal(fs.existsSync(path.join(EDGE_DIR, "marketplaceBridge.js")), false);
     // live boundary adapter uses public CB-15 API only
     const boundary = enforceFactoryBoundary("marketplace_listing");
     assert.equal(boundary.ok, false);

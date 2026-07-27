@@ -1,7 +1,7 @@
 /**
  * P-INT-01 Slice B — factory-orchestration-edge public exports.
- * B1 contracts + B2 job store / runner core.
- * MUST NOT export HTTP server / Auth runtime (B3+).
+ * B1 contracts + B2 store/runner + B3 HTTP command edge (staging).
+ * MUST NOT import or re-export factory-service-edge.
  */
 
 export * from "./contract.js";
@@ -16,3 +16,6 @@ export * from "./boundaryAdapter.js";
 export * from "./jobStore.js";
 export * from "./stubExecutor.js";
 export * from "./workerRunner.js";
+export * from "./stagingAuth.js";
+export * from "./commandCore.js";
+export * from "./httpAdapter.js";

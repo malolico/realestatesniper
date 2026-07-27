@@ -224,7 +224,7 @@ test("10 command envelopes and error catalog", () => {
   assert.ok(FACTORY_ORCHESTRATION_ERROR_CODES.CONFLICT);
 });
 
-test("11 B1 contract modules present; HTTP runtime absent", () => {
+test("11 B1 contract modules present; production Auth runtime absent", () => {
   const files = fs.readdirSync(EDGE_DIR);
   const required = [
     "contract.js",
@@ -237,9 +237,9 @@ test("11 B1 contract modules present; HTTP runtime absent", () => {
   for (const name of required) {
     assert.ok(files.includes(name), `missing contract file: ${name}`);
   }
-  const bannedHttp = ["httpAdapter.js", "httpServer.js", "authRuntime.js"];
-  for (const name of bannedHttp) {
-    assert.equal(files.includes(name), false, `unexpected HTTP runtime file: ${name}`);
+  const banned = ["authRuntime.js", "supabaseAdapter.js", "marketplaceBridge.js"];
+  for (const name of banned) {
+    assert.equal(files.includes(name), false, `unexpected banned file: ${name}`);
   }
 });
 
@@ -287,8 +287,8 @@ console.log("========== P-INT-01 SLICE B1 SUMMARY ==========");
 console.log(`Total: ${results.length}  PASS: ${results.length - failed.length}  FAIL: ${failed.length}`);
 if (failed.length === 0) {
   console.log("ALL SUITES PASS");
-  console.log("AUTHORIZED SURFACE: B1 CONTRACTS ONLY");
-  console.log("NOT AUTHORIZED: B2 worker / B3 HTTP / B4 full suite");
+  console.log("AUTHORIZED SURFACE: B1 CONTRACTS (regression)");
+  console.log("NOTE: B2/B3 modules may coexist; contract tests remain authoritative");
   process.exit(0);
 }
 console.log("FAILURES:");
