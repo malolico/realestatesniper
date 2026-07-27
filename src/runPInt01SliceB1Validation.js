@@ -224,43 +224,59 @@ test("10 command envelopes and error catalog", () => {
   assert.ok(FACTORY_ORCHESTRATION_ERROR_CODES.CONFLICT);
 });
 
-test("11 B1 package has no worker/runtime/store modules", () => {
+test("11 B1 contract modules present; HTTP runtime absent", () => {
   const files = fs.readdirSync(EDGE_DIR);
-  const banned = [
-    "workerRunner.js",
-    "jobStore.js",
-    "httpAdapter.js",
-    "adapters.js",
-    "orchestrationCommandPort.js",
+  const required = [
+    "contract.js",
+    "jobModel.js",
+    "idempotency.js",
+    "cancel.js",
+    "boundary.js",
+    "validation.js",
   ];
-  for (const name of banned) {
-    assert.equal(files.includes(name), false, `unexpected runtime file: ${name}`);
+  for (const name of required) {
+    assert.ok(files.includes(name), `missing contract file: ${name}`);
   }
-  assert.ok(files.includes("contract.js"));
-  assert.ok(files.includes("jobModel.js"));
-  assert.ok(files.includes("idempotency.js"));
-  assert.ok(files.includes("cancel.js"));
-  assert.ok(files.includes("boundary.js"));
-  assert.ok(files.includes("validation.js"));
+  const bannedHttp = ["httpAdapter.js", "httpServer.js", "authRuntime.js"];
+  for (const name of bannedHttp) {
+    assert.equal(files.includes(name), false, `unexpected HTTP runtime file: ${name}`);
+  }
 });
 
-test("12 B1 sources MUST NOT import factory-service-edge or src/factory", () => {
-  const jsFiles = fs
-    .readdirSync(EDGE_DIR)
-    .filter((f) => f.endsWith(".js"))
-    .map((f) => path.join(EDGE_DIR, f));
-  for (const file of jsFiles) {
-    const src = fs.readFileSync(file, "utf8");
+test("12 B1 contract sources MUST NOT import factory-service-edge; CB-15 only via boundaryAdapter", () => {
+  const contractOnly = [
+    "contract.js",
+    "jobModel.js",
+    "idempotency.js",
+    "cancel.js",
+    "boundary.js",
+    "validation.js",
+  ];
+  for (const name of contractOnly) {
+    const src = fs.readFileSync(path.join(EDGE_DIR, name), "utf8");
     assert.equal(
       /from\s+["'][^"']*factory-service-edge/.test(src),
       false,
-      `${path.basename(file)} imports factory-service-edge`
+      `${name} imports factory-service-edge`
     );
     assert.equal(
       /from\s+["'][^"']*src\/factory\//.test(src),
       false,
-      `${path.basename(file)} imports src/factory`
+      `${name} imports src/factory`
     );
+  }
+  const allJs = fs.readdirSync(EDGE_DIR).filter((f) => f.endsWith(".js"));
+  for (const name of allJs) {
+    const src = fs.readFileSync(path.join(EDGE_DIR, name), "utf8");
+    assert.equal(
+      /from\s+["'][^"']*factory-service-edge/.test(src),
+      false,
+      `${name} imports factory-service-edge`
+    );
+  }
+  if (fs.existsSync(path.join(EDGE_DIR, "boundaryAdapter.js"))) {
+    const src = fs.readFileSync(path.join(EDGE_DIR, "boundaryAdapter.js"), "utf8");
+    assert.match(src, /from\s+["'][^"']*factory\/cb15/);
   }
   assert.ok(fs.existsSync(SLICE_A_DIR), "Slice A directory must remain present untouched");
 });

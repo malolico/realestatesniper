@@ -2,7 +2,7 @@
 
 **Environment:** STAGING ONLY  
 **Mandate:** `P-INT-01-SLICE-B-IMPL`  
-**Current cut:** **B1 — Orchestration Contracts**
+**Current cut:** **B2 — Job Store + Job Runner Core** (includes B1 contracts)
 
 ## Purpose
 
@@ -11,22 +11,24 @@ Admin/Ops **command** Control Plane sibling to `factory-service-edge` (Slice A *
 Contract id: `factory.service_edge.command`  
 **MUST NOT** reuse `factory.service_edge.read` for mutations.
 
-## B1 scope (this commit)
+## Delivered
 
-Contracts only:
+### B1 — Contracts
+Envelope, job schema/states, capabilities, HTTP route specs (definitions only), idempotency, cancel, boundary constants, validation, errors.
 
-- Command envelope
-- Job schema / states
-- Capabilities + HTTP route specs
-- Idempotency / cancel / boundary / validation contracts
-- Error catalog
+### B2 — Job Store + Runner Core
+- `InMemoryJobStore` / `FileJobStore` (staging)
+- `JobRunnerCore` (enqueue, claim, async execute, checkpoint, timeout, cancel)
+- Stub executor (no `orchestrateExpediente` yet)
+- Live CB-15 **boundary** via public API (`assertFactoryBoundary` / `isBlockedFactoryOperation`)
 
-## Not in B1
+## Not in B2
 
-Worker, runtime, queues, handlers, endpoints, adapters, persistence, CB integration, business logic.
+HTTP server, AuthN/AuthZ runtime, lineage/HTTP endpoints, Admin UI/FCC, CB-15 orchestrate execution, cloud ELR.
 
 ## Absolute prohibitions
 
 - **MUST NOT modify** `services/factory-service-edge/**`
-- **MUST NOT modify** `src/factory/cb00`…`cb19/**`
+- **MUST NOT modify** `src/factory/cb00`…`cb19/**` (consume public exports only)
 - NO Marketplace / Product / Supabase / II.7
+- NO imports from Slice A `factory-service-edge`
