@@ -360,7 +360,7 @@ async function run() {
   if (failed.length === 0) {
     console.log("ALL SUITES PASS");
     console.log("AUTHORIZED SURFACE: B3 HTTP COMMAND EDGE STAGING");
-    console.log("B4 NOT IMPLEMENTED");
+    console.log("NOTE: B4 integration suite supersedes this banner for Slice B closure");
     process.exit(0);
   }
   console.log("FAILURES:");

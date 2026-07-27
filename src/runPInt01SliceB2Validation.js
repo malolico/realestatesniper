@@ -277,7 +277,7 @@ async function run() {
   if (failed.length === 0) {
     console.log("ALL SUITES PASS");
     console.log("AUTHORIZED SURFACE: B2 JOB STORE + RUNNER CORE");
-    console.log("B3 NOT IMPLEMENTED");
+    console.log("NOTE: B3/B4 may coexist; B2 suite remains authoritative for store/runner");
     process.exit(0);
   }
   console.log("FAILURES:");
