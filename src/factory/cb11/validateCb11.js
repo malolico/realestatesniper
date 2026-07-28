@@ -18,7 +18,11 @@ import { ComplianceStateStore } from "../cb03/complianceStateStore.js";
 import { MotorLockRegistry } from "../cb03/motorLockRegistry.js";
 import { MotorExecutionLock } from "../cb04/motorExecutionLock.js";
 import { MotorRuntime } from "../cb04/motorRuntime.js";
-import { MOTOR_CATALOG } from "../cb04/motorCatalogIndex.js";
+import {
+  MOTOR_CATALOG,
+  MOTOR_CATALOG_COUNT,
+  MOTOR_CATALOG_INDEXED_EXPECTED,
+} from "../cb04/motorCatalogIndex.js";
 import { FoundationKnowledgeStore } from "../cb05/foundationKnowledgeStore.js";
 import { EvidenceService } from "../cb06/evidenceService.js";
 import { EvidenceRegistryStore } from "../cb06/evidenceRegistryStore.js";
@@ -167,11 +171,13 @@ export function validateMotorAndCapCoverage() {
     }
   }
 
-  if (MOTOR_CATALOG.length !== 56) {
-    // documented risk — catalog index count
+  if (MOTOR_CATALOG_COUNT !== MOTOR_CATALOG_INDEXED_EXPECTED) {
+    errors.push(
+      `CB-04 catalog index size mismatch: ${MOTOR_CATALOG_COUNT} !== ${MOTOR_CATALOG_INDEXED_EXPECTED}`
+    );
   }
 
-  return { errors, catalogIndexed: MOTOR_CATALOG.length };
+  return { errors, catalogIndexed: MOTOR_CATALOG_COUNT };
 }
 
 export async function validateOlcHandoffs() {
@@ -279,7 +285,7 @@ export function validateOmcRisksDocumented() {
   if (OMC_MOTOR_COUNT_CONSTITUTIONAL !== 52) {
     errors.push("Constitutional OMC count should remain 52");
   }
-  return { errors, reconciliationDeferred: true };
+  return { errors, reconciliationDeferred: false };
 }
 
 /**

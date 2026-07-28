@@ -9,6 +9,7 @@ import { ComplianceGateService } from "../cb03/complianceGateService.js";
 import { CLEARANCE_STATUS } from "../cb03/clearanceProtocol.js";
 import { MotorExecutionLock } from "../cb04/motorExecutionLock.js";
 import { MotorRuntime } from "../cb04/motorRuntime.js";
+import { MOTOR_CATALOG_COUNT } from "../cb04/motorCatalogIndex.js";
 import { SUFFICIENCY_STATUS } from "../cb06/sufficiencyGate.js";
 import { FoundationLayerService } from "../cb05/foundationLayerService.js";
 import { EvidenceService } from "../cb06/evidenceService.js";
@@ -278,8 +279,8 @@ export class OrchestrationBusService {
       boundary: { factoryOnly: true, decisionSeparated: true },
       omcMotorCountNote: {
         constitutional: OMC_MOTOR_COUNT_CONSTITUTIONAL,
-        cb04CatalogIndexed: 56,
-        reconciliationDeferred: true,
+        cb04CatalogIndexed: MOTOR_CATALOG_COUNT,
+        reconciliationDeferred: false,
       },
     };
   }

@@ -19,6 +19,7 @@ import { ComplianceStateStore } from "../cb03/complianceStateStore.js";
 import { MotorLockRegistry } from "../cb03/motorLockRegistry.js";
 import { MotorExecutionLock } from "../cb04/motorExecutionLock.js";
 import { MotorRuntime } from "../cb04/motorRuntime.js";
+import { MOTOR_CATALOG_COUNT } from "../cb04/motorCatalogIndex.js";
 import { FoundationKnowledgeStore } from "../cb05/foundationKnowledgeStore.js";
 import { FoundationLayerService } from "../cb05/foundationLayerService.js";
 import { EvidenceService } from "../cb06/evidenceService.js";
@@ -366,7 +367,7 @@ export function validateOmcAndDeferredRisksDocumented() {
   }
   return {
     errors,
-    reconciliationDeferred: true,
+    reconciliationDeferred: false,
     motFut02Deferred: true,
     motLiv03Deferred: true,
     motLien01Deferred: DEFERRED_OMC_MOTOR_LIEN_01 === "MOT-LIEN-01",
@@ -446,7 +447,7 @@ export async function runCb10Validation(options = {}) {
     checklist,
     omcMotorCountRisk: {
       constitutional: OMC_MOTOR_COUNT_CONSTITUTIONAL,
-      cb04CatalogIndexed: 56,
+      cb04CatalogIndexed: MOTOR_CATALOG_COUNT,
       reconciliationDeferred: risks.reconciliationDeferred,
     },
     motFut02Deferred: risks.motFut02Deferred,

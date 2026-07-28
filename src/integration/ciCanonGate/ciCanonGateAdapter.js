@@ -169,6 +169,45 @@ export function spawnCbRunnerDryRun(runner, opts = {}) {
 }
 
 /**
+ * Opaque token required to skip the CB sweep in controlled tests only.
+ * Import this exact reference — booleans / string forgeries are rejected.
+ * Never exposed on the CLI release path.
+ */
+export const CI_CANON_GATE_TEST_SKIP_TOKEN = Object.freeze({
+  __ciCanonGateTestSkipCbSweep: true,
+});
+
+/**
+ * Resolve whether CB sweep may be skipped (HQ-03 / MINOR-01).
+ * Default and release path: never skip.
+ *
+ * @param {object} options
+ * @returns {{ skip: boolean } | { skip: false, rejected: true, reason: string }}
+ */
+export function resolveCbSweepSkipPolicy(options = {}) {
+  if (options.skipCbSweep === true) {
+    return {
+      skip: false,
+      rejected: true,
+      reason:
+        "Programmatic skipCbSweep is prohibited (HQ-03). Controlled tests must use allowTestSkipCbSweep with CI_CANON_GATE_TEST_SKIP_TOKEN.",
+    };
+  }
+  if (options.allowTestSkipCbSweep === true) {
+    if (options.testSkipToken !== CI_CANON_GATE_TEST_SKIP_TOKEN) {
+      return {
+        skip: false,
+        rejected: true,
+        reason:
+          "allowTestSkipCbSweep requires the opaque CI_CANON_GATE_TEST_SKIP_TOKEN (fail-closed).",
+      };
+    }
+    return { skip: true };
+  }
+  return { skip: false };
+}
+
+/**
  * Run the CI Canon Gate.
  *
  * @param {{
@@ -178,6 +217,8 @@ export function spawnCbRunnerDryRun(runner, opts = {}) {
  *     | Promise<...>,
  *   driftRecords?: object[],
  *   skipCbSweep?: boolean,
+ *   allowTestSkipCbSweep?: boolean,
+ *   testSkipToken?: typeof CI_CANON_GATE_TEST_SKIP_TOKEN,
  *   cwd?: string,
  * }} [options]
  */
@@ -192,13 +233,27 @@ export async function runCiCanonGate(options = {}) {
       forbiddenFlag: precheck.flag,
       runners: [],
       drift: null,
+      cbSweepSkipped: false,
+    };
+  }
+
+  const skipPolicy = resolveCbSweepSkipPolicy(options);
+  if (skipPolicy.rejected) {
+    return {
+      passed: false,
+      phase: "precheck",
+      reason: skipPolicy.reason,
+      forbiddenFlag: null,
+      runners: [],
+      drift: null,
+      cbSweepSkipped: false,
     };
   }
 
   /** @type {Array<object>} */
   const runnerResults = [];
 
-  if (!options.skipCbSweep) {
+  if (!skipPolicy.skip) {
     const runRunner =
       options.runRunner ??
       ((runner) => spawnCbRunnerDryRun(runner, { cwd: options.cwd ?? REPO_ROOT }));
@@ -222,6 +277,7 @@ export async function runCiCanonGate(options = {}) {
           failedRunner: runner.id,
           runners: runnerResults,
           drift: null,
+          cbSweepSkipped: false,
         };
       }
 
@@ -238,6 +294,7 @@ export async function runCiCanonGate(options = {}) {
           failedRunner: runner.id,
           runners: runnerResults,
           drift: null,
+          cbSweepSkipped: false,
         };
       }
 
@@ -258,6 +315,7 @@ export async function runCiCanonGate(options = {}) {
           failedRunner: runner.id,
           runners: runnerResults,
           drift: null,
+          cbSweepSkipped: false,
         };
       }
     }
@@ -291,6 +349,7 @@ export async function runCiCanonGate(options = {}) {
           passed: false,
           results: driftResults.map((d) => d.report),
         },
+        cbSweepSkipped: skipPolicy.skip,
       };
     }
   }
@@ -305,5 +364,6 @@ export async function runCiCanonGate(options = {}) {
       passed: true,
       results: driftResults.map((d) => d.report),
     },
+    cbSweepSkipped: skipPolicy.skip,
   };
 }

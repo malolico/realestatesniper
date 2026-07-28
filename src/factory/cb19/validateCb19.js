@@ -552,7 +552,7 @@ export async function runCb19Validation(options = {}) {
     factoryCompletionCertificate: completionCertificate,
     declaration: passed ? "Factory 2.0 Construction — COMPLETE" : null,
     deferredRisks: {
-      motorCatalogIndexedVsConstitutional: true,
+      motorCatalogIndexedVsConstitutional: false,
       syntheticFixturesOnly: true,
       noWebMarketplaceProduct: true,
     },

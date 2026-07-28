@@ -353,7 +353,7 @@ export function validateOmcRisksDocumented() {
   }
   return {
     errors,
-    reconciliationDeferred: true,
+    reconciliationDeferred: false,
     motLienDeferred: true,
     syntheticFixturesOnly: true,
     actVStub: true,

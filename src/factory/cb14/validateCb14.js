@@ -342,7 +342,7 @@ export function validateOmcRisksDocumented() {
   if (OMC_MOTOR_COUNT_CONSTITUTIONAL !== 52) {
     errors.push("Constitutional OMC count should remain 52");
   }
-  return { errors, reconciliationDeferred: true };
+  return { errors, reconciliationDeferred: false };
 }
 
 /**

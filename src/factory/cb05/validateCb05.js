@@ -20,6 +20,7 @@ import { MotorLockRegistry } from "../cb03/motorLockRegistry.js";
 import { MotorExecutionLock } from "../cb04/motorExecutionLock.js";
 import { MotorRuntime } from "../cb04/motorRuntime.js";
 import { checkMotorDependencies } from "../cb04/dependencyResolver.js";
+import { MOTOR_CATALOG_COUNT } from "../cb04/motorCatalogIndex.js";
 import { FOUNDATION_MPI_DOMAINS, OMC_MOTOR_COUNT_CONSTITUTIONAL } from "./foundationCatalog.js";
 import { FoundationKnowledgeStore } from "./foundationKnowledgeStore.js";
 import { FoundationLayerService } from "./foundationLayerService.js";
@@ -273,10 +274,17 @@ export async function validateStateTransitionsAndFactoryKey() {
 
 export function validateOmcCountRiskDocumented() {
   const errors = [];
+  // HQ-01 Model R1: constitutional coverage stays 52; indexed catalog stays 56.
   if (OMC_MOTOR_COUNT_CONSTITUTIONAL !== 52) {
     errors.push("Constitutional OMC count constant should remain 52");
   }
-  return { errors, deferredReconciliation: true };
+  if (MOTOR_CATALOG_COUNT !== 56) {
+    errors.push(`CB-04 catalog index should remain 56, got ${MOTOR_CATALOG_COUNT}`);
+  }
+  if (MOTOR_CATALOG_COUNT < OMC_MOTOR_COUNT_CONSTITUTIONAL) {
+    errors.push("Indexed catalog must not fall below constitutional coverage");
+  }
+  return { errors, deferredReconciliation: false };
 }
 
 /**
@@ -350,7 +358,7 @@ export async function runCb05Validation(options = {}) {
     checklist,
     omcMotorCountRisk: {
       constitutional: OMC_MOTOR_COUNT_CONSTITUTIONAL,
-      cb04CatalogIndexed: 56,
+      cb04CatalogIndexed: MOTOR_CATALOG_COUNT,
       reconciliationDeferred: omcRisk.deferredReconciliation,
     },
     phaseRecord,

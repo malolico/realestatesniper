@@ -1,6 +1,8 @@
 export {
   MOTOR_CATALOG,
   MOTOR_CATALOG_COUNT,
+  MOTOR_CATALOG_INDEXED_EXPECTED,
+  OMC_CONSTITUTIONAL_COVERAGE_COUNT,
   assertCapBinding,
   assertMotorInCatalog,
   getMotorCatalogEntry,

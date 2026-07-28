@@ -126,11 +126,23 @@ export function validateConstructionGovernance() {
     errors.push("CB-01 previous phase should be CB-00");
   }
 
-  try {
-    assertPhaseUnlocked("CB-01");
-    errors.push("assertPhaseUnlocked should block CB-01 when CB-00 incomplete");
-  } catch {
-    // expected before CB-00 complete
+  // Self-test only: assertPhaseUnlocked semantics are unchanged in constructionGovernance.
+  // Behavior must match the live ledger state (APPROVED vs not APPROVED).
+  if (isPhaseApproved("CB-00")) {
+    try {
+      assertPhaseUnlocked("CB-01");
+    } catch (err) {
+      errors.push(
+        `assertPhaseUnlocked should allow CB-01 when CB-00 is APPROVED: ${err.message}`
+      );
+    }
+  } else {
+    try {
+      assertPhaseUnlocked("CB-01");
+      errors.push("assertPhaseUnlocked should block CB-01 when CB-00 incomplete");
+    } catch {
+      // expected when CB-00 is not APPROVED
+    }
   }
 
   return { errors };

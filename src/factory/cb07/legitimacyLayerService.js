@@ -7,6 +7,7 @@ import { FactoryRegistry } from "../cb01/factoryRegistry.js";
 import { ComplianceGateService } from "../cb03/complianceGateService.js";
 import { MotorExecutionLock } from "../cb04/motorExecutionLock.js";
 import { MotorRuntime } from "../cb04/motorRuntime.js";
+import { MOTOR_CATALOG_COUNT } from "../cb04/motorCatalogIndex.js";
 import { EvidenceService } from "../cb06/evidenceService.js";
 import { OMC_MOTOR_COUNT_CONSTITUTIONAL } from "./legitimacyCatalog.js";
 import { LegitimacyKnowledgeStore } from "./legitimacyKnowledgeStore.js";
@@ -140,8 +141,8 @@ export class LegitimacyLayerService {
       layer: "LEG",
       omcMotorCountNote: {
         constitutional: OMC_MOTOR_COUNT_CONSTITUTIONAL,
-        cb04CatalogIndexed: 56,
-        reconciliationDeferred: true,
+        cb04CatalogIndexed: MOTOR_CATALOG_COUNT,
+        reconciliationDeferred: false,
       },
     });
 

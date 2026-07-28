@@ -1,7 +1,20 @@
 /**
- * CB-04 — Official motor catalog index (52 MOT) with CAP binding per OMC.
+ * CB-04 — Official motor catalog index with CAP binding per OMC.
  * Metadata only — no business logic.
+ *
+ * HQ-01 / Model R1 (canonical reconciliation — TD-OMC-52-56):
+ * - Constitutional coverage (LFF / CANON_COUNTS.motors): 52
+ * - Runtime CB-04 OMC index length: 56
+ * - Indexed catalog is an intentional superset of constitutional coverage
+ *   (indexed >= constitutional). These are two coherent axes, not a drift.
+ * - Do not invent motors; do not drop indexed capabilities to force equality.
  */
+
+/** Constitutional OMC coverage target (unchanged; not the runtime index size). */
+export const OMC_CONSTITUTIONAL_COVERAGE_COUNT = 52;
+
+/** Intentional CB-04 runtime index size (full OMC-indexed MOT set). */
+export const MOTOR_CATALOG_INDEXED_EXPECTED = 56;
 
 /** @typedef {{ id: string, cap: string, layer: number, name: string }} MotorCatalogEntry */
 
@@ -90,3 +103,14 @@ export function assertCapBinding(motorId, capId) {
 }
 
 export const MOTOR_CATALOG_COUNT = MOTOR_CATALOG.length;
+
+if (MOTOR_CATALOG_COUNT !== MOTOR_CATALOG_INDEXED_EXPECTED) {
+  throw new Error(
+    `[CB-04] MOTOR_CATALOG length ${MOTOR_CATALOG_COUNT} !== indexed expected ${MOTOR_CATALOG_INDEXED_EXPECTED}`
+  );
+}
+if (MOTOR_CATALOG_COUNT < OMC_CONSTITUTIONAL_COVERAGE_COUNT) {
+  throw new Error(
+    `[CB-04] MOTOR_CATALOG length ${MOTOR_CATALOG_COUNT} < constitutional coverage ${OMC_CONSTITUTIONAL_COVERAGE_COUNT}`
+  );
+}

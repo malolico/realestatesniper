@@ -16,7 +16,12 @@ import { FactoryRegistry } from "../cb01/factoryRegistry.js";
 import { ComplianceGateService } from "../cb03/complianceGateService.js";
 import { ComplianceStateStore } from "../cb03/complianceStateStore.js";
 import { MotorLockRegistry } from "../cb03/motorLockRegistry.js";
-import { MOTOR_CATALOG_COUNT, getMotorCatalogEntry } from "./motorCatalogIndex.js";
+import {
+  MOTOR_CATALOG_COUNT,
+  MOTOR_CATALOG_INDEXED_EXPECTED,
+  OMC_CONSTITUTIONAL_COVERAGE_COUNT,
+  getMotorCatalogEntry,
+} from "./motorCatalogIndex.js";
 import { MotorExecutionLock } from "./motorExecutionLock.js";
 import { MotorRuntime } from "./motorRuntime.js";
 import { MotorRuntimeService } from "./motorRuntimeService.js";
@@ -61,8 +66,16 @@ export function validateCb04Governance() {
 
 export function validateMotorCatalog() {
   const errors = [];
-  if (MOTOR_CATALOG_COUNT < 52) {
-    errors.push(`OMC catalog too small: ${MOTOR_CATALOG_COUNT}`);
+  // HQ-01 Model R1: constitutional coverage 52; indexed catalog 56 (superset).
+  if (MOTOR_CATALOG_COUNT < OMC_CONSTITUTIONAL_COVERAGE_COUNT) {
+    errors.push(
+      `OMC catalog below constitutional coverage: ${MOTOR_CATALOG_COUNT} < ${OMC_CONSTITUTIONAL_COVERAGE_COUNT}`
+    );
+  }
+  if (MOTOR_CATALOG_COUNT !== MOTOR_CATALOG_INDEXED_EXPECTED) {
+    errors.push(
+      `OMC catalog index size mismatch: ${MOTOR_CATALOG_COUNT} !== ${MOTOR_CATALOG_INDEXED_EXPECTED}`
+    );
   }
   const idn = getMotorCatalogEntry("MOT-IDN-01");
   const exe = getMotorCatalogEntry("MOT-EXE-01");

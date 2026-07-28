@@ -19,6 +19,7 @@ import { ComplianceStateStore } from "../cb03/complianceStateStore.js";
 import { MotorLockRegistry } from "../cb03/motorLockRegistry.js";
 import { MotorExecutionLock } from "../cb04/motorExecutionLock.js";
 import { MotorRuntime } from "../cb04/motorRuntime.js";
+import { MOTOR_CATALOG_COUNT } from "../cb04/motorCatalogIndex.js";
 import { FoundationKnowledgeStore } from "../cb05/foundationKnowledgeStore.js";
 import { FoundationLayerService } from "../cb05/foundationLayerService.js";
 import { EvidenceService } from "../cb06/evidenceService.js";
@@ -291,7 +292,7 @@ export function validateOmcCountRiskDocumented() {
   if (OMC_MOTOR_COUNT_CONSTITUTIONAL !== 52) {
     errors.push("Constitutional OMC count should remain 52");
   }
-  return { errors, reconciliationDeferred: true };
+  return { errors, reconciliationDeferred: false };
 }
 
 /**
@@ -360,7 +361,7 @@ export async function runCb07Validation(options = {}) {
     checklist,
     omcMotorCountRisk: {
       constitutional: OMC_MOTOR_COUNT_CONSTITUTIONAL,
-      cb04CatalogIndexed: 56,
+      cb04CatalogIndexed: MOTOR_CATALOG_COUNT,
       reconciliationDeferred: omcRisk.reconciliationDeferred,
     },
     phaseRecord,

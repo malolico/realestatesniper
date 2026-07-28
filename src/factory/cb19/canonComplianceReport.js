@@ -64,7 +64,7 @@ export function verifyConstitutionalCoverage() {
       pass: actual.motorsConstitutional === targets.motors && actual.motorsCatalogIndexed >= targets.motors,
       note:
         actual.motorsCatalogIndexed !== targets.motors
-          ? `Indexed ${actual.motorsCatalogIndexed} (constitutional ${targets.motors}) — reconciliation deferred`
+          ? `HQ-01 Model R1: indexed ${actual.motorsCatalogIndexed} (runtime OMC index) ≥ constitutional ${targets.motors}`
           : null,
     },
     { id: "LOOP", target: targets.loops, actual: actual.loops, pass: actual.loops === targets.loops },

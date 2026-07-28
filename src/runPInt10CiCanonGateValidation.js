@@ -15,11 +15,13 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
   CB_RUNNERS,
+  CI_CANON_GATE_TEST_SKIP_TOKEN,
   FORBIDDEN_CLI_FLAGS,
   PHASE_STATUS_REL_PATH,
   REPO_ROOT,
   assertSafeGateArgs,
   evaluateCanonDriftGate,
+  resolveCbSweepSkipPolicy,
   runCiCanonGate,
   sanitizeDriftReport,
   spawnCbRunnerDryRun,
@@ -261,8 +263,12 @@ check("14 adapter source does not write construction-phase-status.json", () => {
   assert.ok(!adapterSrc.includes("savePhaseStatus"));
   // Flag appears only as forbidden allowlist entry — never passed to spawn argv.
   assert.ok(adapterSrc.includes("FORBIDDEN_CLI_FLAGS"));
-  assert.ok(adapterSrc.includes('const argv = [absScript]'));
+  assert.ok(adapterSrc.includes("const argv = [absScript]"));
   assert.ok(!adapterSrc.includes("argv.push"));
+  // HQ-03: casual skipCbSweep must be rejected; tokenized test skip is explicit.
+  assert.ok(adapterSrc.includes("resolveCbSweepSkipPolicy"));
+  assert.ok(adapterSrc.includes("CI_CANON_GATE_TEST_SKIP_TOKEN"));
+  assert.ok(adapterSrc.includes("skipCbSweep is prohibited"));
 });
 
 check("15 no GitHub Actions workflows introduced; CLI is local-only", () => {
@@ -338,6 +344,67 @@ await checkAsync("19 CLI rejects --mark-complete without running sweep", async (
   });
   assert.notEqual(result.status, 0);
   assert.match(`${result.stdout}\n${result.stderr}`, /mark-complete|Forbidden|FAIL/i);
+});
+
+// ---------------------------------------------------------------------------
+// 20–23 HQ-03 — anti-bypass CB sweep skip hygiene (MINOR-01)
+// ---------------------------------------------------------------------------
+
+check("20 resolveCbSweepSkipPolicy rejects legacy skipCbSweep", () => {
+  const r = resolveCbSweepSkipPolicy({ skipCbSweep: true });
+  assert.equal(r.rejected, true);
+  assert.equal(r.skip, false);
+  assert.match(r.reason, /skipCbSweep is prohibited/i);
+});
+
+check("21 resolveCbSweepSkipPolicy rejects allowTestSkip without opaque token", () => {
+  const r = resolveCbSweepSkipPolicy({
+    allowTestSkipCbSweep: true,
+    testSkipToken: { __ciCanonGateTestSkipCbSweep: true },
+  });
+  assert.equal(r.rejected, true);
+  assert.match(r.reason, /CI_CANON_GATE_TEST_SKIP_TOKEN/i);
+});
+
+await checkAsync("22 runCiCanonGate fail-closed on legacy skipCbSweep", async () => {
+  const calls = [];
+  const result = await runCiCanonGate({
+    argv: [],
+    skipCbSweep: true,
+    runRunner: mockAllPassRunner(calls),
+  });
+  assert.equal(result.passed, false);
+  assert.equal(result.phase, "precheck");
+  assert.equal(calls.length, 0);
+  assert.equal(result.cbSweepSkipped, false);
+  assert.match(result.reason, /skipCbSweep is prohibited/i);
+});
+
+await checkAsync("23 controlled test skip requires opaque token; CLI path never skips", async () => {
+  const calls = [];
+  const skipped = await runCiCanonGate({
+    argv: [],
+    allowTestSkipCbSweep: true,
+    testSkipToken: CI_CANON_GATE_TEST_SKIP_TOKEN,
+    runRunner: mockAllPassRunner(calls),
+    driftRecords: [{ factory_key: "PILOT-CLEAN", elr: {} }],
+  });
+  assert.equal(skipped.passed, true);
+  assert.equal(skipped.cbSweepSkipped, true);
+  assert.equal(calls.length, 0);
+
+  const releasePath = await runCiCanonGate({
+    argv: [],
+    runRunner: mockAllPassRunner(calls),
+    driftRecords: [{ factory_key: "PILOT-CLEAN", elr: {} }],
+  });
+  assert.equal(releasePath.passed, true);
+  assert.equal(releasePath.cbSweepSkipped, false);
+  assert.equal(calls.length, 20);
+
+  const cliSrc = readText("src/runCiCanonGate.js");
+  assert.ok(!cliSrc.includes("skipCbSweep"));
+  assert.ok(!cliSrc.includes("allowTestSkipCbSweep"));
 });
 
 // ---------------------------------------------------------------------------
