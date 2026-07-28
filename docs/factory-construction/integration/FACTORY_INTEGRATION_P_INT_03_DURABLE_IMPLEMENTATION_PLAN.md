@@ -19,7 +19,7 @@
 3. `docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_03_OFFLINE_IMPLEMENTATION_PLAN.md`  
 4. `docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_03_OFFLINE_IMPL_STATUS.md`  
 5. `docs/factory-construction/FACTORY_2.0_CONSTRUCTION_BLUEPRINT.md` (CB-01 Registry / ELR)  
-6. Official Discovery — Master Plan Fase II ítem 5 / P-INT-03 Durable Persistence (session artifact, approved) — **COMPLETE**  
+6. `docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_03_DURABLE_DISCOVERY_REPORT.md` — Official Discovery — Master Plan Fase II ítem 5 / P-INT-03 Durable Persistence — **COMPLETE**  
 7. Construction ledger `docs/factory-construction/phases/construction-phase-status.json` (CB-00→CB-19 APPROVED — construction closed)
 
 **Director authorization (this Plan document / existence as planning artifact):** **approved to exist as Plan ONLY**.  
@@ -391,7 +391,7 @@ Auditor documental debe verificar:
 
 1. Conformidad con Master Plan §3.2 / §5 ítem 5 / §7.1.  
 2. Conformidad con Continuity (P-INT-03 Offline CLOSED; **TD-ELR-CLOUD** OPEN; **TD-SQLITE** DEFERRED; protocol §27).  
-3. Conformidad con Official Discovery aprobado.  
+3. Conformidad con Official Discovery aprobado (`docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_03_DURABLE_DISCOVERY_REPORT.md`).  
 4. **No** path selection disguised as architecture.  
 5. **No** IMPL authorization disguised as Plan.  
 6. Hard separations Offline ≠ Durable residual.  
@@ -449,7 +449,7 @@ no implementation block is authorized.
 
 | Ítem | Estado |
 |------|--------|
-| Official Discovery (Fase II ítem 5 / P-INT-03 Durable) | **COMPLETE / APPROVED** |
+| Official Discovery (Fase II ítem 5 / P-INT-03 Durable) | **COMPLETE / APPROVED** — `FACTORY_INTEGRATION_P_INT_03_DURABLE_DISCOVERY_REPORT.md` |
 | This Implementation Plan | **PLAN ONLY — READY FOR DOCUMENTARY AUDIT** |
 | Path Object Store / Cloud / Dedicated DB | **UNDECIDED** |
 | P-INT-03 Durable IMPL | **NOT AUTHORIZED** |
