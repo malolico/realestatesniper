@@ -100,7 +100,7 @@ PUSH: NOT DONE / NOT AUTHORIZED
 | ID | Matter | Prior state | Disposition under PROGRAM 01 | Evidence |
 |----|--------|-------------|------------------------------|----------|
 | **RR-01** | CB-00 dry-run false fail post-APPROVED | OPEN (P-INT-10 Status) | **CLOSED** | HQ-02 — `src/factory/cb00/validateCb00.js` state-aware self-test; Construction Governance unmodified |
-| **TD-OMC-52-56** | Constitutional 52 vs catalog index 56 | OPEN / DEFERRED (Continuity register — not rewritten here) | **CLOSED** (code + this Status) | HQ-01 — Model R1; `MOTOR_CATALOG_INDEXED_EXPECTED = 56`; `OMC_CONSTITUTIONAL_COVERAGE_COUNT = 52`; deferred flags cleared in Factory reporting |
+| **TD-OMC-52-56** | Constitutional 52 vs catalog index 56 | OPEN / DEFERRED (historical Continuity) | **CLOSED** (code + Status + Continuity Documentary Closeout) | HQ-01 — Model R1; Continuity §7 |
 | **MINOR-01** | Programmatic `skipCbSweep` bypass seam | OPEN (P-INT-10 Status) | **CLOSED** | HQ-03 — `resolveCbSweepSkipPolicy`; opaque `CI_CANON_GATE_TEST_SKIP_TOKEN`; legacy `skipCbSweep` fail-closed |
 
 **Note:** Continuity Dossier debt tables are **not** modified by this Status. A future Continuity reconcile mandate may mirror these CLOSED dispositions.
@@ -178,14 +178,14 @@ PUSH: NOT DONE / NOT AUTHORIZED
 
 - [x] PROGRAM 01 marked **COMPLETE**
 - [x] RR-01 **CLOSED**
-- [x] TD-OMC-52-56 **CLOSED** (under this Status; Continuity mirror pending separate mandate)
+- [x] TD-OMC-52-56 **CLOSED** (Status + Continuity Documentary Closeout)
 - [x] MINOR-01 **CLOSED**
 - [x] Implementation Commit recorded (`ef63876…`)
 - [x] Implementation Audit recorded (**PASS WITH OBSERVATIONS**)
 - [x] Implementation Date recorded (**2026-07-28**)
 - [x] Independent Status Documentary Audit (**PASS WITH OBSERVATIONS**)
-- [x] Status Commit
-- [ ] Continuity Dossier reconcile (separate mandate)
+- [x] Status Commit (`dd8912e…`)
+- [x] Continuity Dossier reconcile for PROGRAM 01 debts (**Documentary Closeout**; Closeout Commit pending if Director orders)
 - [ ] Push (not authorized)
 
 ---
@@ -196,17 +196,16 @@ PUSH: NOT DONE / NOT AUTHORIZED
 PROGRAM 01 — FACTORY CORE HARDENING
 STATE: COMPLETE / STATUS COMMITTED
 IMPLEMENTATION COMMIT: ef638767120f31bfdcadbbd0e5c725e2113459ed
+STATUS COMMIT: dd8912eaa12e0f2151a87b3f73ee9e05648272e7
 IMPLEMENTATION AUDIT: PASS WITH OBSERVATIONS
 IMPLEMENTATION DATE: 2026-07-28
 STATUS AUDIT: PASS WITH OBSERVATIONS
-STATUS COMMIT: COMPLETE
 
 RR-01: CLOSED
 TD-OMC-52-56: CLOSED
 MINOR-01: CLOSED
 
 This Status does NOT authorize:
-  - Continuity Dossier update
   - PROGRAM 02 / HQ-04+
   - push
 ```

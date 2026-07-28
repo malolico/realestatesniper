@@ -521,7 +521,7 @@ Las siguientes deudas preexistentes **no fueron corregidas** por Slice A y perma
 |----|-------------|
 | **TD-AUTH-PROD** | Autenticación productiva dependiente de Supabase — no implementada |
 | **TD-DUAL-SNAPSHOT** | Snapshot dual no resuelto |
-| **TD-OMC-52-56** | Reconciliación de motores OMC 52–56 — diferida |
+| **TD-OMC-52-56** | Reconciliación OMC 52–56 — **CLOSED** by PROGRAM 01 (`ef63876…` / Status `dd8912e…`) |
 | **TD-LIEN-01** | Motor de lien (MOT-LIEN-01) — diferido |
 | **TD-HANDLERS** | Handlers de transición — pendientes |
 | **TD-AHEAD-15** | 15 commits locales sin push a upstream — riesgo HIGH de pérdida |

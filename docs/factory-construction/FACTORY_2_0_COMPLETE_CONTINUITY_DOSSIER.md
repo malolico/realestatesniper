@@ -7,11 +7,12 @@
 |-------|-------|
 | **Document ID** | `FACTORY_2_0_COMPLETE_CONTINUITY_DOSSIER.md` |
 | **Path** | `docs/factory-construction/FACTORY_2_0_COMPLETE_CONTINUITY_DOSSIER.md` |
-| **Status** | **RECONCILED POST–P-INT-03 DURABLE OBJECT STORE CLOSEOUT — P-INT-03 OFFLINE CLOSED — OBJECT STORE FULLY CLOSED — FASE I COMPLETED — SLICE B FULLY CLOSED — ACTIVE IMPLEMENTATION: NONE — NEXT BLOCK NONE AUTHORIZED** |
+| **Status** | **RECONCILED POST–PROGRAM 01 FACTORY CORE HARDENING CLOSEOUT — PROGRAM 01 COMPLETE / STATUS COMMITTED — P-INT-03 OBJECT STORE FULLY CLOSED — FASE I COMPLETED — SLICE B FULLY CLOSED — ACTIVE IMPLEMENTATION: NONE — NEXT BLOCK NONE AUTHORIZED** |
 | **Independent Documentary Re-Audit Status** | `docs/factory-construction/integration/FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md` |
+| **PROGRAM 01 Status** | `docs/factory-construction/FACTORY_CORE_HARDENING_PROGRAM_01_IMPL_STATUS.md` |
 | **P-INT-01 Slice B Status** | `docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_01_SLICE_B_IMPL_STATUS.md` |
 | **P-INT-03 Durable Object Store Closeout** | `docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_03_DURABLE_OBJECT_STORE_CLOSEOUT.md` |
-| **Nature** | Documentation only — **does not authorize any new engineering IMPL, reopening of Slice B, further FCC/Web changes without mandate, Supabase, Product, Marketplace, II.7, other P-INT IMPL, or push** |
+| **Nature** | Documentation only — **does not authorize any new engineering IMPL, reopening of Slice B, further FCC/Web changes without mandate, Supabase, Product, Marketplace, II.7, other P-INT IMPL, PROGRAM 02, or push** |
 | **Baseline HEAD (at creation)** | `5a86b0d296a948bfaadb2457e1760e886348af6d` |
 | **Reconciliation tip HEAD (Slice A closed)** | `2622c29d9489aa7a14987be915d40c0aeb1856e8` |
 | **Reconciliation tip HEAD (Admin Live Wiring closed)** | `ab5a4ec63250c1d2b95285759876f8d62b103601` |
@@ -19,9 +20,11 @@
 | **Reconciliation tip HEAD (P-INT-09 Status / Fase I closed)** | `983ee75a2491ccffd71e06bad6d7171c1bf91195` |
 | **Reconciliation tip HEAD (Slice B Status closeout)** | `dce654c7cabff808ee432113ac0ba6c145215014` |
 | **Implementation tip (Slice B B4)** | `09ac29df1d4c522a2201b6e0abf901f1587c5621` |
+| **Implementation tip (PROGRAM 01)** | `ef638767120f31bfdcadbbd0e5c725e2113459ed` |
+| **Status tip (PROGRAM 01)** | `dd8912eaa12e0f2151a87b3f73ee9e05648272e7` |
 | **Baseline branch** | `integration/factory-complete-20260725` |
 | **Forensic Discovery** | COMPLETE CONTINUITY FORENSIC DISCOVERY (session, READ_ONLY) |
-| **Reconciliation** | POST–P-INT-03 Durable **OBJECT STORE** closeout — Offline **CLOSED**; Object Store **FULLY CLOSED**; **TD-ELR-CLOUD** remains **OPEN**; Dedicated DB **OUT**; SQLite **OUT**; **ACTIVE IMPLEMENTATION: NONE**; **NEXT BLOCK: NONE AUTHORIZED**; Continuity Independent Documentary Re-Audit remains **DOCUMENTARY COMMITTED** (prior); this dossier **does not** select the next block |
+| **Reconciliation** | POST–**PROGRAM 01** Factory Core Hardening Documentary Closeout — PROGRAM 01 **COMPLETE** / **STATUS COMMITTED**; **RR-01** / **TD-OMC-52-56** / **P-INT-10 MINOR-01** **CLOSED**; Offline Object Store **FULLY CLOSED**; **TD-ELR-CLOUD** remains **OPEN**; Dedicated DB **OUT**; SQLite **OUT**; **ACTIVE IMPLEMENTATION: NONE**; **NEXT BLOCK: NONE AUTHORIZED**; this dossier **does not** select the next block |
 
 ---
 
@@ -169,7 +172,7 @@ This dossier does **not** order push.
 | **02** | DSO | `src/factory/cb02/` | `src/runCb02DsoValidation.js` | APPROVED | **COMPLETE** | + P-INT-02 Offline packs |
 | **03** | Compliance Gate | `src/factory/cb03/` | `src/runCb03ComplianceValidation.js` | APPROVED | **COMPLETE** | MOT-CMP / P0 |
 | **04** | Motor Runtime | `src/factory/cb04/` | `src/runCb04MotorRuntimeValidation.js` | APPROVED | **COMPLETE** | Stubs handlers; catalog index |
-| **05** | Foundation | `src/factory/cb05/` | `src/runCb05FoundationValidation.js` | APPROVED | **COMPLETE** | Documents 52 vs 56 debt |
+| **05** | Foundation | `src/factory/cb05/` | `src/runCb05FoundationValidation.js` | APPROVED | **COMPLETE** | TD-OMC-52-56 **CLOSED** (PROGRAM 01 Model R1) |
 | **06** | Evidence | `src/factory/cb06/` | `src/runCb06EvidenceValidation.js` | APPROVED | **COMPLETE** | EVD service |
 | **07** | Legitimacy | `src/factory/cb07/` | `src/runCb07LegitimacyValidation.js` | APPROVED | **COMPLETE** | Title/owner domain |
 | **08** | Distress | `src/factory/cb08/` | `src/runCb08DistressValidation.js` | APPROVED | **COMPLETE** | LIEN deferred flag |
@@ -262,18 +265,37 @@ Primary catalogs: `docs/auditoria-maestra/OFFICIAL_MOTOR_CATALOG.md`, Loop/Swarm
 
 ---
 
-## 7. Debt TD-OMC-52-56
+## 7. Debt TD-OMC-52-56 — CLOSED (PROGRAM 01)
 
 | Field | Value |
 |-------|-------|
 | **ID** | **TD-OMC-52-56** |
-| **Fact** | OMC constitutional = **52**; CB-04 `MOTOR_CATALOG` contains **56** IDs; CB-19 validates constitutional coverage **52** |
-| **Evidence** | `src/factory/cb05/CB-05-COMPLETION.md`; `src/factory/cb04/motorCatalogIndex.js` (header says 52; length = 56) |
-| **Status** | **OPEN / DEFERRED** |
-| **Severity** | **MEDIUM** |
-| **Impact** | Catalog drift; ambiguity; constitution vs runtime decoupling risk |
+| **Fact** | OMC constitutional coverage = **52**; CB-04 runtime index = **56** (intentional Model R1 superset) |
+| **Evidence** | `src/factory/cb04/motorCatalogIndex.js` (`OMC_CONSTITUTIONAL_COVERAGE_COUNT`, `MOTOR_CATALOG_INDEXED_EXPECTED`); PROGRAM 01 Status |
+| **Status** | **CLOSED** |
+| **Severity** | Was MEDIUM |
+| **Resolved by** | **PROGRAM 01 / HQ-01** |
+| **Implementation Commit** | `ef638767120f31bfdcadbbd0e5c725e2113459ed` |
+| **Status Commit** | `dd8912eaa12e0f2151a87b3f73ee9e05648272e7` |
+| **Final Technical Audit** | **PASS WITH OBSERVATIONS** |
 | **Blocks P-INT-01 Slice A?** | **NO** |
-| **Resolved?** | **NO** — must not be marked resolved |
+| **Resolved?** | **YES** — do not re-open as OPEN without new mandate |
+
+---
+
+## 7b. PROGRAM 01 — Factory Core Hardening (CLOSED)
+
+| Field | Value |
+|-------|-------|
+| **Program** | **PROGRAM 01 — FACTORY CORE HARDENING** |
+| **State** | **COMPLETE / STATUS COMMITTED** |
+| **Scope** | HQ-02 · HQ-01 · HQ-03 |
+| **Implementation Commit** | `ef638767120f31bfdcadbbd0e5c725e2113459ed` |
+| **Status Commit** | `dd8912eaa12e0f2151a87b3f73ee9e05648272e7` |
+| **Final Technical Audit** | **PASS WITH OBSERVATIONS** |
+| **Debts closed** | **RR-01** (CB-00 post-APPROVED verifier); **TD-OMC-52-56**; **P-INT-10 MINOR-01** (`skipCbSweep`) |
+| **Status path** | `docs/factory-construction/FACTORY_CORE_HARDENING_PROGRAM_01_IMPL_STATUS.md` |
+| **PROGRAM 02** | **NOT OPENED / NOT AUTHORIZED** by this dossier |
 
 ---
 
@@ -293,7 +315,7 @@ Primary catalogs: `docs/auditoria-maestra/OFFICIAL_MOTOR_CATALOG.md`, Loop/Swarm
 | **TD-AUTH-PROD** | Production AuthN/AuthZ Admin | HIGH | **OPEN** | Required for real Slice A deploy; InMemory OK for first IMPL validation |
 | **TD-PHASE-STATUS-META** | `construction-phase-status.json` metadata may be stale vs HEAD | LOW | **OPEN** | Always verify Git |
 
-Closed examples (do not re-open as open): II.6 COMPLETE; P-INT-02/03 Offline COMPLETE; **P-INT-03 Durable OBJECT STORE FULLY CLOSED**; P-INT-04 Offline + Live InMemory COMPLETE; **P-INT-01 Slice A FULLY CLOSED**; **Admin Live Wiring FULLY CLOSED**; **P-INT-01 Slice B FULLY CLOSED**; **P-INT-10 FULLY CLOSED**; **P-INT-09 FULLY CLOSED**; Master Plan **Fase I COMPLETED**; CB-00…19 construction APPROVED.
+Closed examples (do not re-open as open): II.6 COMPLETE; P-INT-02/03 Offline COMPLETE; **P-INT-03 Durable OBJECT STORE FULLY CLOSED**; P-INT-04 Offline + Live InMemory COMPLETE; **P-INT-01 Slice A FULLY CLOSED**; **Admin Live Wiring FULLY CLOSED**; **P-INT-01 Slice B FULLY CLOSED**; **P-INT-10 FULLY CLOSED**; **P-INT-09 FULLY CLOSED**; Master Plan **Fase I COMPLETED**; CB-00…19 construction APPROVED; **PROGRAM 01 COMPLETE** (**RR-01** CLOSED; **TD-OMC-52-56** CLOSED; **P-INT-10 MINOR-01** CLOSED).
 
 ---
 
@@ -650,14 +672,20 @@ Source catalog: Master Plan §3.2.
 | Status Commit | `c98fe0631683c5490487da299d41d212c7ff356a` |
 | Validation | Suite P-INT-10 PASS (per Status) |
 
-### Explicitly not delivered / not authorized
+### Explicitly not delivered / not authorized (under P-INT-10)
 
 - Canon Gate HTTP API  
 - GitHub Actions / remote CI (without §28 mandate)  
-- Factory CB semantic fixes (e.g. CB-00 dry-run post-APPROVED self-test — RR-01 preserved)  
+
+### Later closed outside P-INT-10
+
+- Factory CB-00 dry-run post-APPROVED self-test (**RR-01**) — **CLOSED** by **PROGRAM 01 / HQ-02** (`ef638767120f31bfdcadbbd0e5c725e2113459ed`)  
+- Programmatic `skipCbSweep` (**P-INT-10 MINOR-01**) — **CLOSED** by **PROGRAM 01 / HQ-03** (same Implementation Commit; Status `dd8912eaa12e0f2151a87b3f73ee9e05648272e7`)  
 
 **Status path:**  
-`docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_10_CI_CANON_GATE_IMPL_STATUS.md`
+`docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_10_CI_CANON_GATE_IMPL_STATUS.md`  
+**PROGRAM 01 Status path:**  
+`docs/factory-construction/FACTORY_CORE_HARDENING_PROGRAM_01_IMPL_STATUS.md`
 
 ---
 
@@ -966,11 +994,11 @@ This section is **continuity guidance only**. It is **not** automatic authorizat
 
 **Integration completed:** I.1; II.1→II.6; P-INT-02 Offline; P-INT-03 Offline (**CLOSED**); **P-INT-03 Durable — OBJECT STORE FULLY CLOSED**; P-INT-04 Offline + Live InMemory; **P-INT-01 Slice A FULLY CLOSED**; **Admin Live Wiring FULLY CLOSED**; **P-INT-01 Slice B FULLY CLOSED** (staging; Mandate `P-INT-01-SLICE-B-IMPL`); **Master Plan Fase I COMPLETED** (**P-INT-10 FULLY CLOSED**; **P-INT-09 FULLY CLOSED**). Master Plan Fase II ítem 4 (Job runner + Orchestration API staging) **delivered** via Slice B. Master Plan Fase II ítem 5 path **OBJECT STORE** **FULLY CLOSED** (does **not** close Cloud / Dedicated DB / SQLite).
 
-**Last completed block:** **P-INT-03 Durable — OBJECT STORE**.
+**Last completed block:** **PROGRAM 01 — Factory Core Hardening** (after prior **P-INT-03 Durable — OBJECT STORE**).
 
-**Active engineering IMPL block:** **NONE** — **ACTIVE IMPLEMENTATION: NONE**. No implementation is authorized by this dossier until a **new explicit Director mandate** under Master Plan gates. This Continuity Dossier **does not** select the next block.
+**Active engineering IMPL block:** **NONE** — **ACTIVE IMPLEMENTATION: NONE**. No implementation is authorized by this dossier until a **new explicit Director mandate** under Master Plan gates. This Continuity Dossier **does not** select the next block (including **PROGRAM 02**).
 
-**Consummated (fact):** P-INT-01 Slice B (**FULLY CLOSED** / **IMPLEMENTATION ACCEPTED** / Audit **PASS WITH OBSERVATIONS**); P-INT-03 Durable OBJECT STORE (**FULLY CLOSED**).
+**Consummated (fact):** P-INT-01 Slice B (**FULLY CLOSED** / **IMPLEMENTATION ACCEPTED** / Audit **PASS WITH OBSERVATIONS**); P-INT-03 Durable OBJECT STORE (**FULLY CLOSED**); **PROGRAM 01** (**COMPLETE** / Implementation `ef63876…` / Status `dd8912e…` / Audit **PASS WITH OBSERVATIONS**).
 
 **Indicative afterwards (not authorized by listing here; no next block selected):**
 
@@ -1170,7 +1198,7 @@ Definition of Done checklist (dossier content) — used for Independent Document
 - [x] Includes CB-00→CB-19  
 - [x] Includes I.x, II.x, P-INT  
 - [x] Includes commits and current Git  
-- [x] Includes debt (incl. 52 vs 56)  
+- [x] Includes debt (incl. 52 vs 56 — **TD-OMC-52-56 CLOSED** by PROGRAM 01)  
 - [x] Includes Web and Supabase stop rules  
 - [x] Includes parking, security/legal, product decisions  
 - [x] Includes protocol and roadmap  
@@ -1183,13 +1211,16 @@ Definition of Done checklist (dossier content) — used for Independent Document
 - [x] Does not authorize push  
 - [x] Resolves audit observations MAJOR-01 / MINOR-01…05 (this correction pass)
 
-**Status after post–P-INT-03 Durable OBJECT STORE closeout reconciliation:** **RECONCILED POST–OBJECT STORE CLOSEOUT / P-INT-03 OFFLINE CLOSED / OBJECT STORE FULLY CLOSED / ACTIVE IMPLEMENTATION: NONE / NEXT BLOCK NONE AUTHORIZED / INDEPENDENT DOCUMENTARY RE-AUDIT (prior): PASS WITH OBSERVATIONS — DOCUMENTARY COMMITTED**  
+**Status after post–PROGRAM 01 Documentary Closeout reconciliation:** **RECONCILED POST–PROGRAM 01 / PROGRAM 01 COMPLETE / STATUS COMMITTED / RR-01 CLOSED / TD-OMC-52-56 CLOSED / P-INT-10 MINOR-01 CLOSED / OBJECT STORE FULLY CLOSED / ACTIVE IMPLEMENTATION: NONE / NEXT BLOCK NONE AUTHORIZED / INDEPENDENT DOCUMENTARY RE-AUDIT (prior Continuity): PASS WITH OBSERVATIONS — DOCUMENTARY COMMITTED**  
 Status path: `docs/factory-construction/integration/FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md`  
+PROGRAM 01 Status path: `docs/factory-construction/FACTORY_CORE_HARDENING_PROGRAM_01_IMPL_STATUS.md`  
 Slice B Status path: `docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_01_SLICE_B_IMPL_STATUS.md`  
 OBJECT STORE Closeout path: `docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_03_DURABLE_OBJECT_STORE_CLOSEOUT.md`  
 **Not** APPROVED as implementation authority. **No engineering implementation authorized** by this document. **Push NOT AUTHORIZED** by this document. This dossier **does not** select the next block.
 
-Preserved open (do **not** close here): Slice A technical MINOR-01…04, OBS-01…03, RR-01…04; Slice B residual observations (non-blocking; see Slice B Status); **TD-AUTH-PROD**, **TD-DUAL-SNAPSHOT**, **TD-OMC-52-56**, **TD-LIEN-01**, **TD-HANDLERS**, **TD-AHEAD-***, **TD-PINT04-***, **TD-DSO-LIVE**, **TD-ELR-CLOUD**. Dedicated DB **OUT**; SQLite **OUT**.
+Preserved open (do **not** close here): Slice A technical MINOR-01…04, OBS-01…03, RR-01…04 (**Slice A IDs — distinct from P-INT-10 RR-01 / MINOR-01**); Slice B residual observations (non-blocking; see Slice B Status); **TD-AUTH-PROD**, **TD-DUAL-SNAPSHOT**, **TD-LIEN-01**, **TD-HANDLERS**, **TD-AHEAD-***, **TD-PINT04-***, **TD-DSO-LIVE**, **TD-ELR-CLOUD**. Dedicated DB **OUT**; SQLite **OUT**.
+
+**Closed by PROGRAM 01 (do not re-open without mandate):** **RR-01** (CB-00 post-APPROVED verifier), **TD-OMC-52-56**, **P-INT-10 MINOR-01** (`skipCbSweep`).
 
 ---
 
