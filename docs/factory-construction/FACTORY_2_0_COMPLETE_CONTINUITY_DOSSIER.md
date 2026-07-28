@@ -7,9 +7,10 @@
 |-------|-------|
 | **Document ID** | `FACTORY_2_0_COMPLETE_CONTINUITY_DOSSIER.md` |
 | **Path** | `docs/factory-construction/FACTORY_2_0_COMPLETE_CONTINUITY_DOSSIER.md` |
-| **Status** | **RECONCILED POST–P-INT-01 SLICE B CLOSEOUT — FASE I COMPLETED — SLICE B FULLY CLOSED — INDEPENDENT DOCUMENTARY RE-AUDIT: PASS WITH OBSERVATIONS — DOCUMENTARY COMMITTED — NEXT BLOCK NONE AUTHORIZED** |
+| **Status** | **RECONCILED POST–P-INT-03 DURABLE OBJECT STORE CLOSEOUT — P-INT-03 OFFLINE CLOSED — OBJECT STORE FULLY CLOSED — FASE I COMPLETED — SLICE B FULLY CLOSED — ACTIVE IMPLEMENTATION: NONE — NEXT BLOCK NONE AUTHORIZED** |
 | **Independent Documentary Re-Audit Status** | `docs/factory-construction/integration/FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md` |
 | **P-INT-01 Slice B Status** | `docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_01_SLICE_B_IMPL_STATUS.md` |
+| **P-INT-03 Durable Object Store Closeout** | `docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_03_DURABLE_OBJECT_STORE_CLOSEOUT.md` |
 | **Nature** | Documentation only — **does not authorize any new engineering IMPL, reopening of Slice B, further FCC/Web changes without mandate, Supabase, Product, Marketplace, II.7, other P-INT IMPL, or push** |
 | **Baseline HEAD (at creation)** | `5a86b0d296a948bfaadb2457e1760e886348af6d` |
 | **Reconciliation tip HEAD (Slice A closed)** | `2622c29d9489aa7a14987be915d40c0aeb1856e8` |
@@ -20,7 +21,7 @@
 | **Implementation tip (Slice B B4)** | `09ac29df1d4c522a2201b6e0abf901f1587c5621` |
 | **Baseline branch** | `integration/factory-complete-20260725` |
 | **Forensic Discovery** | COMPLETE CONTINUITY FORENSIC DISCOVERY (session, READ_ONLY) |
-| **Reconciliation** | POST–Slice B closeout — Status Slice B **FULLY CLOSED** / **IMPLEMENTATION ACCEPTED** prevails; Continuity Independent Documentary Re-Audit remains **DOCUMENTARY COMMITTED** |
+| **Reconciliation** | POST–P-INT-03 Durable **OBJECT STORE** closeout — Offline **CLOSED**; Object Store **FULLY CLOSED**; **TD-ELR-CLOUD** remains **OPEN**; Dedicated DB **OUT**; SQLite **OUT**; **ACTIVE IMPLEMENTATION: NONE**; **NEXT BLOCK: NONE AUTHORIZED**; Continuity Independent Documentary Re-Audit remains **DOCUMENTARY COMMITTED** (prior); this dossier **does not** select the next block |
 
 ---
 
@@ -287,12 +288,12 @@ Primary catalogs: `docs/auditoria-maestra/OFFICIAL_MOTOR_CATALOG.md`, Loop/Swarm
 | **TD-PINT04-LIVE** | Non-blocking Live InMemory audit observations | LOW | **OPEN** (non-blocking) | P-INT-04 Live Status |
 | **TD-PINT04-OFFLINE-M*** | Offline audit observations | LOW | **OPEN** (non-blocking) | P-INT-04 Offline Status |
 | **TD-DSO-LIVE** | Live connectors / HTTP ingest | HIGH (scope) | **OPEN / NOT AUTHORIZED** | P-INT-02 Live |
-| **TD-ELR-CLOUD** | Cloud/Supabase ELR | HIGH (scope) | **OPEN / NOT AUTHORIZED** | P-INT-03 cloud |
+| **TD-ELR-CLOUD** | Cloud/Supabase ELR | HIGH (scope) | **OPEN / NOT AUTHORIZED** | Outside OBJECT STORE Mandate (OBJECT STORE **FULLY CLOSED**; Cloud residual remains) |
 | **TD-SQLITE** | SQLite ELR | — | **DEFERRED / NOT AUTHORIZED** | P-INT-03 Plan |
 | **TD-AUTH-PROD** | Production AuthN/AuthZ Admin | HIGH | **OPEN** | Required for real Slice A deploy; InMemory OK for first IMPL validation |
 | **TD-PHASE-STATUS-META** | `construction-phase-status.json` metadata may be stale vs HEAD | LOW | **OPEN** | Always verify Git |
 
-Closed examples (do not re-open as open): II.6 COMPLETE; P-INT-02/03 Offline COMPLETE; P-INT-04 Offline + Live InMemory COMPLETE; **P-INT-01 Slice A FULLY CLOSED**; **Admin Live Wiring FULLY CLOSED**; **P-INT-01 Slice B FULLY CLOSED**; **P-INT-10 FULLY CLOSED**; **P-INT-09 FULLY CLOSED**; Master Plan **Fase I COMPLETED**; CB-00…19 construction APPROVED.
+Closed examples (do not re-open as open): II.6 COMPLETE; P-INT-02/03 Offline COMPLETE; **P-INT-03 Durable OBJECT STORE FULLY CLOSED**; P-INT-04 Offline + Live InMemory COMPLETE; **P-INT-01 Slice A FULLY CLOSED**; **Admin Live Wiring FULLY CLOSED**; **P-INT-01 Slice B FULLY CLOSED**; **P-INT-10 FULLY CLOSED**; **P-INT-09 FULLY CLOSED**; Master Plan **Fase I COMPLETED**; CB-00…19 construction APPROVED.
 
 ---
 
@@ -395,7 +396,7 @@ II.1 Trust
 |-------|------|-------|
 | **01** | Factory Service Edge | **Slice A FULLY CLOSED** (Status COMMITTED); **Admin Live Wiring FULLY CLOSED** (Status COMMITTED); **Slice B FULLY CLOSED** (Status COMMITTED `dce654c…`; Implementation tip `09ac29d…`; Mandate `5967bd4…`; Audit **PASS WITH OBSERVATIONS**; **IMPLEMENTATION ACCEPTED**) |
 | **02** | DSO Live Ingest | Offline **COMPLETE**; Live **OPEN / NOT AUTHORIZED** |
-| **03** | ELR Persistence Bridge | Offline AtomicFile **COMPLETE**; Cloud/Supabase **OPEN**; SQLite **DEFERRED** |
+| **03** | ELR Persistence Bridge | Offline AtomicFile **CLOSED**; Durable **OBJECT STORE FULLY CLOSED** (Mandate `P-INT-03-DURABLE-OBJECT-STORE-IMPL`; Closeout `FACTORY_INTEGRATION_P_INT_03_DURABLE_OBJECT_STORE_CLOSEOUT.md`); Cloud/Supabase (**TD-ELR-CLOUD**) **OPEN** (outside Mandate); Dedicated DB **OUT**; SQLite **DEFERRED / OUT** |
 | **04** | Decision Package Export | Offline **COMPLETE**; Live InMemory **COMPLETE**; Cloud vendor **OPEN / NOT AUTHORIZED** |
 | **05** | Product Publish Gate | **NOT OPENED** |
 | **06** | Marketplace Sync | **NOT OPENED** |
@@ -422,16 +423,35 @@ Source catalog: Master Plan §3.2.
 
 ---
 
-## 13. P-INT-03 (Offline capabilities)
+## 13. P-INT-03 (ELR Persistence Bridge)
+
+### Offline
 
 - `AtomicFileElrStore` (inject-only)  
 - PREPARE / COMMIT / ABORT (+ recover)  
 - SHA-256 sidecar; `storeFormatVersion`  
 - `FileElrStore` remains default  
-- Cloud persistence **not** implemented; Supabase **not** touched; SQLite **deferred**  
+- **CLOSED** / **COMPLETE**  
 
 **Commits:** `37da1ae` (documentation); `0db69d4` (implementation).  
 **Status:** `FACTORY_INTEGRATION_P_INT_03_OFFLINE_IMPL_STATUS.md`
+
+### Durable — OBJECT STORE
+
+- Mandate `P-INT-03-DURABLE-OBJECT-STORE-IMPL` — path **OBJECT STORE**  
+- Phase 1: Object Store contract + `MemoryObjectStoreBackend` + `ObjectStoreElrStore` (inject-only)  
+- Phase 2: `LocalDurableObjectStoreBackend` (process-surviving)  
+- `FileElrStore` remains default; `ElrStorePort` / CB / `FactoryRegistry` / ELR semantics unmodified  
+- **FULLY CLOSED** (Closeout)  
+
+**Closeout:** `docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_03_DURABLE_OBJECT_STORE_CLOSEOUT.md`  
+**Phase Statuses:** `FACTORY_INTEGRATION_P_INT_03_DURABLE_OBJECT_STORE_PHASE1_IMPL_COMMIT_STATUS.md`; `FACTORY_INTEGRATION_P_INT_03_DURABLE_OBJECT_STORE_PHASE2_IMPL_COMMIT_STATUS.md`
+
+### Outside this Mandate (not closed by Object Store closeout)
+
+- **TD-ELR-CLOUD** (Cloud/Supabase ELR) — **OPEN / NOT AUTHORIZED**  
+- Dedicated DB — **OUT** (requires separate Mandate if ever authorized)  
+- SQLite / **TD-SQLITE** — **DEFERRED / OUT**  
 
 ---
 
@@ -944,18 +964,23 @@ This section is **continuity guidance only**. It is **not** automatic authorizat
 
 **Construction:** CB-00 → CB-19 **COMPLETE**.
 
-**Integration completed:** I.1; II.1→II.6; P-INT-02 Offline; P-INT-03 Offline; P-INT-04 Offline + Live InMemory; **P-INT-01 Slice A FULLY CLOSED**; **Admin Live Wiring FULLY CLOSED**; **P-INT-01 Slice B FULLY CLOSED** (staging; Mandate `P-INT-01-SLICE-B-IMPL`); **Master Plan Fase I COMPLETED** (**P-INT-10 FULLY CLOSED**; **P-INT-09 FULLY CLOSED**). Master Plan Fase II ítem 4 (Job runner + Orchestration API staging) **delivered** via Slice B.
+**Integration completed:** I.1; II.1→II.6; P-INT-02 Offline; P-INT-03 Offline (**CLOSED**); **P-INT-03 Durable — OBJECT STORE FULLY CLOSED**; P-INT-04 Offline + Live InMemory; **P-INT-01 Slice A FULLY CLOSED**; **Admin Live Wiring FULLY CLOSED**; **P-INT-01 Slice B FULLY CLOSED** (staging; Mandate `P-INT-01-SLICE-B-IMPL`); **Master Plan Fase I COMPLETED** (**P-INT-10 FULLY CLOSED**; **P-INT-09 FULLY CLOSED**). Master Plan Fase II ítem 4 (Job runner + Orchestration API staging) **delivered** via Slice B. Master Plan Fase II ítem 5 path **OBJECT STORE** **FULLY CLOSED** (does **not** close Cloud / Dedicated DB / SQLite).
 
-**Active engineering IMPL block:** **NONE** — no implementation is authorized by this dossier until a new explicit Director mandate under Master Plan gates (Fase I is closed; Slice B is closed; later Fase II residual / Fase III+ items remain subject to separate authorization).
+**Last completed block:** **P-INT-03 Durable — OBJECT STORE**.
 
-**Consummated (fact):** P-INT-01 Slice B (**FULLY CLOSED** / **IMPLEMENTATION ACCEPTED** / Audit **PASS WITH OBSERVATIONS**).
+**Active engineering IMPL block:** **NONE** — **ACTIVE IMPLEMENTATION: NONE**. No implementation is authorized by this dossier until a **new explicit Director mandate** under Master Plan gates. This Continuity Dossier **does not** select the next block.
+
+**Consummated (fact):** P-INT-01 Slice B (**FULLY CLOSED** / **IMPLEMENTATION ACCEPTED** / Audit **PASS WITH OBSERVATIONS**); P-INT-03 Durable OBJECT STORE (**FULLY CLOSED**).
 
 **Indicative afterwards (not authorized by listing here; no next block selected):**
 
 possible FCC wiring (separate Continuity §20 mandate) → P-INT-02 Live → P-INT-03 cloud → P-INT-04 cloud sink → P-INT-05…08 → II.7 → production Auth → DSO live → Product → Marketplace → **mandatory pre-launch professional cybersecurity + US legal reviews** → Arizona production launch → optional post-launch expanded legal review / future PWA (when PWA reactivation conditions are met).  
-*(Fase IV ítem 13 — retire/isolate `dealPipeline` — remains OPEN / not performed by P-INT-09.)*
+*(Fase IV ítem 13 — retire/isolate `dealPipeline` — remains OPEN / not performed by P-INT-09.)*  
+*(P-INT-03 Cloud / Dedicated DB / SQLite remain outside the closed OBJECT STORE Mandate.)*
 
 ```text
+ACTIVE IMPLEMENTATION: NONE
+
 NEXT BLOCK:
 NONE AUTHORIZED
 
@@ -990,7 +1015,10 @@ NO POSTERIOR BLOCK AUTHORIZED
 | **P-INT-10 — CI Canon Gate** | **FULLY CLOSED / STATUS COMMITTED** (`c98fe06…` / IMPL `1b440c7…`) |
 | **P-INT-09 — DealPipeline Reconciliation** | **FULLY CLOSED / STATUS COMMITTED** (`983ee75…` / IMPL `58eeb75…` / Plan `c402a06…`) |
 | **Master Plan Fase I** | **COMPLETED** (ítems 1–3 CLOSED) |
-| **This Continuity Dossier (post–Slice B closeout reconciliation)** | **RECONCILED / SLICE B FULLY CLOSED / NEXT BLOCK NONE AUTHORIZED** |
+| **P-INT-03 Offline** | **CLOSED** / **COMPLETE** |
+| **P-INT-03 Durable — OBJECT STORE** | **FULLY CLOSED** — Mandate `P-INT-03-DURABLE-OBJECT-STORE-IMPL`; Closeout `FACTORY_INTEGRATION_P_INT_03_DURABLE_OBJECT_STORE_CLOSEOUT.md`; Phase 1/2 Statuses **GIT COMMITTED / STATUS RECONCILED** |
+| **Last completed block** | **P-INT-03 Durable — OBJECT STORE** |
+| **This Continuity Dossier (post–OBJECT STORE closeout reconciliation)** | **RECONCILED / OBJECT STORE FULLY CLOSED / ACTIVE IMPLEMENTATION: NONE / NEXT BLOCK NONE AUTHORIZED** |
 
 PASS / PASS WITH OBSERVATIONS for the Plan refer to the **P-INT-01 Implementation Plan** audit and re-audit.  
 PASS WITH OBSERVATIONS for Slice A refers to the **Independent Technical Audit** recorded in the Slice A Status.  
@@ -1005,22 +1033,30 @@ Admin Live Wiring, P-INT-10, and P-INT-09 audits are recorded in their respectiv
 - **P-INT-10 — CI Canon Gate** — **FULLY CLOSED / STATUS COMMITTED**  
 - **P-INT-09 — DealPipeline Reconciliation** — **FULLY CLOSED / STATUS COMMITTED**  
 - **Master Plan Fase I** — **COMPLETED**  
-- **P-INT-01 Slice B** — **FULLY CLOSED** / **IMPLEMENTATION ACCEPTED** / Audit **PASS WITH OBSERVATIONS**
+- **P-INT-01 Slice B** — **FULLY CLOSED** / **IMPLEMENTATION ACCEPTED** / Audit **PASS WITH OBSERVATIONS**  
+- **P-INT-03 Offline** — **CLOSED**  
+- **P-INT-03 Durable — OBJECT STORE** — **FULLY CLOSED**  
+- **TD-ELR-CLOUD** — remains **OPEN** (outside OBJECT STORE Mandate)  
+- Dedicated DB — **OUT**; SQLite — **OUT**  
+- **Last completed block:** **P-INT-03 Durable — OBJECT STORE**
 
 **Documentary gate (Continuity Independent Documentary Re-Audit):**  
 **COMPLETE** — **INDEPENDENT DOCUMENTARY RE-AUDIT: PASS WITH OBSERVATIONS — DOCUMENTARY COMMITTED**  
-Status: `FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md`
+Status: `FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md`  
+*(Prior re-audit remains DOCUMENTARY COMMITTED; this reconciliation updates Continuity facts for OBJECT STORE closeout without reopening that re-audit as pending IMPL.)*
 
 **Next official engineering block:**
 
 ```text
+ACTIVE IMPLEMENTATION: NONE
+
 NEXT BLOCK:
 NONE AUTHORIZED
 
 NO POSTERIOR BLOCK AUTHORIZED
 ```
 
-Later Master Plan gates require a **new explicit Director mandate** + Implementation Plan. This dossier does **not** reorder Master Plan and does **not** select the next block.
+Later Master Plan gates require a **new explicit Director mandate**. This dossier does **not** reorder Master Plan and does **not** select the next block.
 
 Until a new explicit Director mandate is issued:
 
@@ -1035,7 +1071,7 @@ Until a new explicit Director mandate is issued:
 - **no** Fase IV `dealPipeline` retire/isolate;  
 - **no** push / merge / deploy from this dossier.
 
-`P-INT-01-SLICE-A-IMPL`, **Admin Live Wiring**, **P-INT-01-SLICE-B-IMPL**, **P-INT-10**, and **P-INT-09** are **closed** — do **not** treat them as the exact next engineering step.
+`P-INT-01-SLICE-A-IMPL`, **Admin Live Wiring**, **P-INT-01-SLICE-B-IMPL**, **P-INT-10**, **P-INT-09**, and **P-INT-03 Durable OBJECT STORE** are **closed** — do **not** treat them as the exact next engineering step.
 
 ---
 
@@ -1147,12 +1183,13 @@ Definition of Done checklist (dossier content) — used for Independent Document
 - [x] Does not authorize push  
 - [x] Resolves audit observations MAJOR-01 / MINOR-01…05 (this correction pass)
 
-**Status after post–Slice B closeout reconciliation:** **RECONCILED POST–P-INT-01 SLICE B CLOSEOUT / FASE I COMPLETED / SLICE B FULLY CLOSED / INDEPENDENT DOCUMENTARY RE-AUDIT: PASS WITH OBSERVATIONS — DOCUMENTARY COMMITTED / NEXT BLOCK NONE AUTHORIZED**  
+**Status after post–P-INT-03 Durable OBJECT STORE closeout reconciliation:** **RECONCILED POST–OBJECT STORE CLOSEOUT / P-INT-03 OFFLINE CLOSED / OBJECT STORE FULLY CLOSED / ACTIVE IMPLEMENTATION: NONE / NEXT BLOCK NONE AUTHORIZED / INDEPENDENT DOCUMENTARY RE-AUDIT (prior): PASS WITH OBSERVATIONS — DOCUMENTARY COMMITTED**  
 Status path: `docs/factory-construction/integration/FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md`  
 Slice B Status path: `docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_01_SLICE_B_IMPL_STATUS.md`  
-**Not** APPROVED as implementation authority. **No engineering implementation authorized** by this document. **Push NOT AUTHORIZED** by this document.
+OBJECT STORE Closeout path: `docs/factory-construction/integration/FACTORY_INTEGRATION_P_INT_03_DURABLE_OBJECT_STORE_CLOSEOUT.md`  
+**Not** APPROVED as implementation authority. **No engineering implementation authorized** by this document. **Push NOT AUTHORIZED** by this document. This dossier **does not** select the next block.
 
-Preserved open (do **not** close here): Slice A technical MINOR-01…04, OBS-01…03, RR-01…04; Slice B residual observations (non-blocking; see Slice B Status); **TD-AUTH-PROD**, **TD-DUAL-SNAPSHOT**, **TD-OMC-52-56**, **TD-LIEN-01**, **TD-HANDLERS**, **TD-AHEAD-***, **TD-PINT04-***, **TD-DSO-LIVE**, **TD-ELR-CLOUD**.
+Preserved open (do **not** close here): Slice A technical MINOR-01…04, OBS-01…03, RR-01…04; Slice B residual observations (non-blocking; see Slice B Status); **TD-AUTH-PROD**, **TD-DUAL-SNAPSHOT**, **TD-OMC-52-56**, **TD-LIEN-01**, **TD-HANDLERS**, **TD-AHEAD-***, **TD-PINT04-***, **TD-DSO-LIVE**, **TD-ELR-CLOUD**. Dedicated DB **OUT**; SQLite **OUT**.
 
 ---
 
@@ -1173,21 +1210,31 @@ Admin Live Wiring is CLOSED (FULLY CLOSED / STATUS COMMITTED).
 P-INT-10 — CI Canon Gate is CLOSED (FULLY CLOSED / STATUS COMMITTED).
 P-INT-09 — DealPipeline Reconciliation is CLOSED (FULLY CLOSED / STATUS COMMITTED).
 P-INT-01-SLICE-B-IMPL is CLOSED (FULLY CLOSED / IMPLEMENTATION ACCEPTED / STATUS COMMITTED).
+P-INT-03 Offline is CLOSED.
+P-INT-03 Durable — OBJECT STORE is FULLY CLOSED (Mandate P-INT-03-DURABLE-OBJECT-STORE-IMPL).
 Master Plan Fase I is COMPLETED.
 
-This dossier has been reconciled post–P-INT-01 Slice B closeout.
+Last completed block: P-INT-03 Durable — OBJECT STORE.
 
-Documentary gate (Continuity Independent Documentary Re-Audit):
+TD-ELR-CLOUD remains OPEN (outside OBJECT STORE Mandate).
+Dedicated DB remains OUT.
+SQLite remains OUT.
+
+This dossier has been reconciled post–P-INT-03 Durable OBJECT STORE closeout.
+This dossier does NOT select the next block.
+
+Documentary gate (Continuity Independent Documentary Re-Audit — prior):
   INDEPENDENT DOCUMENTARY RE-AUDIT: PASS WITH OBSERVATIONS
   DOCUMENTARY COMMITTED
   Status: FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md
 
 Next official engineering block:
+  ACTIVE IMPLEMENTATION: NONE
   NEXT BLOCK:
   NONE AUTHORIZED
 
   NO POSTERIOR BLOCK AUTHORIZED
-  (later Master Plan gates require a new explicit Director mandate + Implementation Plan)
+  (later Master Plan gates require a new explicit Director mandate)
 
 Until a new explicit Director mandate is issued,
 no implementation block is authorized.
@@ -1197,9 +1244,11 @@ no implementation block is authorized.
 
 ## 37. Final continuity statement
 
-Factory 2.0 **construction** is closed through **CB-19**. Arizona **integration** has closed I.1, II.1–II.6, P-INT-02/03/04 Offline (+ P-INT-04 Live InMemory), **P-INT-01 Slice A (FULLY CLOSED)**, **Admin Live Wiring (FULLY CLOSED)**, **P-INT-10 (FULLY CLOSED)**, **P-INT-09 (FULLY CLOSED)**, and **P-INT-01 Slice B (FULLY CLOSED / IMPLEMENTATION ACCEPTED / Audit PASS WITH OBSERVATIONS)**. **Master Plan Fase I is COMPLETED**.
+Factory 2.0 **construction** is closed through **CB-19**. Arizona **integration** has closed I.1, II.1–II.6, P-INT-02 Offline, **P-INT-03 Offline (CLOSED)**, **P-INT-03 Durable — OBJECT STORE (FULLY CLOSED)**, P-INT-04 Offline + Live InMemory, **P-INT-01 Slice A (FULLY CLOSED)**, **Admin Live Wiring (FULLY CLOSED)**, **P-INT-10 (FULLY CLOSED)**, **P-INT-09 (FULLY CLOSED)**, and **P-INT-01 Slice B (FULLY CLOSED / IMPLEMENTATION ACCEPTED / Audit PASS WITH OBSERVATIONS)**. **Master Plan Fase I is COMPLETED**. Master Plan Fase II ítem 5 path **OBJECT STORE** is **FULLY CLOSED** (Cloud / Dedicated DB / SQLite **not** closed by that Mandate).
 
-There is **no** active authorized engineering IMPL block.
+**Last completed block:** **P-INT-03 Durable — OBJECT STORE**.
+
+There is **no** active authorized engineering IMPL block (**ACTIVE IMPLEMENTATION: NONE**).
 
 ```text
 NEXT BLOCK:
@@ -1208,9 +1257,11 @@ NONE AUTHORIZED
 NO POSTERIOR BLOCK AUTHORIZED
 ```
 
-Further FCC/Web changes without mandate, Supabase, Product, Marketplace, II.7, P-INT-05…08, and Fase IV `dealPipeline` retire/isolate remain **NOT AUTHORIZED**. Do **not** re-open Slice B as pending IMPL.
+Further FCC/Web changes without mandate, Supabase, Product, Marketplace, II.7, P-INT-05…08, and Fase IV `dealPipeline` retire/isolate remain **NOT AUTHORIZED**. Do **not** re-open Slice B or OBJECT STORE as pending IMPL. **TD-ELR-CLOUD** remains **OPEN**. Dedicated DB **OUT**. SQLite **OUT**.
 
-Resume work by reading: latest Status (`FACTORY_INTEGRATION_P_INT_01_SLICE_B_IMPL_STATUS.md`) → Continuity Independent Documentary Re-Audit Status (`FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md`) → HEAD commit → **this dossier** → restrictions → (**Independent Documentary Re-Audit: PASS WITH OBSERVATIONS — DOCUMENTARY COMMITTED**) → then await **explicit Director mandate** for the next Master Plan gate before any implementation.
+This Continuity Dossier **does not** select the next block. The next block requires a **new explicit Director mandate**.
+
+Resume work by reading: OBJECT STORE Closeout (`FACTORY_INTEGRATION_P_INT_03_DURABLE_OBJECT_STORE_CLOSEOUT.md`) → Continuity Independent Documentary Re-Audit Status (`FACTORY_2_0_CONTINUITY_DOSSIER_INDEPENDENT_DOCUMENTARY_REAUDIT_STATUS.md`) → HEAD commit → **this dossier** → restrictions → then await **explicit Director mandate** for the next Master Plan gate before any implementation.
 
 ---
 
