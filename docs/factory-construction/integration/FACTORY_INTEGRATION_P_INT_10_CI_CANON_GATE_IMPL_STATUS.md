@@ -231,11 +231,11 @@ Independent Technical Audit verification 2–6, 13–14, 17: **PASS**.
 **Veredicto:** **PASS — READY FOR IMPLEMENTATION COMMIT**  
 **CRITICAL:** 0 · **MAJOR:** 0
 
-### MINOR-01 (preservado OPEN)
+### MINOR-01 — CLOSED by PROGRAM 01
 
 | ID | Hallazgo | Estado |
 |----|----------|--------|
-| **MINOR-01** | `runCiCanonGate` expone opción programática `skipCbSweep` (default `false`). No expuesta en CLI; un caller podría omitir el sweep CB. | **OPEN** (no bloqueante) |
+| **MINOR-01** | `runCiCanonGate` exponía opción programática `skipCbSweep` (default `false`). | **CLOSED** — PROGRAM 01 / HQ-03 (`ef638767120f31bfdcadbbd0e5c725e2113459ed`); see `FACTORY_CORE_HARDENING_PROGRAM_01_IMPL_STATUS.md` |
 
 ### OBSERVATIONS (preservadas)
 
@@ -247,17 +247,16 @@ Independent Technical Audit verification 2–6, 13–14, 17: **PASS**.
 
 ---
 
-## 12. Riesgo preexistente CB-00 (no regresión P-INT-10)
+## 12. Riesgo preexistente CB-00 — CLOSED by PROGRAM 01
 
 | Campo | Valor |
 |-------|-------|
 | **ID** | **RR-01 / CB-00 dry-run post-APPROVED** |
-| **Síntoma** | `node src/runCb00CanonValidation.js` (dry-run) → `passed: false` con error `assertPhaseUnlocked should block CB-01 when CB-00 incomplete` |
-| **Causa** | Self-test en `src/factory/cb00/validateCb00.js` (`validateConstructionGovernance`) asume CB-00 incompleto; con ledger **APPROVED**, `assertPhaseUnlocked("CB-01")` no lanza y el test añade error |
-| **Evidencia** | Error presente en `HEAD` Factory **antes** de P-INT-10; Implementation Commit **no** modificó `src/factory/**` |
-| **Technical Audit §16** | **PASS** — problema preexistente, no regresión P-INT-10 |
-| **Efecto en gate** | `node src/runCiCanonGate.js` (sweep completo) **fail-closed** en CB-00 — comportamiento **correcto** del adaptador |
-| **Remedio** | **NOT AUTHORIZED** bajo P-INT-10 — requiere mandato Factory separado |
+| **Síntoma (histórico)** | `node src/runCb00CanonValidation.js` (dry-run) → `passed: false` con error `assertPhaseUnlocked should block CB-01 when CB-00 incomplete` |
+| **Causa (histórica)** | Self-test en `validateCb00.js` asumía CB-00 incompleto bajo ledger **APPROVED** |
+| **Estado bajo P-INT-10** | Preexistente; **no** corregido por P-INT-10 (correcto) |
+| **Estado actual** | **CLOSED** — PROGRAM 01 / HQ-02 (`ef638767120f31bfdcadbbd0e5c725e2113459ed`); Construction Governance unmodified; see `FACTORY_CORE_HARDENING_PROGRAM_01_IMPL_STATUS.md` |
+| **Remedio (histórico P-INT-10)** | Requirió mandato Factory separado — **cumplido** por PROGRAM 01 |
 
 ---
 
@@ -310,7 +309,7 @@ Este Status **no** autoriza Discovery ni IMPL de P-INT-09.
 - P-INT-09 dealPipeline labeling  
 - Continuity Dossier reconcile  
 - Push / merge / deploy  
-- Cierre de MINOR-01 / OBS-01…03  
+- Cierre de MINOR-01 / OBS-01…03 **bajo P-INT-10** (MINOR-01 later **CLOSED** by PROGRAM 01 — see §11 / PROGRAM 01 Status; OBS-01…03 remain accepted OPEN) 
 
 ---
 
@@ -322,8 +321,8 @@ Ready for **Independent Status Audit** when this document:
 - [x] Records suite 19/19 PASS  
 - [x] Lists implemented files and closed scope  
 - [x] Records protected surfaces intact  
-- [x] Records CB-00 pre-existing risk  
-- [x] Preserves Technical Audit MINOR-01 and OBS-01…03  
+- [x] Records CB-00 pre-existing risk (**RR-01** later **CLOSED** by PROGRAM 01)  
+- [x] Preserves Technical Audit OBS-01…03; **MINOR-01 CLOSED** by PROGRAM 01 (Status amendment) 
 - [x] States P-INT-10 / Fase I / P-INT-09 posterior  
 - [x] States push NOT DONE  
 - [x] Does not authorize out-of-scope work  
