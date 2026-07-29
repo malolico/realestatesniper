@@ -302,12 +302,23 @@ export class InMemoryJobStore {
   }
 
   markFailed(jobId, error) {
+    const existing = this._jobs.get(jobId);
+    if (!existing) {
+      const err = new Error("job not found");
+      err.code = FACTORY_ORCHESTRATION_ERROR_CODES.NOT_FOUND;
+      throw err;
+    }
+    if (isTerminalJobState(existing.state)) {
+      const err = new Error("job already terminal");
+      err.code = FACTORY_ORCHESTRATION_ERROR_CODES.CONFLICT;
+      throw err;
+    }
+    // HQ-04 NB-T01: RUNNING + cancelRequested → safe CANCELLED terminal (never leave RUNNING).
+    if (existing.state === JOB_STATES.RUNNING && existing.cancelRequested === true) {
+      const cp = this.checkpoint(jobId, "cancel-before-fail");
+      return cp.job;
+    }
     return this.update(jobId, (job) => {
-      if (isTerminalJobState(job.state)) {
-        const err = new Error("job already terminal");
-        err.code = FACTORY_ORCHESTRATION_ERROR_CODES.CONFLICT;
-        throw err;
-      }
       if (job.state !== JOB_STATES.RUNNING && job.state !== JOB_STATES.QUEUED) {
         const err = new Error("illegal fail transition");
         err.code = FACTORY_ORCHESTRATION_ERROR_CODES.CONFLICT;

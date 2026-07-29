@@ -268,6 +268,255 @@ async function run() {
     assert.match(proc.stdout, /ALL SUITES PASS/);
   });
 
+  // ——— HQ-04 / OBS-SB-RACE hardening (deterministic interleavings) ———
+
+  /**
+   * Controllable delay: timeout arm waits on gate; executor sleep hangs forever.
+   * Releases timeout only after caller invokes allowTimeout() (sync ordering).
+   */
+  function createControllableDelay(timeoutMs) {
+    let allowTimeout;
+    const timeoutGate = new Promise((resolve) => {
+      allowTimeout = resolve;
+    });
+    const delayFn = async (ms) => {
+      if (ms === timeoutMs) {
+        await timeoutGate;
+        return;
+      }
+      await new Promise(() => {});
+    };
+    return { delayFn, allowTimeout: () => allowTimeout() };
+  }
+
+  await test("13 HQ-04 timeout without cancelRequested → FAILED TIMEOUT", async () => {
+    const store = new InMemoryJobStore();
+    const timeoutMs = 10_000;
+    const { delayFn, allowTimeout } = createControllableDelay(timeoutMs);
+    const runner = new JobRunnerCore(store, {
+      executionTimeoutMs: timeoutMs,
+      delay: delayFn,
+      executor: async (_job, hooks) => {
+        allowTimeout();
+        await hooks.sleep(1);
+        return { cancelled: false, resultSummary: { summaryCode: "TOO_LATE" } };
+      },
+    });
+    const { job } = runner.enqueue(
+      { factoryKey: "fk-hq04-13", command: "orchestrateExpediente" },
+      "idem-hq04-13",
+      "actor-a"
+    );
+    const done = await runner.processJob(job.jobId);
+    assert.equal(done.state, JOB_STATES.FAILED);
+    assert.equal(done.error.code, "TIMEOUT");
+    assert.equal(store.read(job.jobId).state, JOB_STATES.FAILED);
+  });
+
+  await test("14 HQ-04 cancelRequested before timeout while RUNNING → CANCELLED", async () => {
+    const store = new InMemoryJobStore();
+    const timeoutMs = 10_000;
+    const { delayFn, allowTimeout } = createControllableDelay(timeoutMs);
+    const runner = new JobRunnerCore(store, {
+      executionTimeoutMs: timeoutMs,
+      delay: delayFn,
+      executor: async (job, hooks) => {
+        const cancel = store.requestCancel(job.jobId);
+        assert.equal(cancel.ok, true);
+        assert.equal(cancel.job.cancelRequested, true);
+        assert.equal(cancel.job.state, JOB_STATES.RUNNING);
+        allowTimeout();
+        await hooks.sleep(1);
+        return { cancelled: false, resultSummary: { summaryCode: "SHOULD_NOT_SUCCEED" } };
+      },
+    });
+    const { job } = runner.enqueue(
+      { factoryKey: "fk-hq04-14", command: "orchestrateExpediente" },
+      "idem-hq04-14",
+      "actor-a"
+    );
+    const done = await runner.processJob(job.jobId);
+    assert.equal(done.state, JOB_STATES.CANCELLED);
+    const persisted = store.read(job.jobId);
+    assert.equal(persisted.state, JOB_STATES.CANCELLED);
+    assert.equal(persisted.state, done.state);
+  });
+
+  await test("15 HQ-04 timeout then cancel → single FAILED terminal preserved", async () => {
+    const store = new InMemoryJobStore();
+    const timeoutMs = 10_000;
+    const { delayFn, allowTimeout } = createControllableDelay(timeoutMs);
+    const runner = new JobRunnerCore(store, {
+      executionTimeoutMs: timeoutMs,
+      delay: delayFn,
+      executor: async (_job, hooks) => {
+        allowTimeout();
+        await hooks.sleep(1);
+        return { cancelled: false, resultSummary: {} };
+      },
+    });
+    const { job } = runner.enqueue(
+      { factoryKey: "fk-hq04-15", command: "orchestrateExpediente" },
+      "idem-hq04-15",
+      "actor-a"
+    );
+    const done = await runner.processJob(job.jobId);
+    assert.equal(done.state, JOB_STATES.FAILED);
+    const cancel = store.requestCancel(job.jobId);
+    assert.equal(cancel.ok, false);
+    assert.equal(cancel.code, FACTORY_ORCHESTRATION_ERROR_CODES.CONFLICT);
+    assert.equal(store.read(job.jobId).state, JOB_STATES.FAILED);
+  });
+
+  await test("16 HQ-04 double cancel idempotent", () => {
+    const store = new InMemoryJobStore();
+    const { job } = store.enqueueOrchestrate({
+      factoryKey: "fk-hq04-16",
+      idempotencyKey: "idem-hq04-16",
+      actorId: "actor-a",
+    });
+    const first = store.requestCancel(job.jobId);
+    assert.equal(first.ok, true);
+    assert.equal(first.job.state, JOB_STATES.CANCELLED);
+    const second = store.requestCancel(job.jobId);
+    assert.equal(second.ok, true);
+    assert.equal(second.idempotent, true);
+    assert.equal(second.job.state, JOB_STATES.CANCELLED);
+    assert.equal(store.read(job.jobId).state, JOB_STATES.CANCELLED);
+  });
+
+  await test("17 HQ-04 timeout after already CANCELLED does not overwrite", async () => {
+    const store = new InMemoryJobStore();
+    const timeoutMs = 10_000;
+    const { delayFn, allowTimeout } = createControllableDelay(timeoutMs);
+    const runner = new JobRunnerCore(store, {
+      executionTimeoutMs: timeoutMs,
+      delay: delayFn,
+      executor: async (job, hooks) => {
+        store.requestCancel(job.jobId);
+        const cp = store.checkpoint(job.jobId, "early-cancel");
+        assert.equal(cp.cancelled, true);
+        assert.equal(cp.job.state, JOB_STATES.CANCELLED);
+        allowTimeout();
+        await hooks.sleep(1);
+        return { cancelled: false, resultSummary: {} };
+      },
+    });
+    const { job } = runner.enqueue(
+      { factoryKey: "fk-hq04-17", command: "orchestrateExpediente" },
+      "idem-hq04-17",
+      "actor-a"
+    );
+    const done = await runner.processJob(job.jobId);
+    assert.equal(done.state, JOB_STATES.CANCELLED);
+    assert.equal(store.read(job.jobId).state, JOB_STATES.CANCELLED);
+  });
+
+  await test("18 HQ-04 SUCCEEDED then cancel/timeout paths do not overwrite", async () => {
+    const store = new InMemoryJobStore();
+    const runner = new JobRunnerCore(store, { executionTimeoutMs: 2000 });
+    const { job } = runner.enqueue(
+      { factoryKey: "fk-hq04-18", command: "orchestrateExpediente" },
+      "idem-hq04-18",
+      "actor-a"
+    );
+    const done = await runner.processJob(job.jobId);
+    assert.equal(done.state, JOB_STATES.SUCCEEDED);
+    const cancel = store.requestCancel(job.jobId);
+    assert.equal(cancel.ok, false);
+    assert.equal(cancel.code, FACTORY_ORCHESTRATION_ERROR_CODES.CONFLICT);
+    assert.throws(
+      () => store.markFailed(job.jobId, { code: "TIMEOUT", message: "late" }),
+      (err) => err.code === FACTORY_ORCHESTRATION_ERROR_CODES.CONFLICT
+    );
+    assert.equal(store.read(job.jobId).state, JOB_STATES.SUCCEEDED);
+  });
+
+  await test("19 HQ-04 FAILED then cancel does not overwrite", async () => {
+    const store = new InMemoryJobStore();
+    const timeoutMs = 10_000;
+    const { delayFn, allowTimeout } = createControllableDelay(timeoutMs);
+    const runner = new JobRunnerCore(store, {
+      executionTimeoutMs: timeoutMs,
+      delay: delayFn,
+      executor: async (_job, hooks) => {
+        allowTimeout();
+        await hooks.sleep(1);
+        return { cancelled: false, resultSummary: {} };
+      },
+    });
+    const { job } = runner.enqueue(
+      { factoryKey: "fk-hq04-19", command: "orchestrateExpediente" },
+      "idem-hq04-19",
+      "actor-a"
+    );
+    const done = await runner.processJob(job.jobId);
+    assert.equal(done.state, JOB_STATES.FAILED);
+    const cancel = store.requestCancel(job.jobId);
+    assert.equal(cancel.ok, false);
+    assert.equal(store.read(job.jobId).state, JOB_STATES.FAILED);
+  });
+
+  await test("20 HQ-04 markFailed with cancelRequested → CANCELLED (no RUNNING left)", () => {
+    const store = new InMemoryJobStore();
+    const { job } = store.enqueueOrchestrate({
+      factoryKey: "fk-hq04-20",
+      idempotencyKey: "idem-hq04-20",
+      actorId: "actor-a",
+    });
+    store.claim(job.jobId);
+    store.requestCancel(job.jobId);
+    assert.equal(store.read(job.jobId).cancelRequested, true);
+    const terminal = store.markFailed(job.jobId, {
+      code: "TIMEOUT",
+      message: "execution timeout",
+    });
+    assert.equal(terminal.state, JOB_STATES.CANCELLED);
+    assert.equal(store.read(job.jobId).state, JOB_STATES.CANCELLED);
+  });
+
+  await test("21 HQ-04 unrelated executor error + cancelRequested → FAILED not CANCELLED", async () => {
+    const store = new InMemoryJobStore();
+    const runner = new JobRunnerCore(store, {
+      executionTimeoutMs: 60_000,
+      executor: async (job) => {
+        store.requestCancel(job.jobId);
+        assert.equal(store.read(job.jobId).cancelRequested, true);
+        const err = new Error("executor boom");
+        err.code = "INTERNAL_ERROR";
+        throw err;
+      },
+    });
+    const { job } = runner.enqueue(
+      { factoryKey: "fk-hq04-21", command: "orchestrateExpediente" },
+      "idem-hq04-21",
+      "actor-a"
+    );
+    const done = await runner.processJob(job.jobId);
+    assert.equal(done.state, JOB_STATES.FAILED);
+    assert.equal(done.error.code, "INTERNAL_ERROR");
+    assert.equal(store.read(job.jobId).state, JOB_STATES.FAILED);
+  });
+
+  await test("22 HQ-04 finalize TIMEOUT+cancelRequested via controlled state (no wall clock)", () => {
+    const store = new InMemoryJobStore();
+    const runner = new JobRunnerCore(store, { executionTimeoutMs: 60_000 });
+    const { job } = store.enqueueOrchestrate({
+      factoryKey: "fk-hq04-22",
+      idempotencyKey: "idem-hq04-22",
+      actorId: "actor-a",
+    });
+    store.claim(job.jobId);
+    store.requestCancel(job.jobId);
+    const done = runner._finalizeTimeoutOrError(
+      job.jobId,
+      { code: "TIMEOUT", message: "execution timeout" },
+      { timedOut: true }
+    );
+    assert.equal(done.state, JOB_STATES.CANCELLED);
+    assert.equal(store.read(job.jobId).state, done.state);
+  });
+
   const failed = results.filter((r) => !r.ok);
   console.log("");
   console.log("========== P-INT-01 SLICE B2 SUMMARY ==========");

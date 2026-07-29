@@ -11,8 +11,20 @@ import { sanitizeResultSummary } from "./validation.js";
 import { runStubOrchestration } from "./stubExecutor.js";
 import { validateOrchestrateSubmitBody } from "./validation.js";
 
-function delay(ms) {
+function defaultDelay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * HQ-04 NB-T03 — cancel-wins only for timeout / cancel-race signals (not arbitrary errors).
+ * @param {unknown} error
+ * @param {{ timedOut?: boolean }} [ctx]
+ */
+function isTimeoutOrCancelRaceError(error, ctx = {}) {
+  if (ctx.timedOut === true) return true;
+  const code =
+    error && typeof error === "object" && typeof error.code === "string" ? error.code : null;
+  return code === "TIMEOUT";
 }
 
 export class JobRunnerCore {
@@ -21,11 +33,13 @@ export class JobRunnerCore {
    * @param {object} [options]
    * @param {number} [options.executionTimeoutMs]
    * @param {(job: object, hooks: object) => Promise<object>} [options.executor]
+   * @param {(ms: number) => Promise<void>} [options.delay] injectable clock (tests / deterministic harness)
    */
   constructor(store, options = {}) {
     this.store = store;
     this.executionTimeoutMs = options.executionTimeoutMs ?? 5_000;
     this.executor = options.executor || runStubOrchestration;
+    this.delay = typeof options.delay === "function" ? options.delay : defaultDelay;
     /** @type {Set<string>} */
     this._inflight = new Set();
   }
@@ -143,7 +157,7 @@ export class JobRunnerCore {
             err.code = "TIMEOUT";
             throw err;
           }
-          await delay(ms);
+          await this.delay(ms);
           if (abort.timedOut) {
             const err = new Error("execution timeout");
             err.code = "TIMEOUT";
@@ -157,7 +171,7 @@ export class JobRunnerCore {
     try {
       const outcome = await Promise.race([
         runExecution(),
-        delay(this.executionTimeoutMs).then(() => {
+        this.delay(this.executionTimeoutMs).then(() => {
           abort.timedOut = true;
           const err = new Error("execution timeout");
           err.code = "TIMEOUT";
@@ -176,8 +190,13 @@ export class JobRunnerCore {
         return current;
       }
 
+      // Defensive / marginal: timeout rarely resolves here (race usually rejects into catch).
       if (abort.timedOut) {
-        return this.store.markFailed(jobId, sanitizeJobError({ code: "TIMEOUT", message: "execution timeout" }));
+        return this._finalizeTimeoutOrError(
+          jobId,
+          { code: "TIMEOUT", message: "execution timeout" },
+          { timedOut: true }
+        );
       }
 
       if (outcome && outcome.cancelled) {
@@ -195,15 +214,56 @@ export class JobRunnerCore {
         sanitizeResultSummary(outcome.resultSummary || {})
       );
     } catch (error) {
-      const current = this.store.read(jobId);
-      if (current && current.state === JOB_STATES.CANCELLED) {
-        return current;
-      }
-      if (current && isTerminalJobState(current.state)) {
-        return current;
-      }
-      const sanitized = sanitizeJobError(error);
-      return this.store.markFailed(jobId, sanitized);
+      // HQ-04 primary path: Promise.race timeout rejects → catch.
+      return this._finalizeTimeoutOrError(jobId, error, { timedOut: abort.timedOut });
     }
+  }
+
+  /**
+   * HQ-04 — Timeout / cancel race arbitration (OBS-SB-RACE).
+   * Prefer persisted terminal; cancel-wins only for timeout/cancel-race signals (NB-T03);
+   * unrelated executor errors keep FAILED semantics (clear pending cancel if needed).
+   * @param {string} jobId
+   * @param {unknown} error
+   * @param {{ timedOut?: boolean }} [ctx]
+   */
+  _finalizeTimeoutOrError(jobId, error, ctx = {}) {
+    const current = this.store.read(jobId);
+    if (current && current.state === JOB_STATES.CANCELLED) {
+      return current;
+    }
+    if (current && isTerminalJobState(current.state)) {
+      return current;
+    }
+
+    const timeoutRace = isTimeoutOrCancelRaceError(error, ctx);
+
+    if (
+      current &&
+      current.state === JOB_STATES.RUNNING &&
+      current.cancelRequested === true &&
+      timeoutRace
+    ) {
+      const cp = this.store.checkpoint(jobId, "cancel-before-timeout-fail");
+      return cp.job;
+    }
+
+    // Unrelated error while cancel was pending: preserve failure semantics (NB-T03).
+    // Clear cancelRequested so markFailed records FAILED (not CANCELLED via NB-T01).
+    if (
+      current &&
+      current.state === JOB_STATES.RUNNING &&
+      current.cancelRequested === true &&
+      !timeoutRace
+    ) {
+      this.store.update(jobId, (job) => {
+        job.cancelRequested = false;
+        job.updatedAt = new Date().toISOString();
+        return job;
+      });
+    }
+
+    const sanitized = sanitizeJobError(error);
+    return this.store.markFailed(jobId, sanitized);
   }
 }
