@@ -80,5 +80,11 @@ export function createDefaultStagingSessions() {
       roles: ["FACTORY_OPS"],
       capabilities: [],
     },
+    // HQ-05: second OPS principal for cross-actor ACL harnesses
+    "dev-ops-b-token": {
+      principalId: "staging-ops-b",
+      roles: ["FACTORY_OPS"],
+      capabilities: [...capsAll],
+    },
   };
 }

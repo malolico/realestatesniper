@@ -15,6 +15,7 @@ import { IDEMPOTENCY_HEADER_NAME } from "./idempotency.js";
 import { sanitizeLineageSummary, sanitizeResultSummary } from "./validation.js";
 import { sanitizeJobError } from "./sanitize.js";
 import { toRfc3339 } from "./rfc3339.js";
+import { jobOwnerMatchesPrincipal, resolveVerifiedActorId } from "./jobOwnership.js";
 
 function headerGet(headers, name) {
   if (!headers) return undefined;
@@ -181,13 +182,13 @@ export class OrchestrationCommandCore {
         return this._submit(request, principal, correlationId);
       }
       if (route.name === "getJob") {
-        return this._getJob(route.jobId, correlationId, route.spec.capability);
+        return this._getJob(route.jobId, principal, correlationId, route.spec.capability);
       }
       if (route.name === "getJobLineage") {
-        return this._getLineage(route.jobId, correlationId, route.spec.capability);
+        return this._getLineage(route.jobId, principal, correlationId, route.spec.capability);
       }
       if (route.name === "cancelJob") {
-        return this._cancel(route.jobId, correlationId, route.spec.capability);
+        return this._cancel(route.jobId, principal, correlationId, route.spec.capability);
       }
       return jsonResponse(
         FACTORY_ORCHESTRATION_HTTP_STATUS.NOT_FOUND,
@@ -215,6 +216,19 @@ export class OrchestrationCommandCore {
   }
 
   _submit(request, principal, correlationId) {
+    // HQ-05: persist only canonical verified actorId (exact AuthN identity, no trim/rewrite).
+    const actorId = resolveVerifiedActorId(principal);
+    if (!actorId) {
+      return jsonResponse(
+        FACTORY_ORCHESTRATION_HTTP_STATUS.FORBIDDEN,
+        buildCommandErrorEnvelope(
+          FACTORY_ORCHESTRATION_ERROR_CODES.FORBIDDEN,
+          "authorization denied",
+          correlationId,
+          FACTORY_ORCHESTRATION_CAPABILITIES.ORCHESTRATE
+        )
+      );
+    }
     const idempotencyKey = headerGet(request.headers, IDEMPOTENCY_HEADER_NAME);
     let body = {};
     const text = request.bodyText ?? "";
@@ -233,18 +247,14 @@ export class OrchestrationCommandCore {
         );
       }
     }
-    const { job, created } = this.runner.enqueue(
-      body,
-      idempotencyKey,
-      principal.principalId
-    );
+    const { job, created } = this.runner.enqueue(body, idempotencyKey, actorId);
     return jsonResponse(
       FACTORY_ORCHESTRATION_HTTP_STATUS.ACCEPTED,
       buildCommandSuccessEnvelope({
         correlationId,
         generatedAt: this.clock.now(),
         capability: FACTORY_ORCHESTRATION_CAPABILITIES.ORCHESTRATE,
-        actor: { principalId: principal.principalId },
+        actor: { principalId: actorId },
         result: {
           jobId: job.jobId,
           state: job.state,
@@ -254,7 +264,23 @@ export class OrchestrationCommandCore {
     );
   }
 
-  _getJob(jobId, correlationId, capability) {
+  /**
+   * HQ-05 — fail-closed owner-match before exposing job or mutating cancel.
+   * Uses existing FORBIDDEN envelope (no owner / state leakage in message).
+   */
+  _denyOwnership(correlationId, capability) {
+    return jsonResponse(
+      FACTORY_ORCHESTRATION_HTTP_STATUS.FORBIDDEN,
+      buildCommandErrorEnvelope(
+        FACTORY_ORCHESTRATION_ERROR_CODES.FORBIDDEN,
+        "authorization denied",
+        correlationId,
+        capability
+      )
+    );
+  }
+
+  _getJob(jobId, principal, correlationId, capability) {
     const job = this.runner.read(jobId);
     if (!job) {
       return jsonResponse(
@@ -267,6 +293,10 @@ export class OrchestrationCommandCore {
         )
       );
     }
+    const ownership = jobOwnerMatchesPrincipal(job, principal);
+    if (!ownership.ok) {
+      return this._denyOwnership(correlationId, capability);
+    }
     return jsonResponse(
       FACTORY_ORCHESTRATION_HTTP_STATUS.OK,
       buildCommandSuccessEnvelope({
@@ -278,7 +308,7 @@ export class OrchestrationCommandCore {
     );
   }
 
-  _getLineage(jobId, correlationId, capability) {
+  _getLineage(jobId, principal, correlationId, capability) {
     const job = this.runner.read(jobId);
     if (!job) {
       return jsonResponse(
@@ -290,6 +320,10 @@ export class OrchestrationCommandCore {
           capability
         )
       );
+    }
+    const ownership = jobOwnerMatchesPrincipal(job, principal);
+    if (!ownership.ok) {
+      return this._denyOwnership(correlationId, capability);
     }
     const lineage = sanitizeLineageSummary({
       jobId: job.jobId,
@@ -312,7 +346,23 @@ export class OrchestrationCommandCore {
     );
   }
 
-  _cancel(jobId, correlationId, capability) {
+  _cancel(jobId, principal, correlationId, capability) {
+    const job = this.runner.read(jobId);
+    if (!job) {
+      return jsonResponse(
+        FACTORY_ORCHESTRATION_HTTP_STATUS.NOT_FOUND,
+        buildCommandErrorEnvelope(
+          FACTORY_ORCHESTRATION_ERROR_CODES.NOT_FOUND,
+          "job not found",
+          correlationId,
+          capability
+        )
+      );
+    }
+    const ownership = jobOwnerMatchesPrincipal(job, principal);
+    if (!ownership.ok) {
+      return this._denyOwnership(correlationId, capability);
+    }
     const result = this.runner.requestCancel(jobId);
     if (!result.ok) {
       return jsonResponse(

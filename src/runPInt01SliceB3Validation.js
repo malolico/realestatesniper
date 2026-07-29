@@ -51,17 +51,42 @@ function test(name, fn) {
   }
 }
 
-function createCore(store = new InMemoryJobStore()) {
+const HQ05_CAPS = [
+  "factory.command.orchestrate",
+  "factory.command.job.read",
+  "factory.command.job.lineage",
+];
+
+function createCore(store = new InMemoryJobStore(), sessions = createDefaultStagingSessions()) {
   const runner = new JobRunnerCore(store, { executionTimeoutMs: 2000 });
   return {
     store,
     runner,
     core: new OrchestrationCommandCore({
       runner,
-      authn: new StagingBearerAuthnAdapter({ sessions: createDefaultStagingSessions() }),
+      authn: new StagingBearerAuthnAdapter({ sessions }),
       authz: new StagingAuthzAdapter(),
     }),
   };
+}
+
+/** AuthN that always returns a fixed principal (layer exercised: OrchestrationCommandCore.handle). */
+function createCoreWithFixedPrincipal(principal, store = new InMemoryJobStore()) {
+  const runner = new JobRunnerCore(store, { executionTimeoutMs: 2000 });
+  return {
+    store,
+    runner,
+    core: new OrchestrationCommandCore({
+      runner,
+      authn: { authenticate: () => principal },
+      authz: new StagingAuthzAdapter(),
+    }),
+  };
+}
+
+function parseCoreResponse(response) {
+  const json = JSON.parse(response.body);
+  return { status: response.statusCode, json, text: response.body };
 }
 
 async function withServer(core, fn) {
@@ -326,6 +351,367 @@ async function run() {
       });
       assert.equal(res.status, 400);
       assert.equal(res.json.error.code, "VALIDATION_FAIL");
+    });
+  });
+
+  // ——— HQ-05 / OBS-SB-ACL actor-scoped ownership (canonical ids, no trim equivalence) ———
+
+  await test("15 HQ-05 GET owner OPS allowed; submit persists exact principalId", async () => {
+    const { core, store } = createCore();
+    await withServer(core, async (port) => {
+      const created = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq05-get-owner" },
+        body: { factoryKey: "fk-hq05-a", command: "orchestrateExpediente" },
+      });
+      assert.equal(created.status, 202);
+      assert.equal(created.json.actor.principalId, "staging-ops");
+      assert.equal(store.read(created.json.result.jobId).actorId, "staging-ops");
+      const res = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${created.json.result.jobId}`,
+        token: "dev-ops-token",
+      });
+      assert.equal(res.status, 200);
+      assert.equal(res.json.result.job.jobId, created.json.result.jobId);
+    });
+  });
+
+  await test("16 HQ-05 GET cross-actor OPS denied", async () => {
+    const { core } = createCore();
+    await withServer(core, async (port) => {
+      const created = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq05-get-xops" },
+        body: { factoryKey: "fk-hq05-b", command: "orchestrateExpediente" },
+      });
+      const res = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${created.json.result.jobId}`,
+        token: "dev-ops-b-token",
+      });
+      assert.equal(res.status, 403);
+      assert.equal(res.json.error.code, "FORBIDDEN");
+      assert.equal(res.json.error.message, "authorization denied");
+      assert.equal(res.json.result, undefined);
+    });
+  });
+
+  await test("17 HQ-05 GET Director owner allowed; Director cross-actor denied", async () => {
+    const { core } = createCore();
+    await withServer(core, async (port) => {
+      const created = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-director-token",
+        headers: { "Idempotency-Key": "hq05-get-dir" },
+        body: { factoryKey: "fk-hq05-c", command: "orchestrateExpediente" },
+      });
+      const own = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${created.json.result.jobId}`,
+        token: "dev-director-token",
+      });
+      assert.equal(own.status, 200);
+      const cross = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${created.json.result.jobId}`,
+        token: "dev-ops-token",
+      });
+      assert.equal(cross.status, 403);
+      assert.equal(cross.json.error.code, "FORBIDDEN");
+    });
+  });
+
+  await test("18 HQ-05 Bearer absent remains 401 (distinct from ownership deny)", async () => {
+    const { core } = createCore();
+    await withServer(core, async (port) => {
+      const created = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq05-get-noauth" },
+        body: { factoryKey: "fk-hq05-d", command: "orchestrateExpediente" },
+      });
+      const res = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${created.json.result.jobId}`,
+      });
+      assert.equal(res.status, 401);
+      assert.equal(res.json.error.code, "UNAUTHENTICATED");
+    });
+  });
+
+  await test("19 HQ-05 principal leading/trailing whitespace DENY (no trim equivalence)", async () => {
+    const sessions = createDefaultStagingSessions();
+    sessions["dev-lead-ws-token"] = {
+      principalId: " staging-ops",
+      roles: ["FACTORY_OPS"],
+      capabilities: [...HQ05_CAPS],
+    };
+    sessions["dev-trail-ws-token"] = {
+      principalId: "staging-ops ",
+      roles: ["FACTORY_OPS"],
+      capabilities: [...HQ05_CAPS],
+    };
+    const { core } = createCore(new InMemoryJobStore(), sessions);
+    await withServer(core, async (port) => {
+      const created = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq05-get-ws" },
+        body: { factoryKey: "fk-hq05-e", command: "orchestrateExpediente" },
+      });
+      assert.equal(created.status, 202);
+      const lead = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${created.json.result.jobId}`,
+        token: "dev-lead-ws-token",
+      });
+      assert.equal(lead.status, 403);
+      assert.equal(lead.json.error.code, "FORBIDDEN");
+      assert.equal(lead.json.error.message, "authorization denied");
+      const trail = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${created.json.result.jobId}`,
+        token: "dev-trail-ws-token",
+      });
+      assert.equal(trail.status, 403);
+      assert.equal(trail.json.error.code, "FORBIDDEN");
+    });
+  });
+
+  await test("20 HQ-05 cancel owner allowed; cross-actor no mutation", async () => {
+    const { core, store } = createCore();
+    await withServer(core, async (port) => {
+      const created = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq05-cancel" },
+        body: { factoryKey: "fk-hq05-f", command: "orchestrateExpediente" },
+      });
+      const jobId = created.json.result.jobId;
+      const before = store.read(jobId);
+      const denied = await httpJson(port, {
+        method: "POST",
+        path: `/v1/factory/orchestration/jobs/${jobId}/cancel`,
+        token: "dev-ops-b-token",
+      });
+      assert.equal(denied.status, 403);
+      const afterDeny = store.read(jobId);
+      assert.equal(afterDeny.state, before.state);
+      assert.equal(afterDeny.cancelRequested, before.cancelRequested);
+      assert.equal(afterDeny.updatedAt, before.updatedAt);
+      const dirDeny = await httpJson(port, {
+        method: "POST",
+        path: `/v1/factory/orchestration/jobs/${jobId}/cancel`,
+        token: "dev-director-token",
+      });
+      assert.equal(dirDeny.status, 403);
+      assert.equal(store.read(jobId).updatedAt, before.updatedAt);
+      const ok = await httpJson(port, {
+        method: "POST",
+        path: `/v1/factory/orchestration/jobs/${jobId}/cancel`,
+        token: "dev-ops-token",
+      });
+      assert.equal(ok.status, 200);
+      assert.equal(store.read(jobId).state, JOB_STATES.CANCELLED);
+    });
+  });
+
+  await test("21 HQ-05 cancel Bearer absent 401; no mutation", async () => {
+    const { core, store } = createCore();
+    await withServer(core, async (port) => {
+      const created = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq05-cancel-noauth" },
+        body: { factoryKey: "fk-hq05-g", command: "orchestrateExpediente" },
+      });
+      const before = store.read(created.json.result.jobId);
+      const res = await httpJson(port, {
+        method: "POST",
+        path: `/v1/factory/orchestration/jobs/${created.json.result.jobId}/cancel`,
+      });
+      assert.equal(res.status, 401);
+      assert.equal(store.read(created.json.result.jobId).updatedAt, before.updatedAt);
+    });
+  });
+
+  await test("22 HQ-05 lineage owner allowed; cross-actor / Director / Bearer absent denied", async () => {
+    const { core } = createCore();
+    await withServer(core, async (port) => {
+      const created = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq05-lin" },
+        body: { factoryKey: "fk-hq05-h", command: "orchestrateExpediente" },
+      });
+      const jobId = created.json.result.jobId;
+      const own = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${jobId}/lineage`,
+        token: "dev-ops-token",
+      });
+      assert.equal(own.status, 200);
+      assert.equal(own.json.result.lineage.factoryKey, "fk-hq05-h");
+      const cross = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${jobId}/lineage`,
+        token: "dev-ops-b-token",
+      });
+      assert.equal(cross.status, 403);
+      assert.equal(cross.json.result, undefined);
+      assert.equal(cross.text.includes("fk-hq05-h"), false);
+      const dir = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${jobId}/lineage`,
+        token: "dev-director-token",
+      });
+      assert.equal(dir.status, 403);
+      assert.equal(dir.json.result, undefined);
+      const absent = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${jobId}/lineage`,
+      });
+      assert.equal(absent.status, 401);
+    });
+  });
+
+  await test("23 HQ-05 unknown jobId still NOT_FOUND (404 vs 403 contract intact)", async () => {
+    const { core } = createCore();
+    await withServer(core, async (port) => {
+      const res = await httpJson(port, {
+        method: "GET",
+        path: "/v1/factory/orchestration/jobs/00000000-0000-4000-8000-000000000099",
+        token: "dev-ops-token",
+      });
+      assert.equal(res.status, 404);
+      assert.equal(res.json.error.code, "NOT_FOUND");
+    });
+  });
+
+  await test("24 HQ-05 authenticated principal without valid principalId → 403 (core.handle)", async () => {
+    // Layer: OrchestrationCommandCore.handle after AuthN returns a principal (AuthZ role+cap ok).
+    const cases = [
+      { label: "absent", principal: { roles: ["FACTORY_OPS"], capabilities: [...HQ05_CAPS] } },
+      { label: "null", principal: { principalId: null, roles: ["FACTORY_OPS"], capabilities: [...HQ05_CAPS] } },
+      { label: "empty", principal: { principalId: "", roles: ["FACTORY_OPS"], capabilities: [...HQ05_CAPS] } },
+      {
+        label: "whitespace",
+        principal: { principalId: "   ", roles: ["FACTORY_OPS"], capabilities: [...HQ05_CAPS] },
+      },
+      {
+        label: "non-string",
+        principal: { principalId: 42, roles: ["FACTORY_OPS"], capabilities: [...HQ05_CAPS] },
+      },
+    ];
+    for (const c of cases) {
+      const { core, store } = createCoreWithFixedPrincipal(c.principal);
+      const { job } = store.enqueueOrchestrate({
+        factoryKey: "fk-hq05-seed",
+        idempotencyKey: `hq05-seed-${c.label}`,
+        actorId: "staging-ops",
+      });
+      const before = store.read(job.jobId);
+      const getRes = parseCoreResponse(
+        await core.handle({
+          method: "GET",
+          url: `/v1/factory/orchestration/jobs/${job.jobId}`,
+          headers: {},
+        })
+      );
+      assert.equal(getRes.status, 403, c.label);
+      assert.equal(getRes.json.error.code, "FORBIDDEN", c.label);
+      assert.equal(getRes.json.error.message, "authorization denied", c.label);
+      assert.equal(getRes.json.result, undefined, c.label);
+      const cancelRes = parseCoreResponse(
+        await core.handle({
+          method: "POST",
+          url: `/v1/factory/orchestration/jobs/${job.jobId}/cancel`,
+          headers: {},
+        })
+      );
+      assert.equal(cancelRes.status, 403, c.label);
+      const after = store.read(job.jobId);
+      assert.equal(after.state, before.state, c.label);
+      assert.equal(after.cancelRequested, before.cancelRequested, c.label);
+      assert.equal(after.updatedAt, before.updatedAt, c.label);
+      const submitRes = parseCoreResponse(
+        await core.handle({
+          method: "POST",
+          url: "/v1/factory/orchestration/jobs",
+          headers: { "Idempotency-Key": `hq05-submit-bad-${c.label}` },
+          bodyText: JSON.stringify({
+            factoryKey: `fk-hq05-bad-${c.label}`,
+            command: "orchestrateExpediente",
+          }),
+        })
+      );
+      assert.equal(submitRes.status, 403, c.label);
+      assert.equal(submitRes.json.result, undefined, c.label);
+    }
+  });
+
+  await test("25 HQ-05 job.actorId with peripheral whitespace → DENY fail-closed", async () => {
+    const { core, store } = createCore();
+    const { job } = store.enqueueOrchestrate({
+      factoryKey: "fk-hq05-pad-owner",
+      idempotencyKey: "hq05-pad-owner",
+      actorId: " staging-ops ",
+    });
+    await withServer(core, async (port) => {
+      const res = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${job.jobId}`,
+        token: "dev-ops-token",
+      });
+      assert.equal(res.status, 403);
+      assert.equal(res.json.error.code, "FORBIDDEN");
+      assert.equal(res.json.result, undefined);
+    });
+  });
+
+  await test("26 HQ-05 submit with non-canonical principalId creates no job", async () => {
+    const sessions = createDefaultStagingSessions();
+    sessions["dev-noncanon-token"] = {
+      principalId: " staging-ops ",
+      roles: ["FACTORY_OPS"],
+      capabilities: [...HQ05_CAPS],
+    };
+    const store = new InMemoryJobStore();
+    const { core } = createCore(store, sessions);
+    await withServer(core, async (port) => {
+      const res = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-noncanon-token",
+        headers: { "Idempotency-Key": "hq05-submit-noncanon" },
+        body: { factoryKey: "fk-hq05-noncanon", command: "orchestrateExpediente" },
+      });
+      assert.equal(res.status, 403);
+      assert.equal(res.json.error.code, "FORBIDDEN");
+      assert.equal(res.json.error.message, "authorization denied");
+      assert.equal(res.json.result, undefined);
+      // Same idempotency key under canonical owner must create (proves prior submit did not persist).
+      const probe = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq05-submit-noncanon" },
+        body: { factoryKey: "fk-hq05-noncanon", command: "orchestrateExpediente" },
+      });
+      assert.equal(probe.status, 202);
+      assert.equal(probe.json.result.created, true);
+      assert.equal(store.read(probe.json.result.jobId).actorId, "staging-ops");
     });
   });
 
