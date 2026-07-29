@@ -47,6 +47,7 @@ export const FACTORY_ORCHESTRATION_ERROR_CODES = Object.freeze({
   CONFLICT: "CONFLICT",
   RATE_LIMITED: "RATE_LIMITED",
   BOUNDARY_REJECTED: "BOUNDARY_REJECTED",
+  PAYLOAD_TOO_LARGE: "PAYLOAD_TOO_LARGE",
   INTERNAL_ERROR: "INTERNAL_ERROR",
 });
 
@@ -58,9 +59,14 @@ export const FACTORY_ORCHESTRATION_HTTP_STATUS = Object.freeze({
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
+  /** HQ-06 — Mandate D06-2 oversize body */
+  PAYLOAD_TOO_LARGE: 413,
   TOO_MANY_REQUESTS: 429,
   INTERNAL: 500,
 });
+
+/** HQ-06 — Mandate D06-1: max request body size (inclusive), bytes. */
+export const FACTORY_ORCHESTRATION_MAX_BODY_BYTES = 65536;
 
 /**
  * Official HTTP route specs (Plan §5.3 / parent §18).

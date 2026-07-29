@@ -16,6 +16,11 @@ import { sanitizeLineageSummary, sanitizeResultSummary } from "./validation.js";
 import { sanitizeJobError } from "./sanitize.js";
 import { toRfc3339 } from "./rfc3339.js";
 import { jobOwnerMatchesPrincipal, resolveVerifiedActorId } from "./jobOwnership.js";
+import {
+  assertRequestBodyWithinLimit,
+  hasNonEmptyRequestBody,
+  isCompatibleJsonContentType,
+} from "./requestBody.js";
 
 function headerGet(headers, name) {
   if (!headers) return undefined;
@@ -188,7 +193,13 @@ export class OrchestrationCommandCore {
         return this._getLineage(route.jobId, principal, correlationId, route.spec.capability);
       }
       if (route.name === "cancelJob") {
-        return this._cancel(route.jobId, principal, correlationId, route.spec.capability);
+        return this._cancel(
+          route.jobId,
+          principal,
+          correlationId,
+          route.spec.capability,
+          request
+        );
       }
       return jsonResponse(
         FACTORY_ORCHESTRATION_HTTP_STATUS.NOT_FOUND,
@@ -229,24 +240,61 @@ export class OrchestrationCommandCore {
         )
       );
     }
-    const idempotencyKey = headerGet(request.headers, IDEMPOTENCY_HEADER_NAME);
-    let body = {};
+
+    // HQ-06 — transport/body gates before enqueue (Mandate D06).
     const text = request.bodyText ?? "";
-    if (text.trim()) {
-      try {
-        body = JSON.parse(text);
-      } catch {
-        return jsonResponse(
-          FACTORY_ORCHESTRATION_HTTP_STATUS.BAD_REQUEST,
-          buildCommandErrorEnvelope(
-            FACTORY_ORCHESTRATION_ERROR_CODES.VALIDATION_FAIL,
-            "invalid JSON body",
-            correlationId,
-            FACTORY_ORCHESTRATION_CAPABILITIES.ORCHESTRATE
-          )
-        );
-      }
+    const sizeGate = assertRequestBodyWithinLimit(text);
+    if (!sizeGate.ok) {
+      return jsonResponse(
+        FACTORY_ORCHESTRATION_HTTP_STATUS.PAYLOAD_TOO_LARGE,
+        buildCommandErrorEnvelope(
+          sizeGate.code,
+          sizeGate.message,
+          correlationId,
+          FACTORY_ORCHESTRATION_CAPABILITIES.ORCHESTRATE
+        )
+      );
     }
+    if (!hasNonEmptyRequestBody(text)) {
+      return jsonResponse(
+        FACTORY_ORCHESTRATION_HTTP_STATUS.BAD_REQUEST,
+        buildCommandErrorEnvelope(
+          FACTORY_ORCHESTRATION_ERROR_CODES.VALIDATION_FAIL,
+          "request body is required",
+          correlationId,
+          FACTORY_ORCHESTRATION_CAPABILITIES.ORCHESTRATE
+        )
+      );
+    }
+    const contentType = headerGet(request.headers, "content-type");
+    if (!isCompatibleJsonContentType(contentType)) {
+      return jsonResponse(
+        FACTORY_ORCHESTRATION_HTTP_STATUS.BAD_REQUEST,
+        buildCommandErrorEnvelope(
+          FACTORY_ORCHESTRATION_ERROR_CODES.VALIDATION_FAIL,
+          "content-type must be application/json",
+          correlationId,
+          FACTORY_ORCHESTRATION_CAPABILITIES.ORCHESTRATE
+        )
+      );
+    }
+
+    let body;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      return jsonResponse(
+        FACTORY_ORCHESTRATION_HTTP_STATUS.BAD_REQUEST,
+        buildCommandErrorEnvelope(
+          FACTORY_ORCHESTRATION_ERROR_CODES.VALIDATION_FAIL,
+          "invalid JSON body",
+          correlationId,
+          FACTORY_ORCHESTRATION_CAPABILITIES.ORCHESTRATE
+        )
+      );
+    }
+
+    const idempotencyKey = headerGet(request.headers, IDEMPOTENCY_HEADER_NAME);
     const { job, created } = this.runner.enqueue(body, idempotencyKey, actorId);
     return jsonResponse(
       FACTORY_ORCHESTRATION_HTTP_STATUS.ACCEPTED,
@@ -346,7 +394,28 @@ export class OrchestrationCommandCore {
     );
   }
 
-  _cancel(jobId, principal, correlationId, capability) {
+  _cancel(jobId, principal, correlationId, capability, request) {
+    // HQ-06 — cancel MUST NOT accept a business body (empty allowed).
+    const text = request?.bodyText ?? "";
+    const sizeGate = assertRequestBodyWithinLimit(text);
+    if (!sizeGate.ok) {
+      return jsonResponse(
+        FACTORY_ORCHESTRATION_HTTP_STATUS.PAYLOAD_TOO_LARGE,
+        buildCommandErrorEnvelope(sizeGate.code, sizeGate.message, correlationId, capability)
+      );
+    }
+    if (hasNonEmptyRequestBody(text)) {
+      return jsonResponse(
+        FACTORY_ORCHESTRATION_HTTP_STATUS.BAD_REQUEST,
+        buildCommandErrorEnvelope(
+          FACTORY_ORCHESTRATION_ERROR_CODES.VALIDATION_FAIL,
+          "cancel must not include a body",
+          correlationId,
+          capability
+        )
+      );
+    }
+
     const job = this.runner.read(jobId);
     if (!job) {
       return jsonResponse(

@@ -19,6 +19,7 @@ import {
   createDefaultStagingSessions,
   createOrchestrationCommandHandler,
   JOB_STATES,
+  FACTORY_ORCHESTRATION_MAX_BODY_BYTES,
 } from "../services/factory-orchestration-edge/index.js";
 
 const results = [];
@@ -103,13 +104,19 @@ async function withServer(core, fn) {
   }
 }
 
-async function httpJson(port, { method, path: reqPath, token, headers = {}, body }) {
-  const payload = body === undefined ? null : JSON.stringify(body);
+async function httpJson(port, { method, path: reqPath, token, headers = {}, body, rawBody, setContentType }) {
+  const payload =
+    rawBody !== undefined ? rawBody : body === undefined ? null : JSON.stringify(body);
+  const autoCt =
+    setContentType !== false &&
+    payload !== null &&
+    headers["content-type"] === undefined &&
+    headers["Content-Type"] === undefined;
   const res = await fetch(`http://127.0.0.1:${port}${reqPath}`, {
     method,
     headers: {
       ...(token ? { authorization: `Bearer ${token}` } : {}),
-      ...(payload ? { "content-type": "application/json" } : {}),
+      ...(autoCt ? { "content-type": "application/json" } : {}),
       "x-correlation-id": headers["x-correlation-id"] || "corr-b3",
       ...headers,
     },
@@ -123,6 +130,14 @@ async function httpJson(port, { method, path: reqPath, token, headers = {}, body
     json = { raw: text };
   }
   return { status: res.status, json, text };
+}
+
+function makeSubmitBodyUtf8Size(targetBytes, factoryKeyPrefix = "fk-size") {
+  const suffix = '","command":"orchestrateExpediente"}';
+  const prefix = `{"factoryKey":"${factoryKeyPrefix}`;
+  const overhead = Buffer.byteLength(prefix, "utf8") + Buffer.byteLength(suffix, "utf8");
+  assert.ok(targetBytes >= overhead + 1, "target too small");
+  return `${prefix}${"a".repeat(targetBytes - overhead)}${suffix}`;
 }
 
 async function run() {
@@ -712,6 +727,261 @@ async function run() {
       assert.equal(probe.status, 202);
       assert.equal(probe.json.result.created, true);
       assert.equal(store.read(probe.json.result.jobId).actorId, "staging-ops");
+    });
+  });
+
+  // ——— HQ-06 / OBS-SB-BODY Content-Type + size + entity rules ———
+
+  await test("27 HQ-06 submit missing Content-Type → 400", async () => {
+    const { core, store } = createCore();
+    await withServer(core, async (port) => {
+      const res = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq06-no-ct" },
+        body: { factoryKey: "fk-hq06-noct", command: "orchestrateExpediente" },
+        setContentType: false,
+      });
+      assert.equal(res.status, 400);
+      assert.equal(res.json.error.code, "VALIDATION_FAIL");
+      assert.equal(res.json.error.message, "content-type must be application/json");
+      assert.equal(res.json.result, undefined);
+      const probe = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq06-no-ct" },
+        body: { factoryKey: "fk-hq06-noct", command: "orchestrateExpediente" },
+      });
+      assert.equal(probe.status, 202);
+      assert.equal(probe.json.result.created, true);
+      assert.equal(store.read(probe.json.result.jobId).actorId, "staging-ops");
+    });
+  });
+
+  await test("28 HQ-06 submit wrong Content-Type → 400", async () => {
+    const { core } = createCore();
+    await withServer(core, async (port) => {
+      const res = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: {
+          "Idempotency-Key": "hq06-bad-ct",
+          "content-type": "text/plain",
+        },
+        body: { factoryKey: "fk-hq06-badct", command: "orchestrateExpediente" },
+        setContentType: false,
+      });
+      assert.equal(res.status, 400);
+      assert.equal(res.json.error.code, "VALIDATION_FAIL");
+      assert.match(res.json.error.message, /content-type/i);
+    });
+  });
+
+  await test("29 HQ-06 submit charset=utf-8 Content-Type allowed", async () => {
+    const { core } = createCore();
+    await withServer(core, async (port) => {
+      const res = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: {
+          "Idempotency-Key": "hq06-ct-utf8",
+          "content-type": "application/json; charset=utf-8",
+        },
+        body: { factoryKey: "fk-hq06-utf8", command: "orchestrateExpediente" },
+        setContentType: false,
+      });
+      assert.equal(res.status, 202);
+    });
+  });
+
+  await test("30 HQ-06 empty submit body → 400; no job", async () => {
+    const { core, store } = createCore();
+    await withServer(core, async (port) => {
+      const res = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq06-empty" },
+        rawBody: "",
+        setContentType: false,
+      });
+      assert.equal(res.status, 400);
+      assert.equal(res.json.error.code, "VALIDATION_FAIL");
+      assert.equal(res.json.error.message, "request body is required");
+      const probe = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq06-empty" },
+        body: { factoryKey: "fk-hq06-empty", command: "orchestrateExpediente" },
+      });
+      assert.equal(probe.status, 202);
+      assert.equal(probe.json.result.created, true);
+      assert.ok(store.read(probe.json.result.jobId));
+    });
+  });
+
+  await test("31 HQ-06 malformed JSON / null / array / primitive → 400; no job", async () => {
+    const { core, store } = createCore();
+    await withServer(core, async (port) => {
+      const cases = [
+        { key: "hq06-mal", rawBody: "{not-json", msg: /invalid JSON/i },
+        { key: "hq06-null", rawBody: "null", msg: /object/i },
+        { key: "hq06-arr", rawBody: "[]", msg: /object/i },
+        { key: "hq06-str", rawBody: '"x"', msg: /object/i },
+        { key: "hq06-num", rawBody: "1", msg: /object/i },
+        { key: "hq06-bool", rawBody: "true", msg: /object/i },
+      ];
+      for (const c of cases) {
+        const res = await httpJson(port, {
+          method: "POST",
+          path: "/v1/factory/orchestration/jobs",
+          token: "dev-ops-token",
+          headers: { "Idempotency-Key": c.key },
+          rawBody: c.rawBody,
+        });
+        assert.equal(res.status, 400, c.key);
+        assert.equal(res.json.error.code, "VALIDATION_FAIL", c.key);
+        assert.match(res.json.error.message, c.msg, c.key);
+        const probe = await httpJson(port, {
+          method: "POST",
+          path: "/v1/factory/orchestration/jobs",
+          token: "dev-ops-token",
+          headers: { "Idempotency-Key": c.key },
+          body: { factoryKey: `fk-${c.key}`, command: "orchestrateExpediente" },
+        });
+        assert.equal(probe.status, 202, c.key);
+        assert.equal(probe.json.result.created, true, c.key);
+        assert.equal(store.read(probe.json.result.jobId).actorId, "staging-ops", c.key);
+      }
+    });
+  });
+
+  await test("32 HQ-06 {} missing required fields → 400; no job", async () => {
+    const { core } = createCore();
+    await withServer(core, async (port) => {
+      const res = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq06-empty-obj" },
+        body: {},
+      });
+      assert.equal(res.status, 400);
+      assert.equal(res.json.error.code, "VALIDATION_FAIL");
+      const probe = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq06-empty-obj" },
+        body: { factoryKey: "fk-hq06-obj", command: "orchestrateExpediente" },
+      });
+      assert.equal(probe.status, 202);
+      assert.equal(probe.json.result.created, true);
+    });
+  });
+
+  await test("33 HQ-06 body size 65536 accepted; 65537 → 413; no body echo", async () => {
+    const { core } = createCore();
+    await withServer(core, async (port) => {
+      const okBody = makeSubmitBodyUtf8Size(FACTORY_ORCHESTRATION_MAX_BODY_BYTES, "fk-hq06-ok");
+      assert.equal(Buffer.byteLength(okBody, "utf8"), FACTORY_ORCHESTRATION_MAX_BODY_BYTES);
+      const ok = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq06-size-ok" },
+        rawBody: okBody,
+      });
+      assert.equal(ok.status, 202);
+
+      const overBody = makeSubmitBodyUtf8Size(FACTORY_ORCHESTRATION_MAX_BODY_BYTES + 1, "fk-hq06-ov");
+      assert.equal(Buffer.byteLength(overBody, "utf8"), FACTORY_ORCHESTRATION_MAX_BODY_BYTES + 1);
+      const over = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq06-size-over" },
+        rawBody: overBody,
+      });
+      assert.equal(over.status, 413);
+      assert.equal(over.json.error.code, "PAYLOAD_TOO_LARGE");
+      assert.equal(over.json.error.message, "payload too large");
+      assert.equal(over.text.includes("fk-hq06-ov"), false);
+      assert.ok(over.text.length < 2000);
+    });
+  });
+
+  await test("34 HQ-06 cancel empty body OK; non-empty body rejected without mutation", async () => {
+    const { core, store } = createCore();
+    await withServer(core, async (port) => {
+      const created = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq06-cancel-body" },
+        body: { factoryKey: "fk-hq06-cancel", command: "orchestrateExpediente" },
+      });
+      const jobId = created.json.result.jobId;
+      const before = store.read(jobId);
+      const denied = await httpJson(port, {
+        method: "POST",
+        path: `/v1/factory/orchestration/jobs/${jobId}/cancel`,
+        token: "dev-ops-token",
+        body: { reason: "nope" },
+      });
+      assert.equal(denied.status, 400);
+      assert.equal(denied.json.error.code, "VALIDATION_FAIL");
+      assert.equal(denied.json.error.message, "cancel must not include a body");
+      const after = store.read(jobId);
+      assert.equal(after.state, before.state);
+      assert.equal(after.cancelRequested, before.cancelRequested);
+      assert.equal(after.updatedAt, before.updatedAt);
+      const ok = await httpJson(port, {
+        method: "POST",
+        path: `/v1/factory/orchestration/jobs/${jobId}/cancel`,
+        token: "dev-ops-token",
+      });
+      assert.equal(ok.status, 200);
+      assert.equal(store.read(jobId).state, JOB_STATES.CANCELLED);
+    });
+  });
+
+  await test("35 HQ-06 actorId in body ignored; ownership from AuthN; HQ-05 cross-actor still denied", async () => {
+    const { core, store } = createCore();
+    await withServer(core, async (port) => {
+      const created = await httpJson(port, {
+        method: "POST",
+        path: "/v1/factory/orchestration/jobs",
+        token: "dev-ops-token",
+        headers: { "Idempotency-Key": "hq06-actor-body" },
+        body: {
+          factoryKey: "fk-hq06-actor",
+          command: "orchestrateExpediente",
+          actorId: "attacker",
+          ownerId: "attacker",
+          state: "SUCCEEDED",
+          roles: ["FACTORY_DIRECTOR"],
+        },
+      });
+      assert.equal(created.status, 202);
+      assert.equal(store.read(created.json.result.jobId).actorId, "staging-ops");
+      const cross = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${created.json.result.jobId}`,
+        token: "dev-ops-b-token",
+      });
+      assert.equal(cross.status, 403);
+      const own = await httpJson(port, {
+        method: "GET",
+        path: `/v1/factory/orchestration/jobs/${created.json.result.jobId}`,
+        token: "dev-ops-token",
+      });
+      assert.equal(own.status, 200);
     });
   });
 

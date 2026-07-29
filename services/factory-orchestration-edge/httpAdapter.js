@@ -3,6 +3,7 @@
  */
 
 import http from "node:http";
+import { randomUUID } from "node:crypto";
 import { OrchestrationCommandCore } from "./commandCore.js";
 import {
   StagingAuthzAdapter,
@@ -14,16 +15,11 @@ import { JobRunnerCore } from "./workerRunner.js";
 import {
   FACTORY_ORCHESTRATION_API_VERSION,
   FACTORY_ORCHESTRATION_ERROR_CODES,
+  FACTORY_ORCHESTRATION_HTTP_STATUS,
+  FACTORY_ORCHESTRATION_MAX_BODY_BYTES,
+  buildCommandErrorEnvelope,
 } from "./contract.js";
-
-function collectBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    req.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
-    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
-    req.on("error", reject);
-  });
-}
+import { collectBodyBounded } from "./requestBody.js";
 
 /**
  * @param {OrchestrationCommandCore} core
@@ -31,7 +27,33 @@ function collectBody(req) {
 export function createOrchestrationCommandHandler(core) {
   return async function handleNodeRequest(req, res) {
     try {
-      const bodyText = await collectBody(req);
+      let bodyText;
+      try {
+        bodyText = await collectBodyBounded(req, FACTORY_ORCHESTRATION_MAX_BODY_BYTES);
+      } catch (error) {
+        if (error && error.code === FACTORY_ORCHESTRATION_ERROR_CODES.PAYLOAD_TOO_LARGE) {
+          const correlationId =
+            (typeof req.headers["x-correlation-id"] === "string" &&
+              req.headers["x-correlation-id"]) ||
+            randomUUID();
+          res.statusCode = FACTORY_ORCHESTRATION_HTTP_STATUS.PAYLOAD_TOO_LARGE;
+          res.setHeader("content-type", "application/json; charset=utf-8");
+          res.end(
+            `${JSON.stringify(
+              buildCommandErrorEnvelope(
+                FACTORY_ORCHESTRATION_ERROR_CODES.PAYLOAD_TOO_LARGE,
+                "payload too large",
+                correlationId
+              ),
+              null,
+              2
+            )}\n`
+          );
+          return;
+        }
+        throw error;
+      }
+
       const response = await core.handle({
         method: req.method,
         url: req.url,

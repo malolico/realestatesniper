@@ -10,6 +10,7 @@ export * from "./idempotency.js";
 export * from "./cancel.js";
 export * from "./boundary.js";
 export * from "./validation.js";
+export * from "./requestBody.js";
 export * from "./rfc3339.js";
 export * from "./sanitize.js";
 export * from "./boundaryAdapter.js";
