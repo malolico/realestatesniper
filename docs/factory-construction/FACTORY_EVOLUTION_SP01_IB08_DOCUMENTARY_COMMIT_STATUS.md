@@ -1,20 +1,23 @@
 # STRATEGIC PROGRAM 01 — FACTORY ALIVE
 ## SP01-IB-08 — DOCUMENTARY COMMIT STATUS
-### Official Documentary Commit Status — Authorization package only (Discovery + Plan + Mandate)
+### Official Documentary Commit Status — Gap Disposition Record + Implementation Status package
 
 | Campo | Valor |
 |-------|--------|
 | **Document ID** | `FACTORY_EVOLUTION_SP01_IB08_DOCUMENTARY_COMMIT_STATUS.md` |
 | **Path** | `docs/factory-construction/FACTORY_EVOLUTION_SP01_IB08_DOCUMENTARY_COMMIT_STATUS.md` |
-| **Nature** | Documentary Commit Status — **records** that SP01-IB-08 authorization documentary phase is complete and audited · **prepares** Git documentary commit of Plan + Mandate · **does not** execute Gap Disposition · **does not** determine binary outcome · **does not** authorize IB-09 · **does not** declare SP01 COMPLETE |
+| **Nature** | Documentary Commit Status — **records** that SP01-IB-08 documentary **execution** (Gap Disposition Record + Implementation Status) is complete and audited · **prepares** Git documentary commit of those artifacts · **does not** execute Git · **does not** open IB-09 · **does not** declare SP01 COMPLETE · **does not** repair GAPs |
 | **Program** | **Strategic Program 01 — Factory Alive** |
 | **Block** | **SP01-IB-08 — Gap Disposition (SATISFIED \| MANDATE-REQUIRED)** |
-| **Mandate ID** | `SP01-IB-08-IMPL` (issued; execution of Record/Status **not** performed by this Status) |
+| **Mandate ID** | `SP01-IB-08-IMPL` |
 | **Date** | **2026-07-30** |
-| **HEAD (context)** | `dc08dbe5ff213608be4d660693d3070fe632e0e1` |
+| **HEAD (context)** | `3a522ea5e89ec27e87b658d87e14fd06e5799007` |
 | **Branch (context)** | `integration/factory-complete-20260725` |
-| **Documentary state** | **AUTHORIZATION DOCUMENTARY PACKAGE COMPLETE — READY FOR GIT DOCUMENTARY COMMIT** |
-| **Authorization state** | **NO GAP DISPOSITION EXECUTION / NO BINARY RESULT / NO IB-09** |
+| **Documentary state** | **GAP DISPOSITION DOCUMENTARY PACKAGE COMPLETE — READY FOR GIT DOCUMENTARY COMMIT** |
+| **Constitutional binary disposition** | **MANDATE-REQUIRED** |
+| **Downstream disposition** | **STOP IMPLEMENTATION UNTIL GAP-FILL MANDATE** |
+| **Authorization state** | **NO IB-09 / NO SP01 COMPLETE / NO GAP REPAIR** |
+| **Prior note** | Authorization package (Discovery + Plan + Mandate) previously published @ baseline HEAD; this Status covers **only** Gap Disposition Record + Implementation Status |
 
 ---
 
@@ -22,24 +25,23 @@
 
 ```text
 SP01-IB-08 DOCUMENTARY COMMIT STATUS
-= READINESS FOR GIT DOCUMENTARY COMMIT OF AUTHORIZATION PACKAGE
-  (DISCOVERY PASS + PLAN PASS + MANDATE PASS)
-≠ GAP DISPOSITION RECORD CREATION BY THIS STATUS
-≠ IB-08 IMPLEMENTATION STATUS CREATION BY THIS STATUS
-≠ DETERMINING ALL CAP SATISFIED
-≠ DETERMINING MANDATE-REQUIRED
-≠ DOCUMENTARY EXECUTION OF DISPOSITION
+= READINESS FOR GIT DOCUMENTARY COMMIT OF
+  GAP DISPOSITION RECORD + IMPLEMENTATION STATUS
+≠ GIT EXECUTED BY THIS DOCUMENT
+≠ GAP REPAIR
+≠ TECHNICAL SOLUTION DESIGN
+≠ CODE / STUB REPAIR / CB-15 WIRING
 ≠ IB-09 EXECUTION
 ≠ SP01 COMPLETE
-≠ CODE / GAP REPAIR / SOLUTION DESIGN
+≠ ALL CAP SATISFIED
 ≠ WEB / SUPABASE / MARKETPLACE / PRODUCT / ARIZONA
 ≠ CONTINUITY DOSSIER REWRITE
-≠ GIT EXECUTED BY THIS DOCUMENT
+≠ MODIFICATION OF GAP DISPOSITION RECORD OR IMPL STATUS BY THIS STATUS
 ```
 
-This Status **records** that Discovery, Official Implementation Plan, and Official Implementation Mandate for SP01-IB-08 exist with Independent Audit **PASS**, and that the **authorization** package is ready for Git documentary commit.
+This Status **records** that the SP01-IB-08 **Gap Disposition Record** and **Implementation Status** exist, have Independent Audit **PASS**, emit constitutional outcome **MANDATE-REQUIRED**, and lock downstream **STOP IMPLEMENTATION UNTIL GAP-FILL MANDATE**.
 
-It does **not** execute disposition, create Record/Status deliverables, or select the binary constitutional outcome.
+It does **not** open IB-09, repair gaps, or declare SP01 COMPLETE.
 
 ---
 
@@ -47,10 +49,13 @@ It does **not** execute disposition, create Record/Status deliverables, or selec
 
 | Campo | Valor |
 |-------|--------|
-| **Status subject** | SP01-IB-08 authorization documentary phase only |
+| **Status subject** | SP01-IB-08 Gap Disposition Record + Implementation Status — Git documentary commit readiness |
 | **Official title** | **SP01-IB-08 — Gap Disposition (SATISFIED \| MANDATE-REQUIRED)** |
-| **Binary outcome** | **PRESERVED** — **NOT DETERMINED** by this Status |
-| **Predecessor** | SP01-IB-07 package **OFFICIALLY PUBLISHED** @ baseline HEAD |
+| **Mandate** | `SP01-IB-08-IMPL` |
+| **Binary disposition** | **MANDATE-REQUIRED** |
+| **Downstream** | **STOP IMPLEMENTATION UNTIL GAP-FILL MANDATE** |
+| **IB-09** | **NOT OPENED** · **NOT AUTHORIZED** |
+| **SP01 COMPLETE** | **NOT DECLARED** |
 
 ---
 
@@ -58,12 +63,11 @@ It does **not** execute disposition, create Record/Status deliverables, or selec
 
 | Source | Role |
 |--------|------|
-| Director order — SP01-IB-08 Documentary Commit Status | Issuance of this Status |
-| SP01-IB-08 Official Discovery (session) | Independent Discovery Audit **PASS** |
-| `FACTORY_EVOLUTION_SP01_IB08_OFFICIAL_IMPLEMENTATION_PLAN.md` | Independent Plan Audit **PASS** |
-| `FACTORY_EVOLUTION_SP01_IB08_OFFICIAL_IMPLEMENTATION_MANDATE.md` | Independent Mandate Audit **PASS** · READY FOR DOCUMENTARY COMMIT |
-| SP01 Official Implementation Plan §7 SP01-IB-08 | Program-level block definition |
-| Factory Evolution Director Strategic Mandate | Program identity |
+| Director order — SP01-IB-08 Documentary Commit Status (Gap Disposition package) | Issuance / update of this Status |
+| `FACTORY_EVOLUTION_SP01_IB08_GAP_DISPOSITION_RECORD.md` | Gap Disposition Record — Independent Gap Disposition Audit **PASS** |
+| `FACTORY_EVOLUTION_SP01_IB08_IMPL_STATUS.md` | Implementation Status — Independent Implementation Status Audit **PASS** |
+| `FACTORY_EVOLUTION_SP01_IB08_OFFICIAL_IMPLEMENTATION_MANDATE.md` | Mandate `SP01-IB-08-IMPL` (authorization package published) |
+| `FACTORY_EVOLUTION_SP01_IB08_OFFICIAL_IMPLEMENTATION_PLAN.md` | Plan parent (authorization package published) |
 
 ---
 
@@ -79,22 +83,26 @@ SP01-IB-08 — Gap Disposition (SATISFIED | MANDATE-REQUIRED)
 
 | # | Artifact | Role | State |
 |---|----------|------|-------|
-| 1 | SP01-IB-08 Official Discovery (session) | Scope recovery | **PASS** (Independent Discovery Audit) |
-| 2 | `FACTORY_EVOLUTION_SP01_IB08_OFFICIAL_IMPLEMENTATION_PLAN.md` | Official Implementation Plan (PLAN ONLY) | **EXISTS** · Audit **PASS** |
-| 3 | `FACTORY_EVOLUTION_SP01_IB08_OFFICIAL_IMPLEMENTATION_MANDATE.md` | Official Implementation Mandate (`SP01-IB-08-IMPL`) | **EXISTS** · Audit **PASS** |
-| 4 | This Documentary Commit Status | Git readiness for authorization package | **READY FOR GIT DOCUMENTARY COMMIT** |
+| 1 | `FACTORY_EVOLUTION_SP01_IB08_GAP_DISPOSITION_RECORD.md` | Gap Disposition Record | **EXISTS** · Independent Gap Disposition Audit **PASS** |
+| 2 | `FACTORY_EVOLUTION_SP01_IB08_IMPL_STATUS.md` | Implementation Status | **EXISTS** · Independent Implementation Status Audit **PASS** |
+| 3 | This Documentary Commit Status | Git documentary commit readiness for items 1–2 | **READY FOR GIT DOCUMENTARY COMMIT** |
 
-**Explicitly NOT in this package:**
+**Referenced deliverables only (this Status):**
+
+| Artifact | Audit |
+|----------|-------|
+| Gap Disposition Record | **PASS** |
+| Implementation Status | **PASS** |
+
+**Not authorized hereby:**
 
 | Artifact / action | State |
 |-------------------|--------|
-| `FACTORY_EVOLUTION_SP01_IB08_GAP_DISPOSITION_RECORD.md` | **NOT CREATED** · **NOT INCLUDED** |
-| `FACTORY_EVOLUTION_SP01_IB08_IMPL_STATUS.md` | **NOT CREATED** · **NOT INCLUDED** |
-| Binary result ALL CAP SATISFIED | **NOT DETERMINED** |
-| Binary result MANDATE-REQUIRED | **NOT DETERMINED** |
-| Documentary disposition execution | **NOT PERFORMED** |
-| IB-09 | **NOT AUTHORIZED** |
+| Gap repair / solution design | **NOT AUTHORIZED** |
+| IB-09 execution | **NOT AUTHORIZED** · **NOT OPENED** |
 | SP01 COMPLETE | **NOT DECLARED** |
+| Modification of Gap Disposition Record or Impl Status by this Status | **NOT PERFORMED** |
+| Code / stub repair / CB-15 wiring | **NOT AUTHORIZED** |
 
 ---
 
@@ -102,29 +110,29 @@ SP01-IB-08 — Gap Disposition (SATISFIED | MANDATE-REQUIRED)
 
 | Artifact | Audit | Verdict |
 |----------|-------|---------|
-| Official Discovery | Independent Discovery Audit | **PASS** · READY TO CREATE PLAN (executed) |
-| Official Implementation Plan | Independent Implementation Plan Audit | **PASS** · READY TO CREATE MANDATE (executed) |
-| Official Implementation Mandate | Independent Implementation Mandate Audit | **PASS** · READY FOR DOCUMENTARY COMMIT |
+| Gap Disposition Record | Independent Gap Disposition Audit | **PASS** · READY TO CREATE IMPL STATUS (executed) |
+| Implementation Status | Independent Implementation Status Audit | **PASS** · READY FOR DOCUMENTARY COMMIT |
 
 ```text
 READY FOR DOCUMENTARY COMMIT
-SP01-IB-08 IMPLEMENTATION MANDATE
+SP01-IB-08 GAP DISPOSITION PACKAGE
 ```
 
 ---
 
-## 6. Binary constitutional lock (cite — not resolved)
+## 6. Constitutional disposition lock (cite — not reopened)
 
 ```text
-BINARY OUTCOME REMAINS:
-  ALL CAP SATISFIED
-    OR
-  MANDATE-REQUIRED
-
-THIS STATUS DOES NOT SELECT EITHER RESULT.
-RESULT SHALL BE DETERMINED ONLY IN FUTURE GAP DISPOSITION RECORD
-UNDER MANDATE SP01-IB-08-IMPL EXECUTION.
+BINARY DISPOSITION: MANDATE-REQUIRED
+DOWNSTREAM: STOP IMPLEMENTATION UNTIL GAP-FILL MANDATE
+CAP-SP01-02: GAP
+CAP-SP01-01,03,04,05,06,07: PROVED
+ALL CAP SATISFIED: NOT DECLARED
+IB-09: NOT OPENED
+SP01 COMPLETE: NOT DECLARED
 ```
+
+This Status **records** the disposition already established in the Gap Disposition Record and Implementation Status. It does **not** reopen or redesign disposition.
 
 ---
 
@@ -132,13 +140,13 @@ UNDER MANDATE SP01-IB-08-IMPL EXECUTION.
 
 | Action | Authorization by this Status |
 |--------|------------------------------|
-| Git documentary commit of Plan + Mandate (+ this Status when Director orders) | **READY** (documentary only) |
-| Create Gap Disposition Record | **NOT AUTHORIZED BY THIS STATUS** (awaits separate Director execution order under Mandate) |
-| Create IB-08 Impl Status | **NOT AUTHORIZED BY THIS STATUS** |
-| Determine ALL CAP SATISFIED / MANDATE-REQUIRED | **NOT AUTHORIZED** |
+| Git documentary commit of Gap Disposition Record + Impl Status (+ this Status when Director orders) | **READY** (documentary only) |
+| Gap repair / solution design | **NOT AUTHORIZED** |
 | IB-09 execution | **NOT AUTHORIZED** |
 | SP01 COMPLETE | **NOT DECLARED** |
-| Code / gap repair / solution design | **NOT AUTHORIZED** |
+| Code / stub repair / CB-15 wiring | **NOT AUTHORIZED** |
+| Modification of Gap Disposition Record or Impl Status | **NOT AUTHORIZED** |
+| Further SP01 gap-fill / engineering IMPL | **STOP** until gap-fill Mandate |
 
 ---
 
@@ -146,12 +154,12 @@ UNDER MANDATE SP01-IB-08-IMPL EXECUTION.
 
 | Check | Result |
 |-------|--------|
-| Discovery Audit PASS | **YES** |
-| Official Implementation Plan exists + Audit PASS | **YES** |
-| Official Implementation Mandate exists + Audit PASS | **YES** |
-| Gap Disposition Record present | **NO** (correct — not in this package) |
-| Impl Status present | **NO** (correct — not in this package) |
-| Binary result determined | **NO** (correct) |
+| Gap Disposition Record exists + Audit PASS | **YES** |
+| Implementation Status exists + Audit PASS | **YES** |
+| Binary disposition recorded | **YES** — **MANDATE-REQUIRED** |
+| Downstream STOP recorded | **YES** — **STOP IMPLEMENTATION UNTIL GAP-FILL MANDATE** |
+| IB-09 opened | **NO** (correct) |
+| SP01 COMPLETE declared | **NO** (correct) |
 | Code changes required | **NO** |
 | Ready for Git documentary commit | **YES** |
 
@@ -160,11 +168,11 @@ READY FOR GIT DOCUMENTARY COMMIT
 ```
 
 **Commit scope guidance (when Director orders Git):**  
-`FACTORY_EVOLUTION_SP01_IB08_OFFICIAL_IMPLEMENTATION_PLAN.md`  
-`FACTORY_EVOLUTION_SP01_IB08_OFFICIAL_IMPLEMENTATION_MANDATE.md`  
+`FACTORY_EVOLUTION_SP01_IB08_GAP_DISPOSITION_RECORD.md`  
+`FACTORY_EVOLUTION_SP01_IB08_IMPL_STATUS.md`  
 `FACTORY_EVOLUTION_SP01_IB08_DOCUMENTARY_COMMIT_STATUS.md` (this file)  
 
-Documentation only. No Gap Disposition Record. No Impl Status. No code. No IB-09.
+Documentation only. No gap repair. No code. No IB-09.
 
 This Status **does not** execute Git.
 
@@ -176,24 +184,23 @@ This Status **does not** execute Git.
 SP01-IB-08 — Gap Disposition (SATISFIED | MANDATE-REQUIRED)
 DOCUMENTARY COMMIT STATUS
 
-DISCOVERY: PASS
-IMPLEMENTATION PLAN: EXISTS / AUDIT PASS
-IMPLEMENTATION MANDATE: EXISTS / AUDIT PASS
-AUTHORIZATION DOCUMENTARY PACKAGE: COMPLETE
+GAP DISPOSITION RECORD: PASS
+IMPLEMENTATION STATUS: PASS
+DOCUMENTARY EXECUTION: COMPLETE
+BINARY DISPOSITION: MANDATE-REQUIRED
+DOWNSTREAM: STOP IMPLEMENTATION UNTIL GAP-FILL MANDATE
 READY FOR GIT DOCUMENTARY COMMIT: YES
 
-GAP DISPOSITION RECORD: NOT INCLUDED
-IMPL STATUS: NOT INCLUDED
-BINARY RESULT: NOT DETERMINED
-DOCUMENTARY EXECUTION: NOT PERFORMED
-IB-09: NOT AUTHORIZED
+IB-09: NOT OPENED
 SP01 COMPLETE: NOT DECLARED
+GAP REPAIR: NOT PERFORMED
+SOLUTION DESIGN: NONE
 
-HEAD CONTEXT: dc08dbe5ff213608be4d660693d3070fe632e0e1
+HEAD CONTEXT: 3a522ea5e89ec27e87b658d87e14fd06e5799007
 BRANCH CONTEXT: integration/factory-complete-20260725
 ```
 
 ---
 
-**Fin — SP01-IB-08 Documentary Commit Status (authorization package).**  
-DOCUMENTATION ONLY. Sin Gap Disposition Record, sin Impl Status, sin resultado binario, sin Git, sin IB-09.
+**Fin — SP01-IB-08 Documentary Commit Status (Gap Disposition package).**  
+DOCUMENTATION ONLY. Sin gap repair, sin código, sin Git, sin IB-09.
