@@ -1,0 +1,454 @@
+{
+  "mpiDomains": {
+    "33": {
+      "deltas": [
+        {
+          "motorId": "MOT-CTX-01",
+          "population": 42000,
+          "mpiDomain": "33"
+        },
+        {
+          "motorId": "MOT-LIV-01",
+          "crimeTrend": "declining",
+          "fairHousingRisk": false,
+          "mpiDomain": "33"
+        },
+        {
+          "motorId": "MOT-CTX-01",
+          "population": 42000,
+          "mpiDomain": "33"
+        },
+        {
+          "motorId": "MOT-LIV-01",
+          "crimeTrend": "declining",
+          "fairHousingRisk": false,
+          "mpiDomain": "33"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-GIS-MC-1785406903656-89",
+          "refUuid": "ca17eda3-28c0-4c5f-83fb-508817927e87",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_PARCEL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-88cbd7e7-7233-40dd-a3b5-",
+          "acquiredAt": "2026-07-30T10:21:43.656Z",
+          "vintageAt": "2026-05-01T10:21:43.656Z",
+          "ddiDomains": [
+            "33",
+            "35"
+          ],
+          "ddiPart": "V",
+          "freshness": {
+            "profile": "CENSUS_DEMO",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-10-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-PRH-SCR-1785406903668-96",
+          "refUuid": "53aba0d1-9dc7-4b9f-9b5f-502a3345d231",
+          "organismId": "ORG-PRH-SCR",
+          "familyId": "PUBLIC_RECORDS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-88cbd7e7-7233-40dd-a3b5-",
+          "acquiredAt": "2026-07-30T10:21:43.668Z",
+          "vintageAt": "2026-05-31T10:21:43.668Z",
+          "ddiDomains": [
+            "34",
+            "36"
+          ],
+          "ddiPart": "V",
+          "freshness": {
+            "profile": "CRIME_TREND",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-10-FIXTURE",
+            "FAIR_HOUSING_GUARD"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-GIS-MC-1785406916872-180",
+          "refUuid": "5275610f-ceb8-4003-8dda-34f7f2a3358b",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_PARCEL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-88cbd7e7-7233-40dd-a3b5-",
+          "acquiredAt": "2026-07-30T10:21:56.872Z",
+          "vintageAt": "2026-05-01T10:21:56.872Z",
+          "ddiDomains": [
+            "33",
+            "35"
+          ],
+          "ddiPart": "V",
+          "freshness": {
+            "profile": "CENSUS_DEMO",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-10-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-PRH-SCR-1785406916892-187",
+          "refUuid": "af8d6112-7f5d-45d4-bddd-0e9cde9c6428",
+          "organismId": "ORG-PRH-SCR",
+          "familyId": "PUBLIC_RECORDS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-88cbd7e7-7233-40dd-a3b5-",
+          "acquiredAt": "2026-07-30T10:21:56.892Z",
+          "vintageAt": "2026-05-31T10:21:56.892Z",
+          "ddiDomains": [
+            "34",
+            "36"
+          ],
+          "ddiPart": "V",
+          "freshness": {
+            "profile": "CRIME_TREND",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-10-FIXTURE",
+            "FAIR_HOUSING_GUARD"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "34": {
+      "deltas": [
+        {
+          "motorId": "MOT-LIV-02",
+          "schoolRating": "B+",
+          "mpiDomain": "34"
+        },
+        {
+          "motorId": "MOT-LIV-02",
+          "schoolRating": "B+",
+          "mpiDomain": "34"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-PRH-SCR-1785406903675-99",
+          "refUuid": "d25e871a-c85e-48e5-911f-363b96b1890f",
+          "organismId": "ORG-PRH-SCR",
+          "familyId": "PUBLIC_RECORDS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-88cbd7e7-7233-40dd-a3b5-",
+          "acquiredAt": "2026-07-30T10:21:43.675Z",
+          "vintageAt": "2026-05-31T10:21:43.675Z",
+          "ddiDomains": [
+            "34",
+            "36"
+          ],
+          "ddiPart": "V",
+          "freshness": {
+            "profile": "CRIME_TREND",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-10-FIXTURE",
+            "FAIR_HOUSING_GUARD"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-PRH-SCR-1785406916900-190",
+          "refUuid": "0bac9810-bae6-444c-a4b7-0f1ef7a93015",
+          "organismId": "ORG-PRH-SCR",
+          "familyId": "PUBLIC_RECORDS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-88cbd7e7-7233-40dd-a3b5-",
+          "acquiredAt": "2026-07-30T10:21:56.900Z",
+          "vintageAt": "2026-05-31T10:21:56.900Z",
+          "ddiDomains": [
+            "34",
+            "36"
+          ],
+          "ddiPart": "V",
+          "freshness": {
+            "profile": "CRIME_TREND",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-10-FIXTURE",
+            "FAIR_HOUSING_GUARD"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "35": {
+      "deltas": [
+        {
+          "motorId": "MOT-CTX-01",
+          "mobilityIndex": 0.72,
+          "mpiDomain": "35"
+        },
+        {
+          "motorId": "MOT-CTX-01",
+          "mobilityIndex": 0.72,
+          "mpiDomain": "35"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-GIS-MC-1785406903656-89",
+          "refUuid": "ca17eda3-28c0-4c5f-83fb-508817927e87",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_PARCEL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-88cbd7e7-7233-40dd-a3b5-",
+          "acquiredAt": "2026-07-30T10:21:43.656Z",
+          "vintageAt": "2026-05-01T10:21:43.656Z",
+          "ddiDomains": [
+            "33",
+            "35"
+          ],
+          "ddiPart": "V",
+          "freshness": {
+            "profile": "CENSUS_DEMO",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-10-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-GIS-MC-1785406916872-180",
+          "refUuid": "5275610f-ceb8-4003-8dda-34f7f2a3358b",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_PARCEL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-88cbd7e7-7233-40dd-a3b5-",
+          "acquiredAt": "2026-07-30T10:21:56.872Z",
+          "vintageAt": "2026-05-01T10:21:56.872Z",
+          "ddiDomains": [
+            "33",
+            "35"
+          ],
+          "ddiPart": "V",
+          "freshness": {
+            "profile": "CENSUS_DEMO",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-10-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "36": {
+      "deltas": [
+        {
+          "motorId": "MOT-CTX-02",
+          "employmentRate": 0.94,
+          "conflict": false,
+          "mpiDomain": "36"
+        },
+        {
+          "motorId": "MOT-CTX-02",
+          "employmentRate": 0.94,
+          "conflict": false,
+          "mpiDomain": "36"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-PRH-SCR-1785406903662-93",
+          "refUuid": "cbd1883c-c344-42eb-9340-e23feb0c7c96",
+          "organismId": "ORG-PRH-SCR",
+          "familyId": "PUBLIC_RECORDS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-88cbd7e7-7233-40dd-a3b5-",
+          "acquiredAt": "2026-07-30T10:21:43.662Z",
+          "vintageAt": "2026-05-31T10:21:43.662Z",
+          "ddiDomains": [
+            "34",
+            "36"
+          ],
+          "ddiPart": "V",
+          "freshness": {
+            "profile": "CRIME_TREND",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-10-FIXTURE",
+            "FAIR_HOUSING_GUARD"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-PRH-SCR-1785406916882-184",
+          "refUuid": "3073dd8d-25d9-40b3-9bfd-76ebd0ff2ac5",
+          "organismId": "ORG-PRH-SCR",
+          "familyId": "PUBLIC_RECORDS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-88cbd7e7-7233-40dd-a3b5-",
+          "acquiredAt": "2026-07-30T10:21:56.882Z",
+          "vintageAt": "2026-05-31T10:21:56.882Z",
+          "ddiDomains": [
+            "34",
+            "36"
+          ],
+          "ddiPart": "V",
+          "freshness": {
+            "profile": "CRIME_TREND",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-10-FIXTURE",
+            "FAIR_HOUSING_GUARD"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "37": {
+      "deltas": [
+        {
+          "motorId": "MOT-FUT-01",
+          "pipelineProjects": 2,
+          "mpiDomain": "37"
+        },
+        {
+          "motorId": "MOT-FUT-01",
+          "pipelineProjects": 2,
+          "mpiDomain": "37"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-GIS-MC-1785406903684-103",
+          "refUuid": "b2548df7-24d7-4d71-ab67-b22d4af212a8",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_PARCEL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-88cbd7e7-7233-40dd-a3b5-",
+          "acquiredAt": "2026-07-30T10:21:43.684Z",
+          "vintageAt": "2026-07-30T10:21:43.684Z",
+          "ddiDomains": [
+            "37"
+          ],
+          "ddiPart": "V",
+          "freshness": {
+            "profile": "PERMITS_CO",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-10-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-GIS-MC-1785406916911-194",
+          "refUuid": "77eb7109-3cd9-46ae-8d6d-2f23295f0b10",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_PARCEL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-88cbd7e7-7233-40dd-a3b5-",
+          "acquiredAt": "2026-07-30T10:21:56.911Z",
+          "vintageAt": "2026-07-30T10:21:56.911Z",
+          "ddiDomains": [
+            "37"
+          ],
+          "ddiPart": "V",
+          "freshness": {
+            "profile": "PERMITS_CO",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-10-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    }
+  },
+  "contextualFreshnessPct": 100,
+  "censusVintageOk": true,
+  "livabilityComplete": true,
+  "updatedAt": "2026-07-30T10:21:58.494Z"
+}

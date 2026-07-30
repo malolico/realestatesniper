@@ -1,5 +1,8 @@
 /**
  * P-INT-01 Slice B2 — Staging stub executor (no CB-15 orchestrateExpediente).
+ * Retained for harness / cancel / timeout injection only.
+ * SP01-IB-09-IMPL: default JobRunnerCore executor is cb15OrchestrationExecutor
+ * (live CB-15 association). Do not treat this stub as CAP-SP01-02 proof.
  * Performs checkpoints so cancelRequested can complete OBS-B1-01.
  * Boundary is enforced by JobRunnerCore via CB-15 public guard before execute.
  */

@@ -1,0 +1,747 @@
+{
+  "mpiDomains": {
+    "10": {
+      "deltas": [
+        {
+          "motorId": "MOT-OCR-01",
+          "deedAcquired": true,
+          "mpiDomain": "10"
+        },
+        {
+          "motorId": "MOT-OCR-02",
+          "authentic": true,
+          "mpiDomain": "10"
+        },
+        {
+          "motorId": "MOT-OCR-01",
+          "deedAcquired": true,
+          "mpiDomain": "10"
+        },
+        {
+          "motorId": "MOT-OCR-02",
+          "authentic": true,
+          "mpiDomain": "10"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-RCR-MC-1785406089013-28",
+          "refUuid": "0632688d-09d0-4efa-8a48-cee4c17b35bb",
+          "organismId": "ORG-RCR-MC",
+          "familyId": "REGISTRAL_RECORDER",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:09.013Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "08",
+            "09",
+            "10"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-TTL-VND-1785406089018-32",
+          "refUuid": "9a5a4938-7c8f-416f-8a73-e7337d0a5c23",
+          "organismId": "ORG-TTL-VND",
+          "familyId": "TITLE_COMMITMENT",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:09.018Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "07",
+            "08",
+            "09"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-RCR-MC-1785406090834-119",
+          "refUuid": "90c88443-16cc-45f8-92ff-8e1cda21cb84",
+          "organismId": "ORG-RCR-MC",
+          "familyId": "REGISTRAL_RECORDER",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:10.834Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "08",
+            "09",
+            "10"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-TTL-VND-1785406090842-123",
+          "refUuid": "68082cc4-d336-4ead-b6ce-38539a92bd98",
+          "organismId": "ORG-TTL-VND",
+          "familyId": "TITLE_COMMITMENT",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:10.842Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "07",
+            "08",
+            "09"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "11": {
+      "deltas": [],
+      "sourceRefs": []
+    },
+    "04": {
+      "deltas": [
+        {
+          "motorId": "MOT-REG-01",
+          "permits": 2,
+          "mpiDomain": "04"
+        },
+        {
+          "motorId": "MOT-REG-02",
+          "zoning": "R-1",
+          "mpiDomain": "04"
+        },
+        {
+          "motorId": "MOT-REG-03",
+          "far": 0.45,
+          "mpiDomain": "04"
+        },
+        {
+          "motorId": "MOT-REG-01",
+          "permits": 2,
+          "mpiDomain": "04"
+        },
+        {
+          "motorId": "MOT-REG-02",
+          "zoning": "R-1",
+          "mpiDomain": "04"
+        },
+        {
+          "motorId": "MOT-REG-03",
+          "far": 0.45,
+          "mpiDomain": "04"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-RCR-MC-1785406088977-13",
+          "refUuid": "760ed5e9-cd66-4fe7-ad54-7c3a6c620d39",
+          "organismId": "ORG-RCR-MC",
+          "familyId": "REGISTRAL_RECORDER",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:08.977Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "08",
+            "09",
+            "10"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-RCR-MC-1785406088983-16",
+          "refUuid": "241fd898-6793-4ea7-9592-d14cc73b2d44",
+          "organismId": "ORG-RCR-MC",
+          "familyId": "REGISTRAL_RECORDER",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:08.983Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "08",
+            "09",
+            "10"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-RCR-MC-1785406090784-104",
+          "refUuid": "ce82b338-f471-4478-ae41-51adb49b2090",
+          "organismId": "ORG-RCR-MC",
+          "familyId": "REGISTRAL_RECORDER",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:10.784Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "08",
+            "09",
+            "10"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-RCR-MC-1785406090793-107",
+          "refUuid": "f80114ee-8761-4373-ba9e-71e5af2e27f7",
+          "organismId": "ORG-RCR-MC",
+          "familyId": "REGISTRAL_RECORDER",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:10.793Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "08",
+            "09",
+            "10"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "05": {
+      "deltas": [],
+      "sourceRefs": []
+    },
+    "06": {
+      "deltas": [],
+      "sourceRefs": []
+    },
+    "07": {
+      "deltas": [
+        {
+          "motorId": "MOT-LEG-01",
+          "marketable": true,
+          "titleCloud": false,
+          "mpiDomain": "07"
+        },
+        {
+          "motorId": "MOT-LEG-01",
+          "marketable": true,
+          "titleCloud": false,
+          "mpiDomain": "07"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-TTL-VND-1785406088995-20",
+          "refUuid": "f709617a-6339-4a0d-bab9-1eff612c2bc4",
+          "organismId": "ORG-TTL-VND",
+          "familyId": "TITLE_COMMITMENT",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:08.995Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "07",
+            "08",
+            "09"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-CRT-MC-1785406088995-21",
+          "refUuid": "48fec512-6d7f-404d-bb46-e1539e49bc38",
+          "organismId": "ORG-CRT-MC",
+          "familyId": "JUDICIAL_INDEX",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:08.995Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "07"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-TTL-VND-1785406090811-111",
+          "refUuid": "2c63128f-3eb9-4737-8621-4336c0d11856",
+          "organismId": "ORG-TTL-VND",
+          "familyId": "TITLE_COMMITMENT",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:10.811Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "07",
+            "08",
+            "09"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-CRT-MC-1785406090811-112",
+          "refUuid": "f58f7a08-b263-4362-b8a8-e9d83fc56fdd",
+          "organismId": "ORG-CRT-MC",
+          "familyId": "JUDICIAL_INDEX",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:10.811Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "07"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "08": {
+      "deltas": [
+        {
+          "motorId": "MOT-OWN-01",
+          "owner": "Smith Family Trust",
+          "mpiDomain": "08"
+        },
+        {
+          "motorId": "MOT-OWN-02",
+          "verified": true,
+          "mismatch": false,
+          "mpiDomain": "08"
+        },
+        {
+          "motorId": "MOT-OWN-01",
+          "owner": "Smith Family Trust",
+          "mpiDomain": "08"
+        },
+        {
+          "motorId": "MOT-OWN-02",
+          "verified": true,
+          "mismatch": false,
+          "mpiDomain": "08"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-RCR-MC-1785406089001-22",
+          "refUuid": "0650491b-dd01-42cc-8deb-182f7d494425",
+          "organismId": "ORG-RCR-MC",
+          "familyId": "REGISTRAL_RECORDER",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:09.001Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "08",
+            "09",
+            "10"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-RCR-MC-1785406089008-25",
+          "refUuid": "54f5519f-5b88-4937-9fc4-bc2a7a6e3021",
+          "organismId": "ORG-RCR-MC",
+          "familyId": "REGISTRAL_RECORDER",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:09.008Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "08",
+            "09",
+            "10"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-TTL-VND-1785406089008-26",
+          "refUuid": "e311e7be-fa69-4940-b8a4-a25ecd0e6f0a",
+          "organismId": "ORG-TTL-VND",
+          "familyId": "TITLE_COMMITMENT",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:09.008Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "07",
+            "08",
+            "09"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-RCR-MC-1785406090819-113",
+          "refUuid": "8c96cba2-1279-45bd-bd4f-6f7a4efbf6a0",
+          "organismId": "ORG-RCR-MC",
+          "familyId": "REGISTRAL_RECORDER",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:10.819Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "08",
+            "09",
+            "10"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-RCR-MC-1785406090827-116",
+          "refUuid": "d77d01f3-bee6-461c-a63e-02888694a00c",
+          "organismId": "ORG-RCR-MC",
+          "familyId": "REGISTRAL_RECORDER",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:10.827Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "08",
+            "09",
+            "10"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-TTL-VND-1785406090827-117",
+          "refUuid": "559962ac-6278-4245-a268-7a281ec9dd43",
+          "organismId": "ORG-TTL-VND",
+          "familyId": "TITLE_COMMITMENT",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:10.827Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "07",
+            "08",
+            "09"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "09": {
+      "deltas": [
+        {
+          "motorId": "MOT-LEG-01",
+          "lienStub": true,
+          "lienCount": 2,
+          "juniorUnresolved": false,
+          "mpiDomain": "09",
+          "note": "Lien encumbrance stub — MOT-LIEN-01 deferred (CB-00 actor pattern)"
+        },
+        {
+          "motorId": "MOT-LEG-01",
+          "lienStub": true,
+          "lienCount": 2,
+          "juniorUnresolved": false,
+          "mpiDomain": "09",
+          "note": "Lien encumbrance stub — MOT-LIEN-01 deferred (CB-00 actor pattern)"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-RCR-MC-1785406088995-19",
+          "refUuid": "30049419-d4c3-4cc8-8155-e193488aa8f1",
+          "organismId": "ORG-RCR-MC",
+          "familyId": "REGISTRAL_RECORDER",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:08.995Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "08",
+            "09",
+            "10"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-RCR-MC-1785406090811-110",
+          "refUuid": "8337d8bb-8fef-4a3f-8813-91a71e5cfc7c",
+          "organismId": "ORG-RCR-MC",
+          "familyId": "REGISTRAL_RECORDER",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:10.811Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "08",
+            "09",
+            "10"
+          ],
+          "ddiPart": "II",
+          "freshness": {
+            "profile": "TITLE_LIENS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-07-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    }
+  },
+  "blockers": [],
+  "transferReady": true,
+  "ownershipVerified": true,
+  "titleMarketable": true,
+  "updatedAt": "2026-07-30T10:08:12.364Z"
+}

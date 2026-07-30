@@ -99,7 +99,7 @@ async function withServer(core, fn) {
 async function run() {
   await test("smoke submit + process + status", async () => {
     const store = new InMemoryJobStore();
-    const runner = new JobRunnerCore(store, { executionTimeoutMs: 2000 });
+    const runner = new JobRunnerCore(store, { executionTimeoutMs: 120_000 });
     const core = new OrchestrationCommandCore({
       runner,
       authn: new StagingBearerAuthnAdapter({ sessions: createDefaultStagingSessions() }),

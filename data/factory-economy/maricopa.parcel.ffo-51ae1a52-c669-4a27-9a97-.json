@@ -1,0 +1,871 @@
+{
+  "mpiDomains": {
+    "21": {
+      "deltas": [
+        {
+          "motorId": "MOT-FIN-01",
+          "equity": 125000,
+          "mpiDomain": "21"
+        },
+        {
+          "motorId": "MOT-FIN-01",
+          "equity": 125000,
+          "mpiDomain": "21"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-ASR-MC-1785407055686-256",
+          "refUuid": "f2089ed5-a015-43b5-8d0b-d763894703f1",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "ASSESSOR_ROLL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:15.686Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "21",
+            "22",
+            "23"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "FISCAL_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-ASR-MC-1785407064560-347",
+          "refUuid": "85edb32a-3318-4c26-8e28-a7647b49fd57",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "ASSESSOR_ROLL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:24.560Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "21",
+            "22",
+            "23"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "FISCAL_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "22": {
+      "deltas": [
+        {
+          "motorId": "MOT-FIN-02",
+          "mortgageBalance": 180000,
+          "mpiDomain": "22"
+        },
+        {
+          "motorId": "MOT-FIN-02",
+          "mortgageBalance": 180000,
+          "mpiDomain": "22"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-ASR-MC-1785407055694-259",
+          "refUuid": "2f86f432-700e-4209-9403-4fba4b48930a",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "ASSESSOR_ROLL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:15.694Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "21",
+            "22",
+            "23"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "FISCAL_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-ASR-MC-1785407064568-350",
+          "refUuid": "bde6bd55-3f64-4166-8dce-87fa7107b1a1",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "ASSESSOR_ROLL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:24.568Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "21",
+            "22",
+            "23"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "FISCAL_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "23": {
+      "deltas": [
+        {
+          "motorId": "MOT-FIN-02",
+          "taxStatus": "current",
+          "mpiDomain": "23"
+        },
+        {
+          "motorId": "MOT-FIN-02",
+          "taxStatus": "current",
+          "mpiDomain": "23"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-ASR-MC-1785407055694-259",
+          "refUuid": "2f86f432-700e-4209-9403-4fba4b48930a",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "ASSESSOR_ROLL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:15.694Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "21",
+            "22",
+            "23"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "FISCAL_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-ASR-MC-1785407064568-350",
+          "refUuid": "bde6bd55-3f64-4166-8dce-87fa7107b1a1",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "ASSESSOR_ROLL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:24.568Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "21",
+            "22",
+            "23"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "FISCAL_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "24": {
+      "deltas": [
+        {
+          "motorId": "MOT-HAZ-01",
+          "floodZone": "X",
+          "mpiDomain": "24"
+        },
+        {
+          "motorId": "MOT-HAZ-01",
+          "floodZone": "X",
+          "mpiDomain": "24"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-GIS-MC-1785407055700-264",
+          "refUuid": "3b2cede0-7133-4be7-9c43-7333b7fe460d",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_PARCEL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:15.700Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "24",
+            "25"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "HAZARD_LAYER",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-GIS-MC-1785407064576-355",
+          "refUuid": "e3e7db9f-fc0c-43e4-a78f-9d83652d6fd6",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_PARCEL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:24.576Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "24",
+            "25"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "HAZARD_LAYER",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "25": {
+      "deltas": [
+        {
+          "motorId": "MOT-HAZ-02",
+          "contamination": false,
+          "mpiDomain": "25"
+        },
+        {
+          "motorId": "MOT-HAZ-02",
+          "contamination": false,
+          "mpiDomain": "25"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-GIS-MC-1785407055706-267",
+          "refUuid": "7ac53b87-2e3a-4193-945d-d7d1893d3405",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_PARCEL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:15.706Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "24",
+            "25"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "HAZARD_LAYER",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-GIS-MC-1785407064583-358",
+          "refUuid": "c36afede-03bf-46da-9fa5-3dc0d33735ba",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_PARCEL",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:24.583Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "24",
+            "25"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "HAZARD_LAYER",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "27": {
+      "deltas": [
+        {
+          "motorId": "MOT-MKT-01",
+          "submarket": "Phoenix-NW",
+          "mpiDomain": "27"
+        },
+        {
+          "motorId": "MOT-MKT-01",
+          "submarket": "Phoenix-NW",
+          "mpiDomain": "27"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-ASR-MC-1785407055713-269",
+          "refUuid": "7fb6b146-c451-4d9d-ac23-2494d11778e6",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "MARKET_MLS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:15.713Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "27",
+            "28",
+            "29",
+            "32"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "MLS_COMPS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-ASR-MC-1785407064590-360",
+          "refUuid": "3be72251-13de-4846-a2a0-3d7c3171fde0",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "MARKET_MLS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:24.590Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "27",
+            "28",
+            "29",
+            "32"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "MLS_COMPS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "28": {
+      "deltas": [
+        {
+          "motorId": "MOT-MKT-02",
+          "compCount": 4,
+          "compConflict": false,
+          "mpiDomain": "28"
+        },
+        {
+          "motorId": "MOT-MKT-02",
+          "compCount": 4,
+          "compConflict": false,
+          "mpiDomain": "28"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-ASR-MC-1785407055719-272",
+          "refUuid": "04fe8d4a-f5ad-4dbc-ac6f-6d46910b4ef6",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "MARKET_MLS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:15.719Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "27",
+            "28",
+            "29",
+            "32"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "MLS_COMPS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-ASR-MC-1785407064599-363",
+          "refUuid": "5ee848f1-9795-4ae0-af7a-eca77eb1c86d",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "MARKET_MLS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:24.599Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "27",
+            "28",
+            "29",
+            "32"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "MLS_COMPS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "29": {
+      "deltas": [
+        {
+          "motorId": "MOT-MKT-03",
+          "reconciled": true,
+          "valueRange": {
+            "low": 310000,
+            "high": 335000
+          },
+          "mpiDomain": "29"
+        },
+        {
+          "motorId": "MOT-MKT-03",
+          "reconciled": true,
+          "valueRange": {
+            "low": 310000,
+            "high": 335000
+          },
+          "mpiDomain": "29"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-ASR-MC-1785407055729-275",
+          "refUuid": "053f351f-aa13-48c3-982f-9e13d5a51854",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "MARKET_MLS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:15.729Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "27",
+            "28",
+            "29",
+            "32"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "MLS_COMPS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-ASR-MC-1785407064606-366",
+          "refUuid": "f9f636b7-2881-44b9-b09a-34ba49abfd5e",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "MARKET_MLS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:24.606Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "27",
+            "28",
+            "29",
+            "32"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "MLS_COMPS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "30": {
+      "deltas": [
+        {
+          "motorId": "MOT-INV-01",
+          "roi": 0.14,
+          "mpiDomain": "30"
+        },
+        {
+          "motorId": "MOT-INV-01",
+          "roi": 0.14,
+          "mpiDomain": "30"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-ASR-MC-1785407055749-278",
+          "refUuid": "81b442af-d69e-487c-b5db-8b4b468eb336",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "MARKET_MLS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:15.749Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "27",
+            "28",
+            "29",
+            "32"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "MLS_COMPS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-ASR-MC-1785407064616-369",
+          "refUuid": "6b9d427a-a8ef-446d-b537-a0ae08a903fd",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "MARKET_MLS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:24.616Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "27",
+            "28",
+            "29",
+            "32"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "MLS_COMPS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "31": {
+      "deltas": [
+        {
+          "motorId": "MOT-INV-02",
+          "strategies": [
+            "flip"
+          ],
+          "multiStrategy": false,
+          "mpiDomain": "31"
+        },
+        {
+          "motorId": "MOT-INV-02",
+          "strategies": [
+            "flip"
+          ],
+          "multiStrategy": false,
+          "mpiDomain": "31"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-ASR-MC-1785407055755-281",
+          "refUuid": "0bd2b42b-6f39-4c97-915e-e6f2b9aa0283",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "MARKET_MLS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:15.755Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "27",
+            "28",
+            "29",
+            "32"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "MLS_COMPS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-ASR-MC-1785407064623-372",
+          "refUuid": "2110dc18-a65e-4cf3-8fef-98e56ae14796",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "MARKET_MLS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:24.623Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "27",
+            "28",
+            "29",
+            "32"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "MLS_COMPS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "32": {
+      "deltas": [
+        {
+          "motorId": "MOT-FIN-01",
+          "economicContext": "stable",
+          "mpiDomain": "32"
+        },
+        {
+          "motorId": "MOT-FIN-01",
+          "economicContext": "stable",
+          "mpiDomain": "32"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-ASR-MC-1785407055686-257",
+          "refUuid": "e36ab786-0fa7-4200-ac62-6b13134c9b2d",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "MARKET_MLS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:15.686Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "27",
+            "28",
+            "29",
+            "32"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "MLS_COMPS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-ASR-MC-1785407064560-348",
+          "refUuid": "ce992e8f-bef0-40c8-aac6-4ea6957ea0d2",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "MARKET_MLS",
+          "epistemicLevel": 2,
+          "factoryKey": "maricopa.parcel.ffo-51ae1a52-c669-4a27-9a97-",
+          "acquiredAt": "2026-07-30T10:24:24.560Z",
+          "vintageAt": null,
+          "ddiDomains": [
+            "27",
+            "28",
+            "29",
+            "32"
+          ],
+          "ddiPart": "IV",
+          "freshness": {
+            "profile": "MLS_COMPS",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-09-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    }
+  },
+  "compCount": 4,
+  "valuationReconciled": true,
+  "investmentStrategies": [
+    "flip"
+  ],
+  "freshnessOk": false,
+  "updatedAt": "2026-07-30T10:24:24.625Z"
+}

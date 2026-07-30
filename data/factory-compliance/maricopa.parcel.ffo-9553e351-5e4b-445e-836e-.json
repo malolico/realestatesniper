@@ -1,0 +1,532 @@
+{
+  "factory_key": "maricopa.parcel.ffo-9553e351-5e4b-445e-836e-",
+  "clearance": "PASS",
+  "violations": [],
+  "history": [
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406952113-sujfn8",
+        "evaluatedAt": "2026-07-30T10:22:32.113Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:32.113Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406952229-r54aly",
+        "evaluatedAt": "2026-07-30T10:22:32.229Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:32.229Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406953897-1o7y15",
+        "evaluatedAt": "2026-07-30T10:22:33.897Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:33.898Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406953994-ohme65",
+        "evaluatedAt": "2026-07-30T10:22:33.994Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:33.995Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954002-bbhntz",
+        "evaluatedAt": "2026-07-30T10:22:34.002Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.002Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954009-8z499f",
+        "evaluatedAt": "2026-07-30T10:22:34.009Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.010Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954016-1db1jw",
+        "evaluatedAt": "2026-07-30T10:22:34.016Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.016Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954025-d0j1qu",
+        "evaluatedAt": "2026-07-30T10:22:34.025Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.026Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954033-qogu4h",
+        "evaluatedAt": "2026-07-30T10:22:34.033Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.033Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954041-n94t45",
+        "evaluatedAt": "2026-07-30T10:22:34.041Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.042Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954049-kb60oa",
+        "evaluatedAt": "2026-07-30T10:22:34.049Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.049Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954056-vp0x19",
+        "evaluatedAt": "2026-07-30T10:22:34.056Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.057Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954067-txkqup",
+        "evaluatedAt": "2026-07-30T10:22:34.067Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.067Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954079-uqjhg6",
+        "evaluatedAt": "2026-07-30T10:22:34.079Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.079Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954086-1t01ez",
+        "evaluatedAt": "2026-07-30T10:22:34.086Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.087Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954095-c2qa5r",
+        "evaluatedAt": "2026-07-30T10:22:34.095Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.095Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954102-x5py8g",
+        "evaluatedAt": "2026-07-30T10:22:34.102Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.102Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954110-i2es67",
+        "evaluatedAt": "2026-07-30T10:22:34.110Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.110Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954119-loyf4u",
+        "evaluatedAt": "2026-07-30T10:22:34.119Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.119Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954127-8y2i7h",
+        "evaluatedAt": "2026-07-30T10:22:34.127Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.128Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954135-xgtkz8",
+        "evaluatedAt": "2026-07-30T10:22:34.135Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.135Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954144-g19yy3",
+        "evaluatedAt": "2026-07-30T10:22:34.144Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.145Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954153-zkayc1",
+        "evaluatedAt": "2026-07-30T10:22:34.153Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.153Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954165-7mxg7s",
+        "evaluatedAt": "2026-07-30T10:22:34.165Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.166Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954175-pvykk8",
+        "evaluatedAt": "2026-07-30T10:22:34.175Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.176Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954184-onja5t",
+        "evaluatedAt": "2026-07-30T10:22:34.184Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.184Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954194-0su3yr",
+        "evaluatedAt": "2026-07-30T10:22:34.194Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.194Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954201-31tioc",
+        "evaluatedAt": "2026-07-30T10:22:34.201Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.202Z"
+    },
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406954211-658z94",
+        "evaluatedAt": "2026-07-30T10:22:34.211Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:34.211Z"
+    }
+  ],
+  "clearanceId": "CLR-1785406954211-658z94",
+  "loopAction": "FIN-S",
+  "updatedAt": "2026-07-30T10:22:34.211Z"
+}

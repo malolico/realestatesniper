@@ -1,0 +1,28 @@
+{
+  "factory_key": "prov-sp01-ib09-93fc60f0-5b84-4daf-8682-0af9edb69d71",
+  "clearance": "PASS",
+  "violations": [],
+  "history": [
+    {
+      "cmpResult": {
+        "actor": "MOT-CMP-01",
+        "clearance": "PASS",
+        "blockReasons": [],
+        "violations": [],
+        "clearanceId": "CLR-1785406935412-snwsj8",
+        "evaluatedAt": "2026-07-30T10:22:15.412Z",
+        "evidenceLevel": "E3"
+      },
+      "loopResult": {
+        "actor": "LOOP-XVR-CMP-01",
+        "action": "FIN-S",
+        "block": false,
+        "message": "clearance_restored"
+      },
+      "recordedAt": "2026-07-30T10:22:15.412Z"
+    }
+  ],
+  "clearanceId": "CLR-1785406935412-snwsj8",
+  "loopAction": "FIN-S",
+  "updatedAt": "2026-07-30T10:22:15.412Z"
+}

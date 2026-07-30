@@ -1,6 +1,8 @@
 /**
  * P-INT-01 Slice B2 — Job Runner Core (async, off-request).
- * No HTTP. No Slice A imports. CB-15: boundary public API only (no orchestrate yet).
+ * No HTTP. No Slice A imports.
+ * SP01-IB-09-IMPL: default executor associates staging jobs with CB-15 orchestrateExpediente
+ * via consumer adapter (cb15OrchestrationExecutor). Stub remains injectable for harnesses.
  */
 
 import { FACTORY_ORCHESTRATION_COMMANDS, FACTORY_ORCHESTRATION_ERROR_CODES } from "./contract.js";
@@ -8,8 +10,11 @@ import { JOB_STATES, isTerminalJobState } from "./jobModel.js";
 import { enforceFactoryBoundary } from "./boundaryAdapter.js";
 import { sanitizeJobError } from "./sanitize.js";
 import { sanitizeResultSummary } from "./validation.js";
-import { runStubOrchestration } from "./stubExecutor.js";
+import { runCb15Orchestration } from "./cb15OrchestrationExecutor.js";
 import { validateOrchestrateSubmitBody } from "./validation.js";
+
+/** Default timeout for Mandated CB-15-associated execution (staging). */
+export const DEFAULT_CB15_EXECUTION_TIMEOUT_MS = 60_000;
 
 function defaultDelay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -37,8 +42,9 @@ export class JobRunnerCore {
    */
   constructor(store, options = {}) {
     this.store = store;
-    this.executionTimeoutMs = options.executionTimeoutMs ?? 5_000;
-    this.executor = options.executor || runStubOrchestration;
+    this.executor = options.executor || runCb15Orchestration;
+    this.executionTimeoutMs =
+      options.executionTimeoutMs ?? DEFAULT_CB15_EXECUTION_TIMEOUT_MS;
     this.delay = typeof options.delay === "function" ? options.delay : defaultDelay;
     /** @type {Set<string>} */
     this._inflight = new Set();

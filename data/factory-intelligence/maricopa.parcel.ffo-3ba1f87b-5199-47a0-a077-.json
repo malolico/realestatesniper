@@ -1,0 +1,150 @@
+{
+  "mpiDomains": {
+    "38": {
+      "deltas": [
+        {
+          "motorId": "MOT-SYN-01",
+          "convergenceScore": 0.84,
+          "mpiDomain": "38",
+          "eLevel": "E2",
+          "elevated": false
+        }
+      ],
+      "sourceRefs": [
+        "SYN-FIX-maricopa.parcel.ffo-3ba1f87b-5199-47a0-a077-"
+      ]
+    },
+    "39": {
+      "deltas": [
+        {
+          "motorId": "MOT-SYN-02",
+          "readinessScore": 1,
+          "gatesPass": 7,
+          "mpiDomain": "39"
+        }
+      ],
+      "sourceRefs": [
+        "SYN-FIX-maricopa.parcel.ffo-3ba1f87b-5199-47a0-a077-"
+      ]
+    },
+    "40": {
+      "deltas": [
+        {
+          "motorId": "MOT-DCN-01",
+          "corpusAssembled": true,
+          "mpiDomain": "40"
+        }
+      ],
+      "sourceRefs": [
+        "DCN-FIX-maricopa.parcel.ffo-3ba1f87b-5199-47a0-a077-"
+      ]
+    },
+    "41": {
+      "deltas": [
+        {
+          "motorId": "MOT-COM-01",
+          "releaseMatrixReady": true,
+          "mpiDomain": "41"
+        }
+      ],
+      "sourceRefs": [
+        "COM-FIX-maricopa.parcel.ffo-3ba1f87b-5199-47a0-a077-"
+      ]
+    },
+    "42": {
+      "deltas": [
+        {
+          "motorId": "MOT-EXE-01",
+          "execMemoSynced": true,
+          "mpiDomain": "42"
+        }
+      ],
+      "sourceRefs": [
+        "EXE-FIX-maricopa.parcel.ffo-3ba1f87b-5199-47a0-a077-"
+      ]
+    }
+  },
+  "convergenceScore": 0,
+  "readinessScore": 0,
+  "knownUnknowns": [
+    {
+      "id": "DKN-maricopa.parcel.ffo-3ba1f87b-5199-47a0-a077--001",
+      "domain": "valuation",
+      "description": "Comp set vintage — minor uncertainty",
+      "obligation": "Obl",
+      "declared": true
+    },
+    {
+      "id": "DKN-maricopa.parcel.ffo-3ba1f87b-5199-47a0-a077--002",
+      "domain": "distress",
+      "description": "Contact authorization window pending",
+      "obligation": "Obl",
+      "declared": true
+    }
+  ],
+  "blockers": [],
+  "icMemoSynced": false,
+  "commercialReady": true,
+  "docGap": false,
+  "updatedAt": "2026-07-30T10:23:07.874Z",
+  "pendingGateEvaluation": {
+    "gates": [
+      {
+        "gate": "G0",
+        "pass": true,
+        "detail": {
+          "clearance": "PASS"
+        }
+      },
+      {
+        "gate": "G1",
+        "pass": true,
+        "detail": {
+          "keyConfidence": "C2",
+          "keyStatus": "definitive"
+        }
+      },
+      {
+        "gate": "G2",
+        "pass": true,
+        "detail": {
+          "openOblBlockers": 0,
+          "documented": true
+        }
+      },
+      {
+        "gate": "G3",
+        "pass": true,
+        "detail": {
+          "sufficiency": "PASS"
+        }
+      },
+      {
+        "gate": "G4",
+        "pass": true,
+        "detail": {
+          "syn02Readiness": true
+        }
+      },
+      {
+        "gate": "G5",
+        "pass": true,
+        "detail": {
+          "declaredCount": 2
+        }
+      },
+      {
+        "gate": "G6",
+        "pass": true,
+        "detail": {
+          "execMemoPresent": true,
+          "releaseMatrixPresent": true
+        }
+      }
+    ],
+    "allPass": true,
+    "passCount": 7,
+    "gateCount": 7,
+    "evaluatedBy": "MOT-SYN-02"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "mpiDomains": {
+    "01": {
+      "deltas": [
+        {
+          "motorId": "MOT-IDN-01",
+          "parcelId": "ffo-651d0d8b-efd8-498e-9ca1-",
+          "confidence": "C1",
+          "jurisdiction": "Maricopa County, AZ",
+          "conflict": false,
+          "mpiDomain": "01"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-ASR-MC-1785406088851-1",
+          "refUuid": "fd7be79f-da3b-4f58-9836-e606ebc98453",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "REGISTRAL_ASSESSOR",
+          "epistemicLevel": 1,
+          "factoryKey": "prov-sp01-ib09-651d0d8b-efd8-498e-9ca1-94adb0a56b1a",
+          "acquiredAt": "2026-07-30T10:08:08.851Z",
+          "vintageAt": "2026-07-30T10:08:08.851Z",
+          "ddiDomains": [
+            "01",
+            "03"
+          ],
+          "ddiPart": "I",
+          "freshness": {
+            "profile": "ASSESSOR_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-05-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-GIS-MC-1785406088851-2",
+          "refUuid": "439efc03-1c75-45ce-bf9b-d972be776bf5",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_OFFICIAL",
+          "epistemicLevel": 1,
+          "factoryKey": "prov-sp01-ib09-651d0d8b-efd8-498e-9ca1-94adb0a56b1a",
+          "acquiredAt": "2026-07-30T10:08:08.851Z",
+          "vintageAt": "2026-07-30T10:08:08.851Z",
+          "ddiDomains": [
+            "01",
+            "02"
+          ],
+          "ddiPart": "I",
+          "freshness": {
+            "profile": "ASSESSOR_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-05-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "02": {
+      "deltas": [],
+      "sourceRefs": []
+    },
+    "03": {
+      "deltas": [],
+      "sourceRefs": []
+    }
+  },
+  "identityConfidence": null,
+  "identityConflict": false,
+  "foundationComplete": false,
+  "updatedAt": "2026-07-30T10:08:08.851Z"
+}

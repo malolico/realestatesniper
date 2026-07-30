@@ -1,0 +1,303 @@
+{
+  "mpiDomains": {
+    "01": {
+      "deltas": [
+        {
+          "motorId": "MOT-IDN-01",
+          "parcelId": "ffo-651d0d8b-efd8-498e-9ca1-",
+          "confidence": "C1",
+          "jurisdiction": "Maricopa County, AZ",
+          "conflict": false,
+          "mpiDomain": "01"
+        },
+        {
+          "motorId": "MOT-IDN-01",
+          "parcelId": "ffo-651d0d8b-efd8-498e-9ca1-",
+          "confidence": "C1",
+          "jurisdiction": "Maricopa County, AZ",
+          "conflict": false,
+          "mpiDomain": "01"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-ASR-MC-1785406088851-1",
+          "refUuid": "fd7be79f-da3b-4f58-9836-e606ebc98453",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "REGISTRAL_ASSESSOR",
+          "epistemicLevel": 1,
+          "factoryKey": "prov-sp01-ib09-651d0d8b-efd8-498e-9ca1-94adb0a56b1a",
+          "acquiredAt": "2026-07-30T10:08:08.851Z",
+          "vintageAt": "2026-07-30T10:08:08.851Z",
+          "ddiDomains": [
+            "01",
+            "03"
+          ],
+          "ddiPart": "I",
+          "freshness": {
+            "profile": "ASSESSOR_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-05-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-GIS-MC-1785406088851-2",
+          "refUuid": "439efc03-1c75-45ce-bf9b-d972be776bf5",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_OFFICIAL",
+          "epistemicLevel": 1,
+          "factoryKey": "prov-sp01-ib09-651d0d8b-efd8-498e-9ca1-94adb0a56b1a",
+          "acquiredAt": "2026-07-30T10:08:08.851Z",
+          "vintageAt": "2026-07-30T10:08:08.851Z",
+          "ddiDomains": [
+            "01",
+            "02"
+          ],
+          "ddiPart": "I",
+          "freshness": {
+            "profile": "ASSESSOR_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-05-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-ASR-MC-1785406088863-3",
+          "refUuid": "d0b6eaab-90a9-4ac3-87f6-669a603e9665",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "REGISTRAL_ASSESSOR",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:08.863Z",
+          "vintageAt": "2026-07-30T10:08:08.863Z",
+          "ddiDomains": [
+            "01",
+            "03"
+          ],
+          "ddiPart": "I",
+          "freshness": {
+            "profile": "ASSESSOR_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-05-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-GIS-MC-1785406088863-4",
+          "refUuid": "b6153ade-94f6-42f0-9e3f-fae8bdb87938",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_OFFICIAL",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:08.863Z",
+          "vintageAt": "2026-07-30T10:08:08.863Z",
+          "ddiDomains": [
+            "01",
+            "02"
+          ],
+          "ddiPart": "I",
+          "freshness": {
+            "profile": "ASSESSOR_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-05-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "02": {
+      "deltas": [
+        {
+          "motorId": "MOT-LOC-01",
+          "geospatialAnchor": true,
+          "mpiDomain": "02"
+        },
+        {
+          "motorId": "MOT-LOC-02",
+          "boundaryVerified": true,
+          "mpiDomain": "02"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-GIS-MC-1785406088867-6",
+          "refUuid": "99fb4c60-6dfe-4d06-957d-30b6918baf33",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_OFFICIAL",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:08.867Z",
+          "vintageAt": "2026-07-30T10:08:08.867Z",
+          "ddiDomains": [
+            "01",
+            "02"
+          ],
+          "ddiPart": "I",
+          "freshness": {
+            "profile": "ASSESSOR_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-05-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-GIS-MC-1785406088872-8",
+          "refUuid": "6e82e2d6-e7f3-4db7-af81-45ec76f61df8",
+          "organismId": "ORG-GIS-MC",
+          "familyId": "GIS_OFFICIAL",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:08.872Z",
+          "vintageAt": "2026-07-30T10:08:08.872Z",
+          "ddiDomains": [
+            "01",
+            "02"
+          ],
+          "ddiPart": "I",
+          "freshness": {
+            "profile": "ASSESSOR_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-05-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    },
+    "03": {
+      "deltas": [
+        {
+          "motorId": "MOT-PHY-01",
+          "profile": {
+            "sqft": 1850,
+            "yearBuilt": 1998,
+            "beds": 3,
+            "baths": 2
+          },
+          "mpiDomain": "03"
+        },
+        {
+          "motorId": "MOT-PHY-02",
+          "improvements": {
+            "pool": false,
+            "garage": true
+          },
+          "mpiDomain": "03"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "SRC-ORG-ASR-MC-1785406088877-9",
+          "refUuid": "09a7ac00-95fe-4ff2-9808-548388671ce6",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "REGISTRAL_ASSESSOR",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:08.877Z",
+          "vintageAt": "2026-07-30T10:08:08.877Z",
+          "ddiDomains": [
+            "01",
+            "03"
+          ],
+          "ddiPart": "I",
+          "freshness": {
+            "profile": "ASSESSOR_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-05-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        },
+        {
+          "id": "SRC-ORG-ASR-MC-1785406088881-11",
+          "refUuid": "98a28f69-5b59-4281-9e67-ccedc239dc7d",
+          "organismId": "ORG-ASR-MC",
+          "familyId": "REGISTRAL_ASSESSOR",
+          "epistemicLevel": 1,
+          "factoryKey": "maricopa.parcel.ffo-651d0d8b-efd8-498e-9ca1-",
+          "acquiredAt": "2026-07-30T10:08:08.881Z",
+          "vintageAt": "2026-07-30T10:08:08.881Z",
+          "ddiDomains": [
+            "01",
+            "03"
+          ],
+          "ddiPart": "I",
+          "freshness": {
+            "profile": "ASSESSOR_ROLL",
+            "synthetic": true
+          },
+          "complianceFlags": [
+            "CB-05-FIXTURE"
+          ],
+          "piiFlags": {
+            "sensitive": false,
+            "contactChannel": false,
+            "authorized": null
+          },
+          "lowConfidenceFlags": [],
+          "constitutionalPhase": "CB-02"
+        }
+      ]
+    }
+  },
+  "identityConfidence": "C1",
+  "identityConflict": false,
+  "foundationComplete": true,
+  "updatedAt": "2026-07-30T10:08:08.897Z",
+  "reconciled": true
+}

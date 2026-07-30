@@ -56,7 +56,7 @@ function test(name, fn) {
 function createStack(runnerOptions = {}) {
   const store = new InMemoryJobStore();
   const runner = new JobRunnerCore(store, {
-    executionTimeoutMs: 2000,
+    executionTimeoutMs: 120_000,
     ...runnerOptions,
   });
   const core = new OrchestrationCommandCore({

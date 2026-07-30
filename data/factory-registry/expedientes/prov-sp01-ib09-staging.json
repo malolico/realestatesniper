@@ -1,0 +1,101 @@
+{
+  "factory_key": "prov-sp01-ib09-staging",
+  "state": "ST-IDN",
+  "keyStatus": "provisional",
+  "candidateRef": "sp01-ib09-staging",
+  "createdAt": "2026-07-30T09:55:34.438Z",
+  "archivedAt": null,
+  "retiredAt": null,
+  "elr": {
+    "elrId": "ELR-prov-sp01-ib09-staging",
+    "factory_key": "prov-sp01-ib09-staging",
+    "factory_key_history": [],
+    "state_transitions": [
+      {
+        "from": null,
+        "to": "ST-NASC",
+        "actor": "FoundationLayerService",
+        "reason": "expediente_birth",
+        "at": "2026-07-30T09:55:34.438Z",
+        "recordedAt": "2026-07-30T09:55:34.438Z",
+        "elrSequence": 1
+      },
+      {
+        "from": "ST-NASC",
+        "to": "ST-IDN",
+        "actor": "MOT-IDN-01",
+        "reason": "foundation_identity_phase",
+        "at": "2026-07-30T09:55:34.442Z",
+        "recordedAt": "2026-07-30T09:55:34.442Z",
+        "elrSequence": 2
+      }
+    ],
+    "motor_manifests": [
+      {
+        "kind": "MOT_CMP_CLEARANCE",
+        "clearance": "PASS",
+        "clearanceId": "CLR-1785405334439-6mnmxv",
+        "violations": [],
+        "loopAction": "FIN-S",
+        "actor": "MOT-CMP-01",
+        "recordedAt": "2026-07-30T09:55:34.440Z",
+        "elrSequence": 1
+      },
+      {
+        "kind": "MOTOR_RUN_MANIFEST",
+        "runId": "RUN-607c4bb6-473a-4ae5-9e53-41d2ef5e509a",
+        "motorId": "MOT-IDN-01",
+        "capId": "CAP-01",
+        "factoryKey": "prov-sp01-ib09-staging",
+        "inputs": {
+          "parcelId": "ffo-bus-001",
+          "simulateConflict": false,
+          "reconciled": true
+        },
+        "outputs": {
+          "parcelId": "ffo-bus-001",
+          "confidence": "C1",
+          "identityResolved": true,
+          "conflict": false,
+          "definitiveKeyCandidate": "maricopa.parcel.ffo-bus-001"
+        },
+        "knowledgeDelta": {
+          "domain": "01",
+          "confidence": "C1",
+          "sourceRefs": [
+            "SRC-ORG-ASR-MC-1785405334445-298",
+            "SRC-ORG-GIS-MC-1785405334445-299"
+          ]
+        },
+        "status": "SUCCESS",
+        "startedAt": "2026-07-30T09:55:34.445Z",
+        "finishedAt": "2026-07-30T09:55:34.446Z",
+        "durationMs": 1,
+        "evidenceIntercept": true,
+        "evidenceRule": "DEP-02",
+        "constitutionalPhase": "CB-04",
+        "actor": "MOT-IDN-01",
+        "recordedAt": "2026-07-30T09:55:34.447Z",
+        "elrSequence": 2
+      }
+    ],
+    "loop_ledger_refs": [],
+    "swarm_mission_refs": [],
+    "aia_rlg_refs": [],
+    "evidence_registry_ref": null,
+    "conflict_resolutions": [],
+    "decision_handoffs": [],
+    "retention_policy": {
+      "retentionYears": 7,
+      "policyRef": "FFO-14",
+      "effectiveAt": "2026-07-30T09:55:34.438Z"
+    },
+    "metadata": {
+      "candidateRef": "sp01-ib09-staging",
+      "createdBy": "FoundationLayerService",
+      "createdAt": "2026-07-30T09:55:34.438Z",
+      "constitutionalPhase": "CB-01"
+    }
+  },
+  "updatedAt": "2026-07-30T09:55:34.447Z"
+}

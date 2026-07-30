@@ -16,6 +16,7 @@ export * from "./sanitize.js";
 export * from "./boundaryAdapter.js";
 export * from "./jobStore.js";
 export * from "./stubExecutor.js";
+export * from "./cb15OrchestrationExecutor.js";
 export * from "./workerRunner.js";
 export * from "./stagingAuth.js";
 export * from "./commandCore.js";

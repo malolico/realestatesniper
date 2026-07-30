@@ -121,8 +121,8 @@ async function run() {
     );
   });
 
-  await test("05 QUEUED → RUNNING → SUCCEEDED via runner", async () => {
-    const runner = new JobRunnerCore(new InMemoryJobStore(), { executionTimeoutMs: 2000 });
+  await test("05 QUEUED → RUNNING → SUCCEEDED via CB-15 Mandated executor (SP01-IB-09)", async () => {
+    const runner = new JobRunnerCore(new InMemoryJobStore(), { executionTimeoutMs: 120_000 });
     const { job } = runner.enqueue(
       { factoryKey: "fk-b2-05", command: "orchestrateExpediente" },
       "idem-05",
@@ -132,6 +132,27 @@ async function run() {
     assert.equal(done.state, JOB_STATES.SUCCEEDED);
     assert.equal(done.resultSummary.elr, undefined);
     assert.equal(done.resultSummary.decisionPackage, undefined);
+    assert.equal(done.resultSummary.orchestrationStatus, "CB15_OK");
+    assert.equal(done.resultSummary.summaryCode, "SP01_IB09_CB15");
+    assert.equal(typeof done.resultSummary.factoryKey, "string");
+    assert.ok(done.resultSummary.factoryKey.length > 0);
+  });
+
+  await test("05b stub executor remains injectable (harness only; not CAP-02 proof)", async () => {
+    const { runStubOrchestration } = await import(
+      "../services/factory-orchestration-edge/stubExecutor.js"
+    );
+    const runner = new JobRunnerCore(new InMemoryJobStore(), {
+      executionTimeoutMs: 2000,
+      executor: runStubOrchestration,
+    });
+    const { job } = runner.enqueue(
+      { factoryKey: "fk-b2-05b", command: "orchestrateExpediente" },
+      "idem-05b",
+      "actor-a"
+    );
+    const done = await runner.processJob(job.jobId);
+    assert.equal(done.state, JOB_STATES.SUCCEEDED);
     assert.equal(done.resultSummary.summaryCode, "B2_STUB");
   });
 
