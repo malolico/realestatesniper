@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Factory Git Hardening — protected local runtime stores
+/data/factory-compliance/
+/data/factory-distress/
+/data/factory-economy/
+/data/factory-environment/
+/data/factory-evidence/
+/data/factory-foundation/
+/data/factory-intelligence/
+/data/factory-legitimacy/
+/data/factory-registry/
+
+# Factory Git Hardening — protected local root artifacts
+/estructura_repo.txt
+/ersMalolicorealestatesniper*
