@@ -210,6 +210,209 @@ This Plan does **not** authorize engineering IMPL, code, adapters, live connecto
 
 This Plan itself is deliverable **SP02-02** only. D1–D7 are organized here; their emission is not authorized as IMPL by this document.
 
+### 6.1 Documentary form specification for D1–D6
+
+**Purpose of §6.1:** Formally define the documentary form of Deliverables **D1–D6** so they may be created without inventing filenames, paths, Document IDs, or structures.  
+
+**Constitutional non-change:** This subsection does **not** alter WP-01…WP-06 objectives, scope, activities, prohibitions, risks, constraints, validation strategy, or §12 exit criteria. Content obligations remain those already stated in §5 (WP-01…WP-06) and the deliverable titles in §6.
+
+**Documentary family (reuse only):** Factory Evolution family already used by SP02-01 / SP02-02 / SP02-03 and by SP01 `*_RECORD.md` / `*_MAP.md` / matrix precedents under `docs/factory-construction/`:
+
+```text
+FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_<ROLE>.md
+```
+
+**Conventions common to D1–D6:**
+
+| Convention | Binding value |
+|------------|----------------|
+| **Repository path** | `docs/factory-construction/` + canonical filename |
+| **Document ID** | Exact canonical filename (same convention as SP02-01 / SP02-02 / SP02-03 and SP01 Evolution records) |
+| **Deliverable ID** | `D1` … `D6` (literal IDs from §6) |
+| **Parent Plan** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_OFFICIAL_IMPLEMENTATION_PLAN.md` (**SP02-02**) |
+| **Parent constitution** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_OFFICIAL_DISCOVERY_SPECIFICATION.md` (**SP02-01**) |
+| **Documentary status convention** | Header field **Mode** / **Documentary state** MUST state: **DOCUMENTARY PREPARATION** · **DOCUMENTATION ONLY** · **≠ IMPL** · **≠ IMPLEMENTATION MANDATE** · **≠ SP02 COMPLETE** |
+| **Publication claim** | MUST NOT claim membership in a published HEAD unless/until a later Director-ordered Git commit includes the file; use **HEAD (context only)** / **Publication: NOT CLAIMED** pattern as in SP02-01 / SP02-02 / SP02-03 |
+| **Language** | Cite-only published repository evidence; no invented evidence; no code; no architecture |
+
+**Minimum mandatory section structure (common to D1–D6):**
+
+1. Title block: `STRATEGIC PROGRAM 02 — ARIZONA ALIVE` · deliverable heading · short subtitle  
+2. Identity table: Document ID · Path · Nature · Deliverable ID · Parent Plan · Parent constitution · Mode/Documentary state · Date · Branch (context only) · HEAD (context only) · Publication  
+3. §0 Absolute non-authorization banner  
+4. §1 Preconditions checklist (PASS/FAIL against published baseline)  
+5. §2 Normative references (mandatory set below + deliverable-specific cites)  
+6. §3 Evidence / inventory / disposition tables (deliverable-specific; mandatory tables below)  
+7. §4 Verification (mandatory checks below)  
+8. §5 Completion criteria (mandatory criteria below)  
+9. Binding footer  
+
+---
+
+#### D1 — Arizona Theater Baseline Inventory Record
+
+| Campo | Valor |
+|-------|--------|
+| **Canonical filename** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_THEATER_BASELINE_INVENTORY_RECORD.md` |
+| **Repository path** | `docs/factory-construction/FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_THEATER_BASELINE_INVENTORY_RECORD.md` |
+| **Document ID** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_THEATER_BASELINE_INVENTORY_RECORD.md` |
+| **Deliverable ID** | **D1** |
+| **Produced by** | WP-01 |
+| **Documentary status convention** | **DOCUMENTARY PREPARATION** · **DOCUMENTATION ONLY** · inventory cite-only · **≠** Live connectors · **≠** SP02 COMPLETE |
+
+**Mandatory normative references:** SP02-01 §8–§9; SP02-02 §5 WP-01; SP02-03 (package gate); Evolution Mandate SP02; P-INT-02 Offline Status; `src/factory/cb02/sourceOrganismsCatalog.js` (cite-only); published RECORDED_ONLY / `pilot-001` paths as located.
+
+**Mandatory evidence tables:**
+
+| Table | Required columns (minimum) |
+|-------|----------------------------|
+| Organisms inventory | Organism ID · Name · Jurisdiction · Status (as published) · Source path |
+| RECORDED_ONLY / pack inventory | Asset · Path or Status cite · Nature (RECORDED_ONLY / synthetic pack / Status) |
+| Alive control-plane reuse surfaces | Surface · Published locus / Status cite · Reuse note (cite-only) |
+
+**Mandatory verification section checks:** Organisms `ORG-ASR-MC`, `ORG-GIS-MC`, `ORG-RCR-MC`, `ORG-CRT-MC` cited; RECORDED_ONLY / `pilot-001` / P-INT-02 Offline Status cited; Alive control-plane references cited; no Live HTTP / new connectors / code claimed.
+
+**Mandatory completion criteria:** All WP-01 activities satisfied by cite-only tables; Mode banner intact; no IMPL / Mandate / SP02 COMPLETE claims.
+
+---
+
+#### D2 — SP02 End-State Evidence Map
+
+| Campo | Valor |
+|-------|--------|
+| **Canonical filename** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_END_STATE_EVIDENCE_MAP.md` |
+| **Repository path** | `docs/factory-construction/FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_END_STATE_EVIDENCE_MAP.md` |
+| **Document ID** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_END_STATE_EVIDENCE_MAP.md` |
+| **Deliverable ID** | **D2** |
+| **Produced by** | WP-02 |
+| **Documentary status convention** | **DOCUMENTARY PREPARATION** · **DOCUMENTATION ONLY** · map only · **≠** Arizona Alive COMPLETE |
+
+**Mandatory normative references:** SP02-01 §3 (A)–(D) and §5 A–F; SP02-02 §5 WP-02; D1 (when present); SP02-03.
+
+**Mandatory evidence tables:**
+
+| Table | Required columns (minimum) |
+|-------|----------------------------|
+| End-state map | SP02-01 element (§3 A–D / §5 A–F) · Classification (`PROVED_CANDIDATE` / `DEFICIT` / `OUT_OF_SP02`) · Published evidence cite or explicit deficit statement |
+
+**Mandatory verification section checks:** Every §3 (A)–(D) and §5 A–F element mapped; classifications only from WP-02 set; no COMPLETE declaration; no invented capabilities.
+
+**Mandatory completion criteria:** Full map rows present; classifications assigned; deficits explicit where applicable; banner intact.
+
+---
+
+#### D3 — SP02 Gap Disposition Record
+
+| Campo | Valor |
+|-------|--------|
+| **Canonical filename** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_GAP_DISPOSITION_RECORD.md` |
+| **Repository path** | `docs/factory-construction/FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_GAP_DISPOSITION_RECORD.md` |
+| **Document ID** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_GAP_DISPOSITION_RECORD.md` |
+| **Deliverable ID** | **D3** |
+| **Produced by** | WP-03 |
+| **Documentary status convention** | **DOCUMENTARY PREPARATION** · **DOCUMENTATION ONLY** · disposition only · **≠** gap repair · **≠** P-INT-02 Live closure |
+
+**Mandatory normative references:** SP02-01 §10 and §3; SP02-02 §5 WP-03; D2 (when present); Continuity §25 (for cyber/legal rows); P-INT-02 Offline Status (Live NOT CLOSED cite); SP02-03.
+
+**Mandatory evidence tables:**
+
+| Table | Required columns (minimum) |
+|-------|----------------------------|
+| Gap disposition matrix | Gap (from SP02-01 §10) · Disposition (`IN_SP02_EVIDENCE_ONLY` / `INTEGRATION_SEPARATE` / `CONTINUITY_DIRECTOR` / `PRE_LAUNCH_EXTERNAL` / `NOT_REQUIRED_FOR_§3`) · Published justification cite |
+
+**Mandatory verification section checks:** Each SP02-01 §10 gap row dispositioned; no false closure of Live / §25 reviews / Continuity reconcile; no Live IMPL authorization.
+
+**Mandatory completion criteria:** Complete disposition matrix; dispositions limited to WP-03 label set; banner intact.
+
+---
+
+#### D4 — SP02 CCD Non-Fork Confirmation Record
+
+| Campo | Valor |
+|-------|--------|
+| **Canonical filename** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_CCD_NON_FORK_CONFIRMATION_RECORD.md` |
+| **Repository path** | `docs/factory-construction/FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_CCD_NON_FORK_CONFIRMATION_RECORD.md` |
+| **Document ID** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_CCD_NON_FORK_CONFIRMATION_RECORD.md` |
+| **Deliverable ID** | **D4** |
+| **Produced by** | WP-04 |
+| **Documentary status convention** | **DOCUMENTARY PREPARATION** · **DOCUMENTATION ONLY** · confirmation only · **≠** second Runtime/Evidence/Intelligence stack |
+
+**Mandatory normative references:** CCD §4.2; CCD Adición 4; SP02-01 §8; SP02-02 §5 WP-04; Evolution Mandate adapters/enrichment rule.
+
+**Mandatory evidence tables:**
+
+| Table | Required columns (minimum) |
+|-------|----------------------------|
+| Non-duplication confirmation | Core (Runtime / Evidence / Legitimacy / Intelligence / Orchestration / constitutional motors / others listed in CCD §4.2 as applicable) · Published locus cite · Confirmation: reused, not forked |
+| Negative confirmation | Statement that no parallel Arizona platform is proposed · Cite |
+
+**Mandatory verification section checks:** CCD non-duplication list addressed; negative confirmation present; no fork design proposed.
+
+**Mandatory completion criteria:** Both tables complete; banner intact; no architecture invention.
+
+---
+
+#### D5 — SP02 Exclusions Lock Record
+
+| Campo | Valor |
+|-------|--------|
+| **Canonical filename** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_EXCLUSIONS_LOCK_RECORD.md` |
+| **Repository path** | `docs/factory-construction/FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_EXCLUSIONS_LOCK_RECORD.md` |
+| **Document ID** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_EXCLUSIONS_LOCK_RECORD.md` |
+| **Deliverable ID** | **D5** |
+| **Produced by** | WP-05 |
+| **Documentary status convention** | **DOCUMENTARY PREPARATION** · **DOCUMENTATION ONLY** · exclusions lock only · **≠** opening excluded surfaces |
+
+**Mandatory normative references:** SP02-01 §6; SP01-01 §18; SP02-02 §5 WP-05; Evolution Mandate SP02 exclusions.
+
+**Mandatory evidence tables:**
+
+| Table | Required columns (minimum) |
+|-------|----------------------------|
+| Exclusions lock checklist | Exclusion item (Scale Out; Product; Marketplace; Decision Engine; CB/Hardening/P-INT rewrite; Supabase; production-launch synonym; Hardening “PROGRAM 02” confusion; others from SP02-01 §6 as listed in WP-05) · Locked (YES) · Source cite |
+
+**Mandatory verification section checks:** WP-05 checklist items present and locked YES with cites; no excluded program/surface opened.
+
+**Mandatory completion criteria:** Checklist complete; banner intact; inheritance bans recorded.
+
+---
+
+#### D6 — SP02 Mandate Necessity Determination
+
+| Campo | Valor |
+|-------|--------|
+| **Canonical filename** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_MANDATE_NECESSITY_DETERMINATION.md` |
+| **Repository path** | `docs/factory-construction/FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_MANDATE_NECESSITY_DETERMINATION.md` |
+| **Document ID** | `FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_MANDATE_NECESSITY_DETERMINATION.md` |
+| **Deliverable ID** | **D6** |
+| **Produced by** | WP-06 |
+| **Documentary status convention** | **DOCUMENTARY PREPARATION** · **DOCUMENTATION ONLY** · binary determination only · **≠** Implementation Mandate · **≠** IMPL authorization |
+
+**Mandatory normative references:** SP02-01 §3; SP02-02 §5 WP-06 and §12; D1–D5 (must be completed and cited); SP02-03.
+
+**Mandatory evidence tables:**
+
+| Table | Required columns (minimum) |
+|-------|----------------------------|
+| Prior deliverables completion | D1…D5 · Path · Present (YES/NO) |
+| Binary determination | Exact one of `MANDATE-REQUIRED` or `SATISFIED-WITHOUT-IMPL` · Cited deficits against SP02-01 §3 only (if MANDATE-REQUIRED) or documentary satisfaction cites (if SATISFIED-WITHOUT-IMPL) |
+
+**Mandatory verification section checks:** D1–D5 present; exactly one binary value emitted; if `MANDATE-REQUIRED`, deficits cite SP02-01 §3 only; this file is not an Implementation Mandate.
+
+**Mandatory completion criteria:** Binary determination formally concluded; prior D1–D5 completion table YES; banner intact; §12 Mandate gate remains unsatisfied until a separate Director Mandate is issued when `MANDATE-REQUIRED`.
+
+---
+
+**§6.1 binding footer**
+
+```text
+§6.1 = DOCUMENTARY FORM ONLY FOR D1–D6
+DOES NOT CHANGE: WP objectives · scope · risks · constraints · validation · §12 exit criteria
+DOES NOT AUTHORIZE: IMPL · Implementation Mandate · commits · push
+DOES NOT CREATE: D1–D6 files by this Plan correction alone
+FAMILY: FACTORY_EVOLUTION_SP02_ARIZONA_ALIVE_* (existing)
+```
+
 ---
 
 ## 7. Validation strategy
