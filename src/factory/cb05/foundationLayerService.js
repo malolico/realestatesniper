@@ -76,13 +76,27 @@ export class FoundationLayerService {
   }
 
   /**
-   * @param {{ candidateRef?: string, parcelId?: string, simulateConflict?: boolean, reconciled?: boolean }} [input]
+   * @param {{
+   *   candidateRef?: string,
+   *   parcelId?: string,
+   *   simulateConflict?: boolean,
+   *   reconciled?: boolean,
+   *   forceSynthetic?: boolean,
+   *   preferRecordedEnrichment?: boolean,
+   *   recordedPackRoot?: string,
+   *   allowStaleRecordedEnrichment?: boolean,
+   * }} [input]
    */
   async bootstrapFoundation(input = {}) {
+    /** SP03-§15-ENG-IMPL Phase 2 / OBS-02 — forward source-resolution opts to handlers. */
     const motorInputs = {
       parcelId: input.parcelId,
       simulateConflict: input.simulateConflict ?? false,
       reconciled: input.reconciled ?? true,
+      forceSynthetic: input.forceSynthetic === true,
+      preferRecordedEnrichment: input.preferRecordedEnrichment,
+      recordedPackRoot: input.recordedPackRoot,
+      allowStaleRecordedEnrichment: input.allowStaleRecordedEnrichment === true,
     };
 
     const expediente = this.registry.createExpediente({
@@ -119,6 +133,7 @@ export class FoundationLayerService {
 
     if (idnManifest.outputs?.conflict === true) {
       const idn02 = await this.runFoundationMotor(factoryKey, "MOT-IDN-02", {
+        ...motorInputs,
         reconciled: motorInputs.reconciled,
       });
       manifests.push(idn02);

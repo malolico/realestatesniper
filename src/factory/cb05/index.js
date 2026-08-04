@@ -14,9 +14,13 @@ export {
   buildGisFixtureRef,
   buildFoundationFixtureBundle,
   resolveFoundationSourceBundle,
+  isRecordedEnrichmentFreshForFoundation,
 } from "./foundationSourceFixtures.js";
 
-export { applyRecordedEnrichmentEvidenceCheckpoint } from "./foundationRecordedEvidenceCheckpoint.js";
+export {
+  applyRecordedEnrichmentEvidenceCheckpoint,
+  reportRecordedEnrichmentVitalityPosture,
+} from "./foundationRecordedEvidenceCheckpoint.js";
 
 export { FoundationKnowledgeStore, DEFAULT_FOUNDATION_ROOT } from "./foundationKnowledgeStore.js";
 export {

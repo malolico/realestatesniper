@@ -1,12 +1,13 @@
 /**
  * CB-05 — Foundation source fixtures + SP03 recorded-pack enrichment resolver.
  * Synthetic fixtures retained for catalog-only / regression paths.
- * Prefer RECORDED_ONLY pack enrichment when available (SP03-§15-ENG-IMPL Phase 1).
- * No live connectors.
+ * Prefer RECORDED_ONLY pack enrichment when pack loads AND within LOOP-FND-FRS-01 SLA
+ * (SP03-§15-ENG-IMPL Phase 2 / OBS-01). No live connectors.
  */
 
 import { buildSourceRef } from "../cb02/sourceRef.js";
 import { buildFoundationRecordedEnrichmentBundle } from "../cb02/connectors/recordedPackEnrichmentAdapter.js";
+import { evaluateFreshness } from "./loopFndFrs01.js";
 
 /**
  * @param {string} factoryKey
@@ -63,14 +64,27 @@ export function buildFoundationFixtureBundle(factoryKey, options = {}) {
 }
 
 /**
+ * Whether recorded enrichment SourceRefs satisfy LOOP-FND-FRS-01 freshness SLA.
+ * Preserves honest vintageAt — does not rewrite pack vintages.
+ *
+ * @param {{ assessor?: object, gis?: object, recorder?: object|null }} bundle
+ */
+export function isRecordedEnrichmentFreshForFoundation(bundle) {
+  const refs = [bundle.assessor, bundle.gis, bundle.recorder].filter(Boolean);
+  return evaluateFreshness(refs).fresh === true;
+}
+
+/**
  * Resolve foundation source bundle: prefer RECORDED_ONLY pack enrichment
- * (information-source replacement / enrichment) when pack loads; else synthetic fixtures.
+ * when pack loads and is within freshness SLA (OBS-01); else synthetic fixtures.
+ * Explicit preferRecordedEnrichment=true keeps recorded even if stale (honest vintages).
  *
  * @param {string} factoryKey
  * @param {{
  *   packRoot?: string,
  *   preferRecordedEnrichment?: boolean,
  *   forceSynthetic?: boolean,
+ *   allowStaleRecordedEnrichment?: boolean,
  *   stale?: boolean,
  * }} [options]
  */
@@ -85,7 +99,22 @@ export function resolveFoundationSourceBundle(factoryKey, options = {}) {
       packRoot: options.packRoot,
     });
     if (enriched.ok === true) {
-      return enriched;
+      const allowStale =
+        options.allowStaleRecordedEnrichment === true ||
+        options.preferRecordedEnrichment === true;
+      if (allowStale || isRecordedEnrichmentFreshForFoundation(enriched)) {
+        return enriched;
+      }
+      const fallback = buildFoundationFixtureBundle(factoryKey, options);
+      return Object.freeze({
+        ...fallback,
+        recordedSkippedReason: "freshness_sla_breach",
+        recordedPackRootAvailable: enriched.packRoot ?? null,
+        constitutionalPhase: "SP03-§15-ENG-IMPL",
+        enrichmentMandate: "SP03-§15-ENG-IMPL",
+        phase: "Phase 2",
+        obsRefs: ["OBS-01"],
+      });
     }
   }
 

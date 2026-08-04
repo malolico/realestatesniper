@@ -1,7 +1,7 @@
 /**
  * CB-05 — Foundation motor scaffolding handlers.
- * SP03-§15-ENG-IMPL Phase 1: prefer RECORDED_ONLY pack enrichment SourceRefs
- * under existing motor IDs (no Runtime/OMC redesign; no Live).
+ * SP03-§15-ENG-IMPL Phase 2: RECORDED_ONLY pack enrichment under existing motor IDs
+ * (OBS-01 freshness-aware resolve; OBS-04 PHY-02 pack improvements; no Live/redesign).
  */
 
 import { resolveFoundationSourceBundle } from "./foundationSourceFixtures.js";
@@ -27,7 +27,32 @@ function resolveSources(ctx) {
     packRoot: ctx.inputs?.recordedPackRoot,
     preferRecordedEnrichment: ctx.inputs?.preferRecordedEnrichment,
     forceSynthetic: ctx.inputs?.forceSynthetic === true,
+    allowStaleRecordedEnrichment: ctx.inputs?.allowStaleRecordedEnrichment === true,
   });
+}
+
+/**
+ * Derive improvements profile from RECORDED_ONLY assessor payload when present (OBS-04).
+ * @param {object|undefined} assessorPayload
+ * @param {boolean} synthetic
+ */
+function resolveImprovementsFromPack(assessorPayload, synthetic) {
+  if (!assessorPayload || synthetic) {
+    return { pool: false, garage: true, fromRecordedPack: false };
+  }
+  const nested = assessorPayload.improvements && typeof assessorPayload.improvements === "object"
+    ? assessorPayload.improvements
+    : {};
+  return {
+    pool: nested.pool ?? assessorPayload.pool ?? false,
+    garage:
+      nested.garage ??
+      assessorPayload.garage ??
+      (assessorPayload.landUseCode === "R1" ? true : false),
+    landUseCode: assessorPayload.landUseCode ?? null,
+    assessedYear: assessorPayload.assessedYear ?? null,
+    fromRecordedPack: true,
+  };
 }
 
 /**
@@ -209,22 +234,26 @@ export const FOUNDATION_MOTOR_HANDLERS = {
   "MOT-PHY-02": async (ctx) => {
     const fixtures = resolveSources(ctx);
     const meta = sourceModeMeta(fixtures);
+    const improvements = resolveImprovementsFromPack(
+      fixtures.payloadsByOrganism?.["ORG-ASR-MC"],
+      meta.synthetic === true
+    );
     record(
       { ...ctx, knowledgeStore: ctx.knowledgeStore },
       "03",
       {
         motorId: "MOT-PHY-02",
-        improvements: { pool: false, garage: true },
+        improvements,
         mpiDomain: "03",
         ...meta,
       },
       [fixtures.assessor]
     );
     return {
-      outputs: { improvementsProfiled: true, ...meta },
+      outputs: { improvementsProfiled: true, improvements, ...meta },
       knowledgeDelta: {
         domain: "03",
-        improvements: meta.synthetic ? "stub" : "recorded_enrichment",
+        improvements: meta.synthetic ? "stub" : "assessor_recorded_enrichment",
         ...meta,
       },
     };
