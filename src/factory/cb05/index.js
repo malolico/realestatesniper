@@ -22,7 +22,11 @@ export {
   reportRecordedEnrichmentVitalityPosture,
 } from "./foundationRecordedEvidenceCheckpoint.js";
 
-export { advanceRecordedEnrichmentVitality } from "./foundationRecordedVitalityAdvancement.js";
+export {
+  advanceRecordedEnrichmentVitality,
+  applyRecordedKnowledgeOverlay,
+  applyLegitimacyLivingRequirementConsume,
+} from "./foundationRecordedVitalityAdvancement.js";
 
 export { FoundationKnowledgeStore, DEFAULT_FOUNDATION_ROOT } from "./foundationKnowledgeStore.js";
 export {

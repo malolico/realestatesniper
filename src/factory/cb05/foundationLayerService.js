@@ -87,6 +87,8 @@ export class FoundationLayerService {
    *   recordedPackRoot?: string,
    *   allowStaleRecordedEnrichment?: boolean,
    *   applyRecordedVitalityAdvancement?: boolean,
+   *   applyRecordedKnowledgeOverlay?: boolean,
+   *   applyLegitimacyLivingConsume?: boolean,
    * }} [input]
    */
   async bootstrapFoundation(input = {}) {
@@ -183,16 +185,22 @@ export class FoundationLayerService {
       this.knowledgeStore.write(factoryKey, state);
     }
 
-    /** SP03-§15-ENG-IMPL Phase 3 / OBS-05 — RECORDED vitality advancement (no Live; no COMPLETE). */
+    /** SP03-§15-ENG-IMPL / OBS-05 — RECORDED vitality advancement (no Live; no COMPLETE). */
     let vitalityAdvancement = null;
     if (input.applyRecordedVitalityAdvancement !== false && input.forceSynthetic !== true) {
+      const motorSourceMode =
+        manifests.find((m) => m?.outputs?.sourceMode)?.outputs?.sourceMode ?? null;
       vitalityAdvancement = advanceRecordedEnrichmentVitality({
         factoryKey,
         packRoot: input.recordedPackRoot,
         knowledgeStore: this.knowledgeStore,
+        registry: this.registry,
         foundationQuality: quality,
         foundationFreshness: freshness,
         foundationComplete: state.foundationComplete === true,
+        motorSourceMode,
+        applyKnowledgeOverlay: input.applyRecordedKnowledgeOverlay !== false,
+        applyLegitimacyConsume: input.applyLegitimacyLivingConsume !== false,
       });
     }
 
