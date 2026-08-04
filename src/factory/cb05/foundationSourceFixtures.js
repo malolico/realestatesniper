@@ -1,8 +1,12 @@
 /**
- * CB-05 — Synthetic foundation source fixtures (catalog-only, no live connectors)
+ * CB-05 — Foundation source fixtures + SP03 recorded-pack enrichment resolver.
+ * Synthetic fixtures retained for catalog-only / regression paths.
+ * Prefer RECORDED_ONLY pack enrichment when available (SP03-§15-ENG-IMPL Phase 1).
+ * No live connectors.
  */
 
 import { buildSourceRef } from "../cb02/sourceRef.js";
+import { buildFoundationRecordedEnrichmentBundle } from "../cb02/connectors/recordedPackEnrichmentAdapter.js";
 
 /**
  * @param {string} factoryKey
@@ -52,6 +56,38 @@ export function buildFoundationFixtureBundle(factoryKey, options = {}) {
     assessor: buildAssessorFixtureRef(factoryKey, { vintageAt }),
     gis: buildGisFixtureRef(factoryKey, { vintageAt }),
     synthetic: true,
+    recordedOnly: false,
+    sourceMode: "SYNTHETIC_FIXTURE",
     constitutionalPhase: "CB-05",
   });
+}
+
+/**
+ * Resolve foundation source bundle: prefer RECORDED_ONLY pack enrichment
+ * (information-source replacement / enrichment) when pack loads; else synthetic fixtures.
+ *
+ * @param {string} factoryKey
+ * @param {{
+ *   packRoot?: string,
+ *   preferRecordedEnrichment?: boolean,
+ *   forceSynthetic?: boolean,
+ *   stale?: boolean,
+ * }} [options]
+ */
+export function resolveFoundationSourceBundle(factoryKey, options = {}) {
+  if (options.forceSynthetic === true) {
+    return buildFoundationFixtureBundle(factoryKey, options);
+  }
+
+  const prefer = options.preferRecordedEnrichment !== false;
+  if (prefer) {
+    const enriched = buildFoundationRecordedEnrichmentBundle(factoryKey, {
+      packRoot: options.packRoot,
+    });
+    if (enriched.ok === true) {
+      return enriched;
+    }
+  }
+
+  return buildFoundationFixtureBundle(factoryKey, options);
 }

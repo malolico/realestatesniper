@@ -13,7 +13,10 @@ export {
   buildAssessorFixtureRef,
   buildGisFixtureRef,
   buildFoundationFixtureBundle,
+  resolveFoundationSourceBundle,
 } from "./foundationSourceFixtures.js";
+
+export { applyRecordedEnrichmentEvidenceCheckpoint } from "./foundationRecordedEvidenceCheckpoint.js";
 
 export { FoundationKnowledgeStore, DEFAULT_FOUNDATION_ROOT } from "./foundationKnowledgeStore.js";
 export {

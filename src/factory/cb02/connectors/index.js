@@ -37,3 +37,10 @@ export {
 } from "./recordedPackValidator.js";
 export { loadRecordedPackForIngest } from "./recordedPackLoader.js";
 export { offlineIngestFromPack } from "./offlineIngestFromPack.js";
+export {
+  DEFAULT_SP03_RECORDED_PACK_ROOT,
+  resolveDefaultRecordedPackRoot,
+  buildRecordedEnrichmentSourceRef,
+  loadRecordedPackEnrichment,
+  buildFoundationRecordedEnrichmentBundle,
+} from "./recordedPackEnrichmentAdapter.js";
