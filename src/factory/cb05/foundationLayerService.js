@@ -22,6 +22,7 @@ import { FoundationKnowledgeStore } from "./foundationKnowledgeStore.js";
 import { FOUNDATION_PIPELINE_SEQUENCE } from "./foundationPipeline.js";
 import { evaluateFoundationQuality, recordLoopFndSup01 } from "./loopFndSup01.js";
 import { evaluateFoundationFreshness, recordLoopFndFrs01 } from "./loopFndFrs01.js";
+import { advanceRecordedEnrichmentVitality } from "./foundationRecordedVitalityAdvancement.js";
 
 const POST_IDN_SEQUENCE = FOUNDATION_PIPELINE_SEQUENCE.filter((id) => id !== "MOT-IDN-01");
 
@@ -85,6 +86,7 @@ export class FoundationLayerService {
    *   preferRecordedEnrichment?: boolean,
    *   recordedPackRoot?: string,
    *   allowStaleRecordedEnrichment?: boolean,
+   *   applyRecordedVitalityAdvancement?: boolean,
    * }} [input]
    */
   async bootstrapFoundation(input = {}) {
@@ -181,6 +183,19 @@ export class FoundationLayerService {
       this.knowledgeStore.write(factoryKey, state);
     }
 
+    /** SP03-§15-ENG-IMPL Phase 3 / OBS-05 — RECORDED vitality advancement (no Live; no COMPLETE). */
+    let vitalityAdvancement = null;
+    if (input.applyRecordedVitalityAdvancement !== false && input.forceSynthetic !== true) {
+      vitalityAdvancement = advanceRecordedEnrichmentVitality({
+        factoryKey,
+        packRoot: input.recordedPackRoot,
+        knowledgeStore: this.knowledgeStore,
+        foundationQuality: quality,
+        foundationFreshness: freshness,
+        foundationComplete: state.foundationComplete === true,
+      });
+    }
+
     return {
       factoryKey,
       state: this.registry.getExpediente(factoryKey)?.state,
@@ -188,6 +203,7 @@ export class FoundationLayerService {
       mpiCoverage,
       quality,
       freshness,
+      vitalityAdvancement,
       dep01Satisfied: this.isDep01Satisfied(factoryKey),
       omcMotorCountNote: {
         constitutional: OMC_MOTOR_COUNT_CONSTITUTIONAL,

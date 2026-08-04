@@ -43,12 +43,17 @@ function resolveImprovementsFromPack(assessorPayload, synthetic) {
   const nested = assessorPayload.improvements && typeof assessorPayload.improvements === "object"
     ? assessorPayload.improvements
     : {};
+  const hasExplicitGarage =
+    nested.garage !== undefined || assessorPayload.garage !== undefined;
+  const garage = hasExplicitGarage
+    ? nested.garage ?? assessorPayload.garage
+    : assessorPayload.landUseCode === "R1"
+      ? true
+      : false;
   return {
     pool: nested.pool ?? assessorPayload.pool ?? false,
-    garage:
-      nested.garage ??
-      assessorPayload.garage ??
-      (assessorPayload.landUseCode === "R1" ? true : false),
+    garage,
+    garageInferredFromLandUse: !hasExplicitGarage && assessorPayload.landUseCode === "R1",
     landUseCode: assessorPayload.landUseCode ?? null,
     assessedYear: assessorPayload.assessedYear ?? null,
     fromRecordedPack: true,

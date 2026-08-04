@@ -110,10 +110,11 @@ export function resolveFoundationSourceBundle(factoryKey, options = {}) {
         ...fallback,
         recordedSkippedReason: "freshness_sla_breach",
         recordedPackRootAvailable: enriched.packRoot ?? null,
-        constitutionalPhase: "SP03-§15-ENG-IMPL",
-        enrichmentMandate: "SP03-§15-ENG-IMPL",
-        phase: "Phase 2",
-        obsRefs: ["OBS-01"],
+        /** OBS-P2-03 — keep fixture constitutionalPhase; SP03 refs are advisory only. */
+        recordedEnrichmentSkippedPhase: "SP03-§15-ENG-IMPL",
+        enrichmentMandate: null,
+        phase: "Phase 3",
+        obsRefs: ["OBS-01", "OBS-P2-03"],
       });
     }
   }
