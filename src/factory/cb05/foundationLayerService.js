@@ -23,6 +23,7 @@ import { FOUNDATION_PIPELINE_SEQUENCE } from "./foundationPipeline.js";
 import { evaluateFoundationQuality, recordLoopFndSup01 } from "./loopFndSup01.js";
 import { evaluateFoundationFreshness, recordLoopFndFrs01 } from "./loopFndFrs01.js";
 import { advanceRecordedEnrichmentVitality } from "./foundationRecordedVitalityAdvancement.js";
+import { advanceVatSection154VitalityArrival } from "./foundationVatSection154VitalityArrival.js";
 
 const POST_IDN_SEQUENCE = FOUNDATION_PIPELINE_SEQUENCE.filter((id) => id !== "MOT-IDN-01");
 
@@ -86,11 +87,12 @@ export class FoundationLayerService {
    *   preferRecordedEnrichment?: boolean,
    *   recordedPackRoot?: string,
    *   allowStaleRecordedEnrichment?: boolean,
-   *   applyRecordedVitalityAdvancement?: boolean,
-   *   applyRecordedKnowledgeOverlay?: boolean,
-   *   applyLegitimacyLivingConsume?: boolean,
-   * }} [input]
-   */
+ *   applyRecordedVitalityAdvancement?: boolean,
+ *   applyRecordedKnowledgeOverlay?: boolean,
+ *   applyLegitimacyLivingConsume?: boolean,
+ *   applyVatSection154VitalityArrival?: boolean,
+ * }} [input]
+ */
   async bootstrapFoundation(input = {}) {
     /** SP03-§15-ENG-IMPL Phase 2 / OBS-02 — forward source-resolution opts to handlers. */
     const motorInputs = {
@@ -187,6 +189,8 @@ export class FoundationLayerService {
 
     /** SP03-§15-ENG-IMPL / OBS-05 — RECORDED vitality advancement (no Live; no COMPLETE). */
     let vitalityAdvancement = null;
+    /** SP03-§15-4-VAT-ENG-IMPL — VAT-SP03-§15-4 arrival tip (new slice; Eng COMPLETE immutable). */
+    let vatSection154VitalityArrival = null;
     if (input.applyRecordedVitalityAdvancement !== false && input.forceSynthetic !== true) {
       const motorSourceMode =
         manifests.find((m) => m?.outputs?.sourceMode)?.outputs?.sourceMode ?? null;
@@ -202,6 +206,22 @@ export class FoundationLayerService {
         applyKnowledgeOverlay: input.applyRecordedKnowledgeOverlay !== false,
         applyLegitimacyConsume: input.applyLegitimacyLivingConsume !== false,
       });
+
+      if (input.applyVatSection154VitalityArrival !== false && vitalityAdvancement) {
+        vatSection154VitalityArrival = advanceVatSection154VitalityArrival({
+          factoryKey,
+          packRoot: input.recordedPackRoot,
+          knowledgeStore: this.knowledgeStore,
+          registry: this.registry,
+          foundationQuality: quality,
+          foundationFreshness: freshness,
+          foundationComplete: state.foundationComplete === true,
+          motorSourceMode,
+          recordedVitality: vitalityAdvancement,
+          applyKnowledgeOverlay: input.applyRecordedKnowledgeOverlay !== false,
+          applyLegitimacyConsume: input.applyLegitimacyLivingConsume !== false,
+        });
+      }
     }
 
     return {
@@ -212,6 +232,7 @@ export class FoundationLayerService {
       quality,
       freshness,
       vitalityAdvancement,
+      vatSection154VitalityArrival,
       dep01Satisfied: this.isDep01Satisfied(factoryKey),
       omcMotorCountNote: {
         constitutional: OMC_MOTOR_COUNT_CONSTITUTIONAL,

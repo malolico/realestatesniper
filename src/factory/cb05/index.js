@@ -28,6 +28,14 @@ export {
   applyLegitimacyLivingRequirementConsume,
 } from "./foundationRecordedVitalityAdvancement.js";
 
+export {
+  VAT_MANDATED_MPI_DOMAINS,
+  applyLegitimacyRecordedEnrichmentOverlay,
+  applyLoopLegSup01LivingLegitimacyConsume,
+  scoreVatSp03Section154,
+  advanceVatSection154VitalityArrival,
+} from "./foundationVatSection154VitalityArrival.js";
+
 export { FoundationKnowledgeStore, DEFAULT_FOUNDATION_ROOT } from "./foundationKnowledgeStore.js";
 export {
   FOUNDATION_MOTOR_HANDLERS,
