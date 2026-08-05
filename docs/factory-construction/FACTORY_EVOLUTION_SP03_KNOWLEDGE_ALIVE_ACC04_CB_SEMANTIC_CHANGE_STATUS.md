@@ -176,15 +176,15 @@ SP03-01 §14 ACC-04 — CONSTITUTIONAL DETERMINATION:
 
 ## 5. Limitaciones
 
-1. **No** enmienda SP03-01 §14 ni ningún otro apartado de SP03-01.  
-2. **No** enmienda D5, D6, D8, §12#1/#2 Statuses, Director Constitutional Equivalence Directive, o ACC-03 Status.  
-3. **No** enmienda Engineering Mandate, Phase 1–4 Statuses, o Engineering COMPLETE Status.  
-4. **No** declara §4 SATISFIED, CAP PROVED, Knowledge Alive COMPLETE, o SP03 COMPLETE.  
-5. **No** cierra OBS-05 / §4-DEF-01 / §4-DEF-02.  
-6. **No** evalúa ni declara ACC-05, ACC-06, ACC-07, o ACC-08.  
-7. **No** declara cierre del §12 restante ni del §15 restante.  
-8. **No** emite Independent Technical Audit of SP03 closure ni Status SP03 COMPLETE.  
-9. **No** autoriza código, Git, staging, commit, o push por este archivo.  
+1. **No** enmienda SP03-01 §14 ni ningún otro apartado de SP03-01.
+2. **No** enmienda D5, D6, D8, §12#1/#2 Statuses, Director Constitutional Equivalence Directive, o ACC-03 Status.
+3. **No** enmienda Engineering Mandate, Phase 1–4 Statuses, o Engineering COMPLETE Status.
+4. **No** declara §4 SATISFIED, CAP PROVED, Knowledge Alive COMPLETE, o SP03 COMPLETE.
+5. **No** cierra OBS-05 / §4-DEF-01 / §4-DEF-02.
+6. **No** evalúa ni declara ACC-05, ACC-06, ACC-07, o ACC-08.
+7. **No** declara cierre del §12 restante ni del §15 restante.
+8. **No** emite Independent Technical Audit of SP03 closure ni Status SP03 COMPLETE.
+9. **No** autoriza código, Git, staging, commit, o push por este archivo.
 10. D8 se cita **únicamente** como preparación estructural — **no** como declaración de ACC-04 cerrado por D8 solo.
 
 ---
@@ -382,14 +382,14 @@ SP03-01 §14 ACC-04
 
 After this Status, the following remain **not executed by this instrument**:
 
-1. Evaluation of SP03-01 §14 **ACC-05…ACC-08**;  
-2. SP03-01 §12 DONE elements collectively / §12 remaining;  
-3. SP03-01 §15 remaining evidence-class closure;  
-4. Independent Technical Audit of SP03 closure;  
+1. Evaluation of SP03-01 §14 **ACC-05…ACC-08**;
+2. SP03-01 §12 DONE elements collectively / §12 remaining;
+3. SP03-01 §15 remaining evidence-class closure;
+4. Independent Technical Audit of SP03 closure;
 5. Dedicated Continuity §27 **Status SP03 COMPLETE**.
 
-ACC-01 / ACC-02 remain under the Director Constitutional Equivalence Directive — **UNCHANGED**.  
-ACC-03 remains under its Living Requirements Status — **UNCHANGED**.  
+ACC-01 / ACC-02 remain under the Director Constitutional Equivalence Directive — **UNCHANGED**.
+ACC-03 remains under its Living Requirements Status — **UNCHANGED**.
 Engineering Implementation COMPLETE remains as previously declared — **UNCHANGED**.
 
 ---
