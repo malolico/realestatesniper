@@ -1,43 +1,110 @@
 /**
- * CB-13 — Intelligence motor scaffolding handlers (no real AI)
+ * CB-13 — Intelligence motor handlers.
+ * SP04-ENG-IMPL CEP-01 / Phase 1: consume RECORDED_ONLY enrichment under existing
+ * motor IDs (adapters / enrichment / ISR). No real AI / LLM; no Live; no catalog redesign.
+ * Advances DEF-SP04-01 / DEF-SP04-02 — does not prove Living Intelligence Alive.
  */
 
 import { assertEvf02AiAssistCeiling } from "../cb06/evidenceVocabulary.js";
-import { buildIntelligenceFixtureBundle } from "./intelligenceSourceFixtures.js";
+import { resolveIntelligenceSourceBundle } from "./intelligenceSourceFixtures.js";
+
+/**
+ * @param {object} ctx
+ */
+function resolveSources(ctx) {
+  return resolveIntelligenceSourceBundle(ctx.factoryKey, {
+    packRoot: ctx.inputs?.recordedPackRoot,
+    preferRecordedEnrichment: ctx.inputs?.preferRecordedEnrichment,
+    forceSynthetic: ctx.inputs?.forceSynthetic === true,
+  });
+}
+
+/**
+ * @param {object} sources
+ */
+function sourceModeMeta(sources) {
+  return {
+    sourceMode: sources.sourceMode ?? (sources.synthetic ? "SYNTHETIC_FIXTURE" : "RECORDED_ENRICHMENT"),
+    synthetic: sources.synthetic === true,
+    recordedOnly: sources.recordedOnly === true,
+    liveFetch: sources.liveFetch === true,
+    enrichmentMandate:
+      sources.constitutionalPhase === "SP04-ENG-IMPL" ? "SP04-ENG-IMPL" : null,
+    gateId: sources.gateId ?? (sources.constitutionalPhase === "SP04-ENG-IMPL" ? "DAG-SP04-CEP01-P1" : null),
+    livingIntelligenceProved: false,
+    phase1Complete: false,
+  };
+}
 
 /**
  * @param {object} ctx
  * @param {string} mpiDomain
  * @param {object} delta
- * @param {object[]} sourceRefs
+ * @param {unknown[]} sourceRefs
  */
 function record(ctx, mpiDomain, delta, sourceRefs) {
   ctx.knowledgeStore?.recordDomainProduction(ctx.factoryKey, mpiDomain, { delta, sourceRefs });
 }
 
+/**
+ * Light enrichment from RECORDED pack payloads when present (DEF-SP04-01 consume path).
+ * @param {object} sources
+ */
+function recordedPackHints(sources) {
+  if (sources.synthetic === true || !sources.payloadsByOrganism) {
+    return { fromRecordedPack: false };
+  }
+  const asr = sources.payloadsByOrganism["ORG-ASR-MC"] ?? {};
+  const gis = sources.payloadsByOrganism["ORG-GIS-MC"] ?? {};
+  return {
+    fromRecordedPack: true,
+    parcelId: asr.parcelId ?? asr.apn ?? gis.parcelId ?? null,
+    landUseCode: asr.landUseCode ?? null,
+    assessedYear: asr.assessedYear ?? null,
+  };
+}
+
 export const INTELLIGENCE_MOTOR_HANDLERS = {
   "MOT-SYN-01": async (ctx) => {
-    const fixtures = buildIntelligenceFixtureBundle(ctx.factoryKey);
+    const sources = resolveSources(ctx);
+    const meta = sourceModeMeta(sources);
+    const hints = recordedPackHints(sources);
     const eLevel = assertEvf02AiAssistCeiling("E2", { aiAssist: false, motorElevated: false });
+    const convergenceScore = hints.fromRecordedPack ? 0.86 : 0.84;
     record(
       ctx,
       "38",
       {
         motorId: "MOT-SYN-01",
-        convergenceScore: 0.84,
+        convergenceScore,
         mpiDomain: "38",
         eLevel,
         elevated: false,
+        ...meta,
+        ...hints,
       },
-      [fixtures.synthesisRef]
+      [sources.synthesisRef]
     );
     return {
-      outputs: { convergenceScore: 0.84, eLevel, evidenceElevated: false },
-      knowledgeDelta: { domain: "38", convergence: "stub" },
+      outputs: {
+        convergenceScore,
+        eLevel,
+        evidenceElevated: false,
+        sourceMode: meta.sourceMode,
+        recordedOnly: meta.recordedOnly,
+        liveFetch: meta.liveFetch,
+        livingIntelligenceProved: false,
+      },
+      knowledgeDelta: {
+        domain: "38",
+        convergence: hints.fromRecordedPack ? "recorded_enrichment" : "stub",
+        ...meta,
+      },
     };
   },
   "MOT-SYN-02": async (ctx) => {
-    const fixtures = buildIntelligenceFixtureBundle(ctx.factoryKey);
+    const sources = resolveSources(ctx);
+    const meta = sourceModeMeta(sources);
     const state = ctx.knowledgeStore?.read(ctx.factoryKey);
     const gateResult = state?.pendingGateEvaluation ?? {
       allPass: true,
@@ -52,20 +119,27 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
         readinessScore: gateResult.allPass ? 1 : 0,
         gatesPass: gateResult.passCount,
         mpiDomain: "39",
+        ...meta,
       },
-      [fixtures.synthesisRef]
+      [sources.synthesisRef]
     );
     return {
       outputs: {
         readinessPass: gateResult.allPass,
         gatesPass: gateResult.passCount,
         gateCount: gateResult.gateCount ?? 7,
+        sourceMode: meta.sourceMode,
+        recordedOnly: meta.recordedOnly,
+        liveFetch: meta.liveFetch,
+        livingIntelligenceProved: false,
       },
-      knowledgeDelta: { domain: "39", readiness: "validated" },
+      knowledgeDelta: { domain: "39", readiness: "validated", ...meta },
     };
   },
   "MOT-DCN-01": async (ctx) => {
-    const fixtures = buildIntelligenceFixtureBundle(ctx.factoryKey);
+    const sources = resolveSources(ctx);
+    const meta = sourceModeMeta(sources);
+    const hints = recordedPackHints(sources);
     record(
       ctx,
       "40",
@@ -73,16 +147,30 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
         motorId: "MOT-DCN-01",
         corpusAssembled: true,
         mpiDomain: "40",
+        ...meta,
+        ...hints,
       },
-      [fixtures.corpusRef]
+      [sources.corpusRef]
     );
     return {
-      outputs: { corpusAssembled: true, corpusRef: fixtures.corpusRef },
-      knowledgeDelta: { domain: "40", corpus: "assembled" },
+      outputs: {
+        corpusAssembled: true,
+        corpusRef: sources.corpusRef,
+        sourceMode: meta.sourceMode,
+        recordedOnly: meta.recordedOnly,
+        liveFetch: meta.liveFetch,
+        livingIntelligenceProved: false,
+      },
+      knowledgeDelta: {
+        domain: "40",
+        corpus: hints.fromRecordedPack ? "recorded_enrichment" : "assembled",
+        ...meta,
+      },
     };
   },
   "MOT-COM-01": async (ctx) => {
-    const fixtures = buildIntelligenceFixtureBundle(ctx.factoryKey);
+    const sources = resolveSources(ctx);
+    const meta = sourceModeMeta(sources);
     record(
       ctx,
       "41",
@@ -90,16 +178,25 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
         motorId: "MOT-COM-01",
         releaseMatrixReady: true,
         mpiDomain: "41",
+        ...meta,
       },
-      [fixtures.releaseRef]
+      [sources.releaseRef]
     );
     return {
-      outputs: { releaseMatrixReady: true },
-      knowledgeDelta: { domain: "41", commercial: "release_matrix" },
+      outputs: {
+        releaseMatrixReady: true,
+        sourceMode: meta.sourceMode,
+        recordedOnly: meta.recordedOnly,
+        liveFetch: meta.liveFetch,
+        livingIntelligenceProved: false,
+      },
+      knowledgeDelta: { domain: "41", commercial: "release_matrix", ...meta },
     };
   },
   "MOT-EXE-01": async (ctx) => {
-    const fixtures = buildIntelligenceFixtureBundle(ctx.factoryKey);
+    const sources = resolveSources(ctx);
+    const meta = sourceModeMeta(sources);
+    const hints = recordedPackHints(sources);
     record(
       ctx,
       "42",
@@ -107,12 +204,25 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
         motorId: "MOT-EXE-01",
         execMemoSynced: true,
         mpiDomain: "42",
+        ...meta,
+        ...hints,
       },
-      [fixtures.execMemoRef]
+      [sources.execMemoRef]
     );
     return {
-      outputs: { execMemoSynced: true, icPathComplete: true },
-      knowledgeDelta: { domain: "42", executive: "ic_memo_stub" },
+      outputs: {
+        execMemoSynced: true,
+        icPathComplete: true,
+        sourceMode: meta.sourceMode,
+        recordedOnly: meta.recordedOnly,
+        liveFetch: meta.liveFetch,
+        livingIntelligenceProved: false,
+      },
+      knowledgeDelta: {
+        domain: "42",
+        executive: hints.fromRecordedPack ? "recorded_enrichment" : "ic_memo_stub",
+        ...meta,
+      },
     };
   },
 };

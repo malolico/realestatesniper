@@ -32,6 +32,7 @@ import {
   ingestIntelligenceEvidence,
   evaluateIntelligenceSufficiency,
 } from "./intelligenceEvidenceIngest.js";
+import { applyIntelligenceRecordedEvidenceCheckpoint } from "./intelligenceRecordedEvidenceCheckpoint.js";
 import { evaluateAllReadinessGates } from "./readinessGates.js";
 import {
   recordReadinessGateEvaluation,
@@ -211,12 +212,22 @@ export class IntelligenceLayerService {
 
   /**
    * @param {string} factoryKey
-   * @param {{ candidateRef?: string, parcelId?: string, simulateSufficiencyGap?: boolean }} [options]
+   * @param {{
+   *   candidateRef?: string,
+   *   parcelId?: string,
+   *   simulateSufficiencyGap?: boolean,
+   *   recordedPackRoot?: string,
+   *   preferRecordedEnrichment?: boolean,
+   *   forceSynthetic?: boolean,
+   * }} [options]
    */
   async bootstrapIntelligence(factoryKey, options = {}) {
     const foundation = await this.foundation.bootstrapFoundation({
       candidateRef: options.candidateRef ?? "cb13-intelligence",
       parcelId: options.parcelId ?? "intelligence-001",
+      recordedPackRoot: options.recordedPackRoot,
+      preferRecordedEnrichment: options.preferRecordedEnrichment,
+      forceSynthetic: options.forceSynthetic,
     });
     const key = foundation.factoryKey;
 
@@ -274,7 +285,19 @@ export class IntelligenceLayerService {
     });
     recordReadinessGateEvaluation(this.registry, key, gateEvaluation);
 
-    const manifests = await runIntelligencePipeline(this.runtime, key);
+    const manifests = await runIntelligencePipeline(this.runtime, key, {
+      recordedPackRoot: options.recordedPackRoot,
+      preferRecordedEnrichment: options.preferRecordedEnrichment,
+      forceSynthetic: options.forceSynthetic,
+      gateEvaluation,
+    });
+
+    const recordedEvidenceCheckpoint = applyIntelligenceRecordedEvidenceCheckpoint({
+      factoryKey: key,
+      packRoot: options.recordedPackRoot,
+      evd01: this.evidenceService.evd01,
+      forceSynthetic: options.forceSynthetic === true,
+    });
 
     const record = this.registry.getExpediente(key);
     const handoffs = record.elr.decision_handoffs ?? [];
@@ -341,6 +364,7 @@ export class IntelligenceLayerService {
       mpiCoverage: this.knowledgeStore.mpiCoverage(key),
       evidence: evidenceResult,
       sufficiency: evaluateIntelligenceSufficiency(evidenceResult),
+      recordedEvidenceCheckpoint,
       gateEvaluation,
       loops: { intEvd, intGap, intQlt, intFrs, intRdy },
       readinessTransition,
@@ -349,6 +373,10 @@ export class IntelligenceLayerService {
       syn01ElevatedE: syn01?.outputs?.evidenceElevated === false,
       syn02ReadinessPass: syn02?.outputs?.readinessPass === true,
       cb16HandoffEnabled: isDecisionHandoffEnabled(this.registry.getExpediente(key).elr),
+      sourceMode: syn01?.outputs?.sourceMode ?? null,
+      recordedOnly: syn01?.outputs?.recordedOnly === true,
+      livingIntelligenceProved: false,
+      phase1Complete: false,
       omcMotorCountNote: {
         constitutional: OMC_MOTOR_COUNT_CONSTITUTIONAL,
         cb04CatalogIndexed: MOTOR_CATALOG_COUNT,

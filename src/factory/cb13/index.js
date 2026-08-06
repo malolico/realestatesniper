@@ -26,7 +26,15 @@ export {
 } from "./readinessGates.js";
 
 export { IntelligenceKnowledgeStore, DEFAULT_INTELLIGENCE_ROOT } from "./intelligenceKnowledgeStore.js";
-export { buildIntelligenceFixtureBundle } from "./intelligenceSourceFixtures.js";
+export {
+  buildIntelligenceFixtureBundle,
+  resolveIntelligenceSourceBundle,
+} from "./intelligenceSourceFixtures.js";
+export {
+  buildIntelligenceRecordedEnrichmentBundle,
+  resolveDefaultRecordedPackRoot,
+} from "./intelligenceRecordedEnrichmentAdapter.js";
+export { applyIntelligenceRecordedEvidenceCheckpoint } from "./intelligenceRecordedEvidenceCheckpoint.js";
 export { INTELLIGENCE_MOTOR_HANDLERS, registerIntelligenceMotorHandlers } from "./intelligenceMotorHandlers.js";
 export { runIntelligencePipeline } from "./intelligencePipeline.js";
 export { ingestIntelligenceEvidence, evaluateIntelligenceSufficiency } from "./intelligenceEvidenceIngest.js";

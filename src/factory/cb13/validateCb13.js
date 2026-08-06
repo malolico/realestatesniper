@@ -44,6 +44,12 @@ import { IntelligenceLayerService } from "./intelligenceLayerService.js";
 import { evaluateAllReadinessGates } from "./readinessGates.js";
 import { routeSufficiencyGap } from "./sufficiencyGapRouter.js";
 import { isDecisionHandoffEnabled } from "./decisionHandoffPrep.js";
+import {
+  buildIntelligenceFixtureBundle,
+  resolveIntelligenceSourceBundle,
+} from "./intelligenceSourceFixtures.js";
+import { buildIntelligenceRecordedEnrichmentBundle } from "./intelligenceRecordedEnrichmentAdapter.js";
+import { applyIntelligenceRecordedEvidenceCheckpoint } from "./intelligenceRecordedEvidenceCheckpoint.js";
 
 function createTempEnv() {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "cb13-validation-"));
@@ -348,6 +354,110 @@ export function validateOmcRisksDocumented() {
 }
 
 /**
+ * SP04-ENG-IMPL CEP-01 — recorded enrichment / ISR honesty (DEF-SP04-01 / DEF-SP04-02).
+ * Does not claim Living Intelligence Alive PROVED or Phase 1 COMPLETE.
+ */
+export async function validateSp04Cep01RecordedEnrichment() {
+  const errors = [];
+  const env = createTempEnv();
+  try {
+    const synthetic = buildIntelligenceFixtureBundle("cep01-synthetic");
+    if (synthetic.synthetic !== true || synthetic.sourceMode !== "SYNTHETIC_FIXTURE") {
+      errors.push("Synthetic INT fixture bundle must remain available");
+    }
+
+    const forced = resolveIntelligenceSourceBundle("cep01-force", { forceSynthetic: true });
+    if (forced.synthetic !== true) {
+      errors.push("forceSynthetic must resolve to synthetic INT fixtures");
+    }
+
+    const liveAttempt = buildIntelligenceRecordedEnrichmentBundle("cep01-live", {
+      attemptLiveFetch: true,
+    });
+    if (liveAttempt.ok !== false) {
+      errors.push("INT recorded enrichment must refuse attemptLiveFetch");
+    }
+
+    const enriched = resolveIntelligenceSourceBundle("cep01-recorded");
+    if (enriched.ok === true || enriched.recordedOnly === true) {
+      if (enriched.synthetic === true || enriched.liveFetch === true) {
+        errors.push("Recorded INT enrichment must not be synthetic or Live");
+      }
+      if (enriched.sourceMode !== "RECORDED_ENRICHMENT") {
+        errors.push("Recorded INT enrichment sourceMode must be RECORDED_ENRICHMENT");
+      }
+      if (enriched.livingIntelligenceProved === true || enriched.phase1Complete === true) {
+        errors.push("CEP-01 must not claim Living IA PROVED or Phase 1 COMPLETE");
+      }
+    } else if (!enriched.recordedSkippedReason && enriched.synthetic !== true) {
+      errors.push("When pack unavailable, resolver must fall back to synthetic honestly");
+    }
+
+    const { intelligence } = createIntelligenceStack(env);
+    const result = await intelligence.bootstrapIntelligence("cb13-cep01-enrichment", {
+      parcelId: "int-cep01-001",
+    });
+
+    if (result.livingIntelligenceProved === true || result.phase1Complete === true) {
+      errors.push("bootstrapIntelligence must not claim Living IA PROVED or Phase 1 COMPLETE");
+    }
+
+    const syn01 = result.manifests?.find((m) => m.motorId === "MOT-SYN-01");
+    if (!syn01?.outputs) {
+      errors.push("MOT-SYN-01 outputs missing after CEP-01 bootstrap");
+    } else {
+      if (syn01.outputs.sourceMode !== "RECORDED_ENRICHMENT") {
+        errors.push('Bootstrap MOT-SYN-01 sourceMode must be "RECORDED_ENRICHMENT"');
+      }
+      if (syn01.outputs.recordedOnly !== true) {
+        errors.push("Bootstrap MOT-SYN-01 recordedOnly must be true");
+      }
+      if (syn01.outputs.liveFetch !== false) {
+        errors.push("Bootstrap MOT-SYN-01 liveFetch must be false");
+      }
+      if (syn01.outputs.livingIntelligenceProved !== false) {
+        errors.push("Bootstrap MOT-SYN-01 livingIntelligenceProved must be false");
+      }
+      if (result.phase1Complete !== false) {
+        errors.push("Bootstrap phase1Complete must be false");
+      }
+      if (result.livingIntelligenceProved !== false) {
+        errors.push("Bootstrap livingIntelligenceProved must be false");
+      }
+    }
+
+    if (result.recordedOnly !== true) {
+      errors.push("Bootstrap result.recordedOnly must be true under authorized recorded pack path");
+    }
+    if (result.sourceMode !== "RECORDED_ENRICHMENT") {
+      errors.push('Bootstrap result.sourceMode must be "RECORDED_ENRICHMENT"');
+    }
+
+    if (result.recordedEvidenceCheckpoint?.ok === true) {
+      if (result.recordedEvidenceCheckpoint.vitalityClaimed === true) {
+        errors.push("INT recorded evidence checkpoint must not claim vitality/Live");
+      }
+      if (result.recordedEvidenceCheckpoint.livingIntelligenceProved === true) {
+        errors.push("INT recorded evidence checkpoint must not claim Living IA PROVED");
+      }
+    }
+
+    const checkpoint = applyIntelligenceRecordedEvidenceCheckpoint({
+      factoryKey: result.factoryKey,
+      evd01: intelligence.evidenceService.evd01,
+    });
+    if (checkpoint.ok === true && checkpoint.liveFetch === true) {
+      errors.push("INT evidence checkpoint must keep liveFetch false");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  } finally {
+    fs.rmSync(env.base, { recursive: true, force: true });
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb13Validation(options = {}) {
@@ -360,6 +470,7 @@ export async function runCb13Validation(options = {}) {
   const gaps = validateSufficiencyGapRouting();
   const reproducible = validateReadinessGatesReproducible();
   const risks = validateOmcRisksDocumented();
+  const cep01 = await validateSp04Cep01RecordedEnrichment();
 
   const allErrors = [
     ...gov.errors,
@@ -371,6 +482,7 @@ export async function runCb13Validation(options = {}) {
     ...gaps.errors,
     ...reproducible.errors,
     ...risks.errors,
+    ...cep01.errors,
   ];
 
   const checklist = [
