@@ -354,8 +354,8 @@ export function validateOmcRisksDocumented() {
 }
 
 /**
- * SP04-ENG-IMPL CEP-01 — recorded enrichment / ISR honesty (DEF-SP04-01 / DEF-SP04-02).
- * Does not claim Living Intelligence Alive PROVED or Phase 1 COMPLETE.
+ * SP04-ENG-IMPL CEP-01 (+ residual DAG-SP04-CEP01-P1-R1-G1) — recorded enrichment / ISR honesty
+ * (DEF-SP04-01 / DEF-SP04-02). Does not claim Living Intelligence Alive PROVED or Phase 1 COMPLETE.
  */
 export async function validateSp04Cep01RecordedEnrichment() {
   const errors = [];
@@ -389,6 +389,22 @@ export async function validateSp04Cep01RecordedEnrichment() {
       if (enriched.livingIntelligenceProved === true || enriched.phase1Complete === true) {
         errors.push("CEP-01 must not claim Living IA PROVED or Phase 1 COMPLETE");
       }
+      if (!enriched.payloadsByOrganism || typeof enriched.payloadsByOrganism !== "object") {
+        errors.push("Recorded INT enrichment must expose payloadsByOrganism from CB-02 consume path");
+      } else {
+        if (!enriched.payloadsByOrganism["ORG-ASR-MC"]) {
+          errors.push("Recorded INT enrichment payloadsByOrganism must include ORG-ASR-MC");
+        }
+        if (!enriched.payloadsByOrganism["ORG-GIS-MC"]) {
+          errors.push("Recorded INT enrichment payloadsByOrganism must include ORG-GIS-MC");
+        }
+      }
+      if (!enriched.synthesisRef || !enriched.corpusRef || !enriched.releaseRef || !enriched.execMemoRef) {
+        errors.push("Recorded INT enrichment must preserve synthesis/corpus/release/execMemo SourceRefs");
+      }
+      if (Array.isArray(enriched.organismsPresent) && !enriched.organismsPresent.includes("ORG-ASR-MC")) {
+        errors.push("Recorded INT enrichment organismsPresent must include ORG-ASR-MC");
+      }
     } else if (!enriched.recordedSkippedReason && enriched.synthetic !== true) {
       errors.push("When pack unavailable, resolver must fall back to synthetic honestly");
     }
@@ -415,6 +431,12 @@ export async function validateSp04Cep01RecordedEnrichment() {
       if (syn01.outputs.liveFetch !== false) {
         errors.push("Bootstrap MOT-SYN-01 liveFetch must be false");
       }
+      if (syn01.outputs.fromRecordedPack !== true) {
+        errors.push("Bootstrap MOT-SYN-01 fromRecordedPack must be true under RECORDED pack path");
+      }
+      if (!syn01.outputs.parcelId) {
+        errors.push("Bootstrap MOT-SYN-01 must surface recorded parcelId from payloadsByOrganism");
+      }
       if (syn01.outputs.livingIntelligenceProved !== false) {
         errors.push("Bootstrap MOT-SYN-01 livingIntelligenceProved must be false");
       }
@@ -423,6 +445,43 @@ export async function validateSp04Cep01RecordedEnrichment() {
       }
       if (result.livingIntelligenceProved !== false) {
         errors.push("Bootstrap livingIntelligenceProved must be false");
+      }
+    }
+
+    const com01 = result.manifests?.find((m) => m.motorId === "MOT-COM-01");
+    if (!com01?.outputs) {
+      errors.push("MOT-COM-01 outputs missing after CEP-01 residual bootstrap");
+    } else {
+      if (com01.outputs.sourceMode !== "RECORDED_ENRICHMENT") {
+        errors.push('Bootstrap MOT-COM-01 sourceMode must be "RECORDED_ENRICHMENT"');
+      }
+      if (com01.outputs.fromRecordedPack !== true) {
+        errors.push("Bootstrap MOT-COM-01 must consume recordedPackHints (fromRecordedPack true)");
+      }
+      if (com01.outputs.liveFetch !== false) {
+        errors.push("Bootstrap MOT-COM-01 liveFetch must be false");
+      }
+      if (com01.outputs.livingIntelligenceProved !== false || com01.outputs.phase1Complete !== false) {
+        errors.push("Bootstrap MOT-COM-01 must not claim Living IA PROVED or Phase 1 COMPLETE");
+      }
+    }
+
+    const kn = intelligence.knowledgeStore.read(result.factoryKey);
+    for (const domain of ["38", "40", "41", "42"]) {
+      const entry = kn.mpiDomains?.[domain];
+      if (!entry || !entry.deltas?.length) {
+        errors.push(`Knowledge domain ${domain} must record residual enrichment deltas`);
+        continue;
+      }
+      const last = entry.deltas[entry.deltas.length - 1];
+      if (last.fromRecordedPack !== true) {
+        errors.push(`Knowledge domain ${domain} last delta must set fromRecordedPack true`);
+      }
+      if (domain === "41" && last.commercial !== "recorded_enrichment") {
+        errors.push('MOT-COM-01 knowledge delta commercial must be "recorded_enrichment"');
+      }
+      if (!entry.sourceRefs?.length) {
+        errors.push(`Knowledge domain ${domain} must preserve SourceRefs`);
       }
     }
 

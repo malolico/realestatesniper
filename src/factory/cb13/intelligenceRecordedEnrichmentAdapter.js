@@ -1,5 +1,6 @@
 /**
- * SP04-ENG-IMPL CEP-01 / Phase 1 — Intelligence recorded-pack enrichment adapter.
+ * SP04-ENG-IMPL CEP-01 / Phase 1 (+ residual DAG-SP04-CEP01-P1-R1-G1) —
+ * Intelligence recorded-pack enrichment adapter.
  *
  * Consumes published CB-02 RECORDED_ONLY pack enrichment (SP03 substrate) and maps
  * it to INT-facing SourceRefs for CB-13 motors. Does not enable Live, does not
@@ -7,7 +8,8 @@
  *
  * Mandate class: adapters / enrichment / information-source replacement
  * Deficits: DEF-SP04-01 · DEF-SP04-02
- * Gate: DAG-SP04-CEP01-P1
+ * Parent Gate: DAG-SP04-CEP01-P1
+ * Residual Grant: DAG-SP04-CEP01-P1-R1-G1
  */
 
 import {
@@ -34,6 +36,8 @@ export { resolveDefaultRecordedPackRoot };
  *   releaseRef: object,
  *   execMemoRef: object,
  *   payloadsByOrganism: Record<string, object>,
+ *   organismsPresent: string[],
+ *   payloadSchemaIds: Record<string, string|null>,
  *   synthetic: false,
  *   recordedOnly: true,
  *   liveFetch: false,
@@ -41,6 +45,7 @@ export { resolveDefaultRecordedPackRoot };
  *   sourceMode: "RECORDED_ENRICHMENT",
  *   constitutionalPhase: string,
  *   mandateRefs: string[],
+ *   residualGrantId: string,
  * } | { ok: false, reason: string, code?: string }}
  */
 export function buildIntelligenceRecordedEnrichmentBundle(factoryKey, options = {}) {
@@ -58,11 +63,20 @@ export function buildIntelligenceRecordedEnrichmentBundle(factoryKey, options = 
   }
 
   /*
-   * ASR/GIS → INT role mapping (CEP-01 adapter only):
+   * ASR/GIS/RCR → INT role mapping (CEP-01 residual adapter only):
    * - Consumes published CB-02 SourceRefs from RECORDED_ONLY pack enrichment.
    * - Does not create organisms; does not expand catalog; does not alter motor/organism IDs.
    * - Does not redesign Construction Block semantics — consume-only information-source wiring.
+   * - releaseRef prefers recorder when present (commercial / release matrix ISR).
    */
+  const payloadsByOrganism = loaded.payloadsByOrganism ?? {};
+  const organismsPresent = Object.keys(payloadsByOrganism);
+  const payloadSchemaIds = Object.freeze({
+    "ORG-ASR-MC": payloadsByOrganism["ORG-ASR-MC"]?.schemaId ?? null,
+    "ORG-GIS-MC": payloadsByOrganism["ORG-GIS-MC"]?.schemaId ?? null,
+    "ORG-RCR-MC": payloadsByOrganism["ORG-RCR-MC"]?.schemaId ?? null,
+  });
+
   const synthesisRef = loaded.assessor;
   const corpusRef = loaded.gis;
   const releaseRef = loaded.recorder ?? loaded.assessor;
@@ -74,7 +88,9 @@ export function buildIntelligenceRecordedEnrichmentBundle(factoryKey, options = 
     corpusRef,
     releaseRef,
     execMemoRef,
-    payloadsByOrganism: loaded.payloadsByOrganism,
+    payloadsByOrganism,
+    organismsPresent,
+    payloadSchemaIds,
     synthetic: false,
     recordedOnly: true,
     liveFetch: false,
@@ -82,8 +98,18 @@ export function buildIntelligenceRecordedEnrichmentBundle(factoryKey, options = 
     sourceMode: "RECORDED_ENRICHMENT",
     constitutionalPhase: "SP04-ENG-IMPL",
     mandateClass: "INFORMATION_SOURCE_ENRICHMENT",
-    mandateRefs: ["SP04-ENG-IMPL", "CEP-01", "DEF-SP04-01", "DEF-SP04-02", "DAG-SP04-CEP01-P1"],
+    mandateRefs: [
+      "SP04-ENG-IMPL",
+      "CEP-01",
+      "DEF-SP04-01",
+      "DEF-SP04-02",
+      "DAG-SP04-CEP01-P1",
+      "DAG-SP04-CEP01-P1-R1",
+      "DAG-SP04-CEP01-P1-R1-G1",
+    ],
     gateId: "DAG-SP04-CEP01-P1",
+    residualOrderId: "DAG-SP04-CEP01-P1-R1",
+    residualGrantId: "DAG-SP04-CEP01-P1-R1-G1",
     livingIntelligenceProved: false,
     phase1Complete: false,
   });

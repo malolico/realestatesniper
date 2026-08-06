@@ -1,7 +1,8 @@
 /**
  * CB-13 — Intelligence motor handlers.
- * SP04-ENG-IMPL CEP-01 / Phase 1: consume RECORDED_ONLY enrichment under existing
- * motor IDs (adapters / enrichment / ISR). No real AI / LLM; no Live; no catalog redesign.
+ * SP04-ENG-IMPL CEP-01 / Phase 1 (+ residual DAG-SP04-CEP01-P1-R1-G1):
+ * consume RECORDED_ONLY enrichment under existing motor IDs
+ * (adapters / enrichment / ISR). No real AI / LLM; no Live; no catalog redesign.
  * Advances DEF-SP04-01 / DEF-SP04-02 — does not prove Living Intelligence Alive.
  */
 
@@ -31,6 +32,7 @@ function sourceModeMeta(sources) {
     enrichmentMandate:
       sources.constitutionalPhase === "SP04-ENG-IMPL" ? "SP04-ENG-IMPL" : null,
     gateId: sources.gateId ?? (sources.constitutionalPhase === "SP04-ENG-IMPL" ? "DAG-SP04-CEP01-P1" : null),
+    residualGrantId: sources.residualGrantId ?? null,
     livingIntelligenceProved: false,
     phase1Complete: false,
   };
@@ -47,7 +49,8 @@ function record(ctx, mpiDomain, delta, sourceRefs) {
 }
 
 /**
- * Light enrichment from RECORDED pack payloads when present (DEF-SP04-01 consume path).
+ * RECORDED pack payload → INT knowledge hints (DEF-SP04-01 / DEF-SP04-02 consume path).
+ * Consumes published CB-02 payloadsByOrganism only — no Live, no LLM, no CB-02 mutation.
  * @param {object} sources
  */
 function recordedPackHints(sources) {
@@ -56,11 +59,33 @@ function recordedPackHints(sources) {
   }
   const asr = sources.payloadsByOrganism["ORG-ASR-MC"] ?? {};
   const gis = sources.payloadsByOrganism["ORG-GIS-MC"] ?? {};
+  const rcr = sources.payloadsByOrganism["ORG-RCR-MC"] ?? {};
+  const organismsPresent = Object.keys(sources.payloadsByOrganism);
+  const situs = asr.situsAddress && typeof asr.situsAddress === "object" ? asr.situsAddress : {};
+  const centroid = gis.centroid && typeof gis.centroid === "object" ? gis.centroid : {};
+
   return {
     fromRecordedPack: true,
-    parcelId: asr.parcelId ?? asr.apn ?? gis.parcelId ?? null,
+    organismsPresent,
+    parcelId: asr.parcelId ?? asr.apn ?? gis.parcelId ?? rcr.parcelRef ?? null,
+    apn: asr.apn ?? null,
     landUseCode: asr.landUseCode ?? null,
     assessedYear: asr.assessedYear ?? null,
+    situsLine1: situs.line1 ?? null,
+    situsCity: situs.city ?? null,
+    situsState: situs.state ?? null,
+    situsPostalCode: situs.postalCode ?? null,
+    geometryType: gis.geometryType ?? null,
+    centroidLat: typeof centroid.lat === "number" ? centroid.lat : null,
+    centroidLon: typeof centroid.lon === "number" ? centroid.lon : null,
+    crs: gis.crs ?? null,
+    recorderDocumentId: rcr.documentId ?? null,
+    recorderDocumentType: rcr.documentType ?? null,
+    recorderRecordedDate: rcr.recordedDate ?? null,
+    recorderParcelRef: rcr.parcelRef ?? null,
+    assessorSchemaId: asr.schemaId ?? null,
+    gisSchemaId: gis.schemaId ?? null,
+    recorderSchemaId: rcr.schemaId ?? null,
   };
 }
 
@@ -93,18 +118,23 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
         sourceMode: meta.sourceMode,
         recordedOnly: meta.recordedOnly,
         liveFetch: meta.liveFetch,
+        fromRecordedPack: hints.fromRecordedPack === true,
+        parcelId: hints.parcelId ?? null,
         livingIntelligenceProved: false,
+        phase1Complete: false,
       },
       knowledgeDelta: {
         domain: "38",
         convergence: hints.fromRecordedPack ? "recorded_enrichment" : "stub",
         ...meta,
+        ...hints,
       },
     };
   },
   "MOT-SYN-02": async (ctx) => {
     const sources = resolveSources(ctx);
     const meta = sourceModeMeta(sources);
+    const hints = recordedPackHints(sources);
     const state = ctx.knowledgeStore?.read(ctx.factoryKey);
     const gateResult = state?.pendingGateEvaluation ?? {
       allPass: true,
@@ -120,6 +150,8 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
         gatesPass: gateResult.passCount,
         mpiDomain: "39",
         ...meta,
+        fromRecordedPack: hints.fromRecordedPack === true,
+        parcelId: hints.parcelId ?? null,
       },
       [sources.synthesisRef]
     );
@@ -131,9 +163,17 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
         sourceMode: meta.sourceMode,
         recordedOnly: meta.recordedOnly,
         liveFetch: meta.liveFetch,
+        fromRecordedPack: hints.fromRecordedPack === true,
         livingIntelligenceProved: false,
+        phase1Complete: false,
       },
-      knowledgeDelta: { domain: "39", readiness: "validated", ...meta },
+      knowledgeDelta: {
+        domain: "39",
+        readiness: "validated",
+        ...meta,
+        fromRecordedPack: hints.fromRecordedPack === true,
+        parcelId: hints.parcelId ?? null,
+      },
     };
   },
   "MOT-DCN-01": async (ctx) => {
@@ -159,18 +199,23 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
         sourceMode: meta.sourceMode,
         recordedOnly: meta.recordedOnly,
         liveFetch: meta.liveFetch,
+        fromRecordedPack: hints.fromRecordedPack === true,
+        geometryType: hints.geometryType ?? null,
         livingIntelligenceProved: false,
+        phase1Complete: false,
       },
       knowledgeDelta: {
         domain: "40",
         corpus: hints.fromRecordedPack ? "recorded_enrichment" : "assembled",
         ...meta,
+        ...hints,
       },
     };
   },
   "MOT-COM-01": async (ctx) => {
     const sources = resolveSources(ctx);
     const meta = sourceModeMeta(sources);
+    const hints = recordedPackHints(sources);
     record(
       ctx,
       "41",
@@ -178,7 +223,9 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
         motorId: "MOT-COM-01",
         releaseMatrixReady: true,
         mpiDomain: "41",
+        commercial: hints.fromRecordedPack ? "recorded_enrichment" : "release_matrix",
         ...meta,
+        ...hints,
       },
       [sources.releaseRef]
     );
@@ -188,9 +235,18 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
         sourceMode: meta.sourceMode,
         recordedOnly: meta.recordedOnly,
         liveFetch: meta.liveFetch,
+        fromRecordedPack: hints.fromRecordedPack === true,
+        recorderDocumentId: hints.recorderDocumentId ?? null,
+        recorderDocumentType: hints.recorderDocumentType ?? null,
         livingIntelligenceProved: false,
+        phase1Complete: false,
       },
-      knowledgeDelta: { domain: "41", commercial: "release_matrix", ...meta },
+      knowledgeDelta: {
+        domain: "41",
+        commercial: hints.fromRecordedPack ? "recorded_enrichment" : "release_matrix",
+        ...meta,
+        ...hints,
+      },
     };
   },
   "MOT-EXE-01": async (ctx) => {
@@ -216,12 +272,16 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
         sourceMode: meta.sourceMode,
         recordedOnly: meta.recordedOnly,
         liveFetch: meta.liveFetch,
+        fromRecordedPack: hints.fromRecordedPack === true,
+        parcelId: hints.parcelId ?? null,
         livingIntelligenceProved: false,
+        phase1Complete: false,
       },
       knowledgeDelta: {
         domain: "42",
         executive: hints.fromRecordedPack ? "recorded_enrichment" : "ic_memo_stub",
         ...meta,
+        ...hints,
       },
     };
   },
