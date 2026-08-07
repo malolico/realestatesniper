@@ -206,16 +206,16 @@ FORBIDDEN / NOT PERFORMED BY THIS INSTRUMENT OR BY THIS CLOSURE PATH:
 
 ## 7. Behavior archived (post-commit)
 
-1. Profundización de **`recordedPackHints`** desde **`payloadsByOrganism`** ASR / GIS / RCR.  
-2. Enriquecimiento **RECORDED** de knowledge deltas bajo IDs de motor existentes.  
-3. **MOT-COM-01** consume **`recordedPackHints`**.  
-4. **`commercial = "recorded_enrichment"`** únicamente bajo evidencia RECORDED.  
-5. **SourceRefs** preservados en producción de dominio.  
-6. **`organismsPresent` / `payloadSchemaIds` / residual Grant refs** como trazabilidad (sin alterar contratos públicos protegidos).  
-7. **`releaseRef`** basado en referencias RECORDED existentes (`recorder ?? assessor`).  
-8. **Live** rechazado (`LIVE_NOT_AUTHORIZED` / `liveFetch: false`).  
-9. **Ausencia de LLM** / IA generativa / aprendizaje.  
-10. **Ausencia de nuevos motores** / nuevos IDs / rediseño de catálogo.  
+1. Profundización de **`recordedPackHints`** desde **`payloadsByOrganism`** ASR / GIS / RCR.
+2. Enriquecimiento **RECORDED** de knowledge deltas bajo IDs de motor existentes.
+3. **MOT-COM-01** consume **`recordedPackHints`**.
+4. **`commercial = "recorded_enrichment"`** únicamente bajo evidencia RECORDED.
+5. **SourceRefs** preservados en producción de dominio.
+6. **`organismsPresent` / `payloadSchemaIds` / residual Grant refs** como trazabilidad (sin alterar contratos públicos protegidos).
+7. **`releaseRef`** basado en referencias RECORDED existentes (`recorder ?? assessor`).
+8. **Live** rechazado (`LIVE_NOT_AUTHORIZED` / `liveFetch: false`).
+9. **Ausencia de LLM** / IA generativa / aprendizaje.
+10. **Ausencia de nuevos motores** / nuevos IDs / rediseño de catálogo.
 
 ---
 
