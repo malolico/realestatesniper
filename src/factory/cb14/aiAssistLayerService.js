@@ -24,6 +24,7 @@ import {
 } from "./reasoningLedger.js";
 import { validateDualRunClassC } from "./slotRegistry.js";
 import { executeAiaAssistStub } from "./aiaAssistStub.js";
+import { resolveSupervisedOrStub } from "./supervisedAiAssistAdapter.js";
 import { applyAiAssistOutputLimits } from "./constitutionalLimits.js";
 
 export class AiAssistLayerService {
@@ -148,15 +149,15 @@ export class AiAssistLayerService {
 
     recordAiAssistRegistryComplete(this.registry, key, [...AIA_IDS]);
 
-    const stubA = applyAiAssistOutputLimits(
-      executeAiaAssistStub("AIA-NRM-01", { factoryKey: key })
-    );
-    const stubB = applyAiAssistOutputLimits(
-      executeAiaAssistStub("AIA-NRM-01", { factoryKey: key })
-    );
+    // G1: dual-run exercises supervised path (stub only as fail-closed fallback).
+    const dualCtx = { factoryKey: key };
+    const resolvedA = resolveSupervisedOrStub("AIA-NRM-01", dualCtx, executeAiaAssistStub);
+    const resolvedB = resolveSupervisedOrStub("AIA-NRM-01", dualCtx, executeAiaAssistStub);
+    const runA = applyAiAssistOutputLimits(resolvedA.output);
+    const runB = applyAiAssistOutputLimits(resolvedB.output);
     const dualRun = validateDualRunClassC(
-      { ...stubA, fun: "NRM", modelSlot: "SLOT-01", confidence: stubA.confidence },
-      { ...stubB, fun: "NRM", modelSlot: "SLOT-10", confidence: stubB.confidence }
+      { ...runA, fun: "NRM", modelSlot: "SLOT-01", confidence: runA.confidence },
+      { ...runB, fun: "NRM", modelSlot: "SLOT-10", confidence: runB.confidence }
     );
     recordDualRunValidation(this.registry, key, dualRun);
 
@@ -181,6 +182,10 @@ export class AiAssistLayerService {
         classXBlocked: classXBlocked.every((r) => r.accepted === false),
         dualRunPass: dualRun.pass,
         readinessGatesPass,
+        dualRunAssistPathA: resolvedA.assistPath,
+        dualRunAssistPathB: resolvedB.assistPath,
+        dualRunUsedStubFallback:
+          resolvedA.usedStubFallback === true || resolvedB.usedStubFallback === true,
       },
       dualRun,
       classXBlocked,

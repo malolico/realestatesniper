@@ -8,6 +8,7 @@ import { validatePrhCompliance } from "./prhProhibitions.js";
 import { enforceAutAuthority } from "./autAuthority.js";
 import { assertAuthorizedInvoker, applyAiAssistOutputLimits } from "./constitutionalLimits.js";
 import { executeAiaAssistStub } from "./aiaAssistStub.js";
+import { resolveSupervisedOrStub } from "./supervisedAiAssistAdapter.js";
 import { recordRlgInvocation } from "./reasoningLedger.js";
 
 export class AiaInvocationGateway {
@@ -92,14 +93,25 @@ export class AiaInvocationGateway {
       return { accepted: false, reason: aut.reason, aut };
     }
 
-    const stub = executeAiaAssistStub(aiaId, {
-      factoryKey,
-      inputs: request.inputs,
-    });
+    // Constitutional checks above remain mandatory before any assist execution.
+    const resolved = resolveSupervisedOrStub(
+      aiaId,
+      {
+        factoryKey,
+        inputs: request.inputs,
+        attemptLiveFetch: request.attemptLiveFetch,
+        useLlm: request.useLlm,
+        attemptLlm: request.attemptLlm,
+        vendorInference: request.vendorInference,
+        network: request.network,
+        externalApi: request.externalApi,
+      },
+      executeAiaAssistStub
+    );
 
     let output;
     try {
-      output = applyAiAssistOutputLimits(stub);
+      output = applyAiAssistOutputLimits(resolved.output);
     } catch (err) {
       return { accepted: false, reason: err.message };
     }
@@ -116,6 +128,7 @@ export class AiaInvocationGateway {
       prhPass: true,
       prhViolations: [],
       reasoningSummary: output.suggestion?.summary,
+      assistPath: resolved.assistPath,
     };
 
     recordRlgInvocation(this.registry, factoryKey, rlg);
@@ -129,6 +142,8 @@ export class AiaInvocationGateway {
       rlg,
       aut,
       assistiveOnly: true,
+      assistPath: resolved.assistPath,
+      usedStubFallback: resolved.usedStubFallback === true,
     };
   }
 

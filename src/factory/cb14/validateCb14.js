@@ -47,6 +47,13 @@ import { applyAiAssistOutputLimits } from "./constitutionalLimits.js";
 import { AiaInvocationGateway } from "./aiaInvocationGateway.js";
 import { AiAssistLayerService } from "./aiAssistLayerService.js";
 import { SLOT_COUNT } from "./slotRegistry.js";
+import { executeAiaAssistStub } from "./aiaAssistStub.js";
+import {
+  CEP02_G1_GRANT_ID,
+  SUPERVISED_ASSIST_PATH,
+  SUPERVISED_SOURCE_MODE,
+  executeSupervisedAiAssist,
+} from "./supervisedAiAssistAdapter.js";
 
 function createTempEnv() {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "cb14-validation-"));
@@ -346,6 +353,132 @@ export function validateOmcRisksDocumented() {
 }
 
 /**
+ * SP04 CEP-02 G1 — supervised NON-LIVE / NON-LLM assist honesty (DAG-SP04-CEP02-P2-G1).
+ */
+export async function validateSp04Cep02G1SupervisedAssist() {
+  const errors = [];
+
+  const stub = executeAiaAssistStub("AIA-NRM-01", { factoryKey: "cep02-stub-honesty" });
+  if (!String(stub.suggestion?.summary ?? "").startsWith("Stub assist for")) {
+    errors.push("Historical stub summary must remain stub-only");
+  }
+  if (stub.suggestion?.aiExecution !== false || stub.aiExecution === true) {
+    errors.push("Historical stub must keep aiExecution false");
+  }
+  if (stub.assistPath === SUPERVISED_ASSIST_PATH) {
+    errors.push("Historical stub must not claim SUPERVISED assistPath");
+  }
+
+  const supervised = executeSupervisedAiAssist("AIA-NRM-01", {
+    factoryKey: "cep02-supervised",
+    inputs: { parcelId: "ai-assist-001", candidateRef: "cep02-g1" },
+  });
+  if (!supervised.ok) {
+    errors.push(`Supervised adapter should succeed with local context: ${supervised.reason}`);
+  } else {
+    const out = supervised.output;
+    if (out.assistPath !== SUPERVISED_ASSIST_PATH) {
+      errors.push("Supervised output assistPath must be SUPERVISED");
+    }
+    if (out.sourceMode !== SUPERVISED_SOURCE_MODE) {
+      errors.push("Supervised sourceMode must be RECORDED_ENRICHMENT");
+    }
+    if (out.recordedOnly !== true || out.liveFetch !== false) {
+      errors.push("Supervised path must be recordedOnly with liveFetch false");
+    }
+    if (out.llmUsed !== false || out.vendorInference !== false || out.networkUsed !== false) {
+      errors.push("Supervised path must not use LLM / vendor / network");
+    }
+    if (out.aiExecution !== false || out.assistiveOnly !== true) {
+      errors.push("Supervised path must remain assistive with aiExecution false");
+    }
+    if (out.grantId !== CEP02_G1_GRANT_ID) {
+      errors.push("Supervised path must cite DAG-SP04-CEP02-P2-G1");
+    }
+    if (out.livingIntelligenceProved === true || out.defSp0403Closed === true || out.cep02Complete === true) {
+      errors.push("Supervised path must not claim PROVED / DEF-03 CLOSED / CEP-02 COMPLETE");
+    }
+    if (String(out.suggestion?.summary ?? "").startsWith("Stub assist for")) {
+      errors.push("Supervised summary must be distinct from historical stub-only");
+    }
+  }
+
+  const liveRefuse = executeSupervisedAiAssist("AIA-NRM-01", { attemptLiveFetch: true });
+  if (liveRefuse.ok || liveRefuse.code !== "LIVE_NOT_AUTHORIZED") {
+    errors.push("Supervised adapter must fail-closed on Live");
+  }
+  const llmRefuse = executeSupervisedAiAssist("AIA-NRM-01", { useLlm: true });
+  if (llmRefuse.ok || llmRefuse.code !== "LLM_NOT_AUTHORIZED") {
+    errors.push("Supervised adapter must fail-closed on LLM");
+  }
+  const netRefuse = executeSupervisedAiAssist("AIA-NRM-01", { network: true });
+  if (netRefuse.ok || netRefuse.code !== "NETWORK_NOT_AUTHORIZED") {
+    errors.push("Supervised adapter must fail-closed on network");
+  }
+
+  const env = createTempEnv();
+  try {
+    const { gateway, aiAssist } = createAiAssistStack(env);
+
+    const boot = await aiAssist.bootstrapAiAssistLayer("cep02-g1-boot", {
+      candidateRef: "cep02-g1-boot",
+      parcelId: "cep02-g1-001",
+    });
+    if (boot.summary.dualRunAssistPathA !== SUPERVISED_ASSIST_PATH) {
+      errors.push("Dual-run must exercise SUPERVISED path under G1");
+    }
+    if (boot.summary.dualRunUsedStubFallback === true) {
+      errors.push("Dual-run must not use stub fallback for legitimate supervised inputs");
+    }
+    if (!boot.summary.dualRunPass) {
+      errors.push("Dual-run must still pass under supervised G1 path");
+    }
+
+    const supervisedAccepted = (boot.invocationResults ?? []).filter(
+      (r) => r.accepted && r.assistPath === SUPERVISED_ASSIST_PATH
+    );
+    if (supervisedAccepted.length < 1) {
+      errors.push("Bootstrap must record at least one SUPERVISED accepted invocation");
+    }
+
+    const key = boot.factoryKey;
+    const invoked = gateway.invoke(key, "AIA-NRM-01", {
+      invoker: "MOT-IDN-01",
+      invokerAccepted: true,
+      inputs: { parcelId: "g1-parcel" },
+    });
+    if (!invoked.accepted) {
+      errors.push(`Gateway supervised invoke failed: ${invoked.reason}`);
+    } else {
+      if (invoked.assistPath !== SUPERVISED_ASSIST_PATH) {
+        errors.push("Gateway must select SUPERVISED path under G1");
+      }
+      if (invoked.usedStubFallback === true) {
+        errors.push("Gateway must not fall back to stub for legitimate supervised inputs");
+      }
+      if (invoked.output?.assistPath !== SUPERVISED_ASSIST_PATH) {
+        errors.push("Gateway output must carry SUPERVISED assistPath");
+      }
+    }
+
+    const liveFallback = gateway.invoke(key, "AIA-NRM-01", {
+      invoker: "MOT-IDN-01",
+      invokerAccepted: true,
+      attemptLiveFetch: true,
+    });
+    if (!liveFallback.accepted || liveFallback.assistPath !== "STUB_FALLBACK") {
+      errors.push("Gateway must fail-closed to stub fallback when Live is requested");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  } finally {
+    fs.rmSync(env.base, { recursive: true, force: true });
+  }
+
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb14Validation(options = {}) {
@@ -359,6 +492,7 @@ export async function runCb14Validation(options = {}) {
   const evf02 = validateEvf02Ceiling();
   const limits = validateConstitutionalLimits();
   const risks = validateOmcRisksDocumented();
+  const cep02g1 = await validateSp04Cep02G1SupervisedAssist();
 
   const allErrors = [
     ...gov.errors,
@@ -371,6 +505,7 @@ export async function runCb14Validation(options = {}) {
     ...evf02.errors,
     ...limits.errors,
     ...risks.errors,
+    ...cep02g1.errors,
   ];
 
   const checklist = [
@@ -406,6 +541,11 @@ export async function runCb14Validation(options = {}) {
         evf02.errors.length === 0 && limits.errors.length === 0
           ? CHECKLIST_STATUS.PASS
           : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB14-07",
+      criterion: "SP04 CEP-02 G1 supervised NON-LIVE / NON-LLM assist honesty",
+      status: cep02g1.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 
