@@ -26,8 +26,17 @@ import { LoopEngineService } from "../cb11/loopEngineService.js";
 import { OMC_MOTOR_COUNT_CONSTITUTIONAL } from "../cb11/loopEngineCatalog.js";
 import { OSC_SWM_COUNT, SWM_CATALOG, SWM_IDS } from "./swarmCatalog.js";
 import { normalizeSwarmTarget, resolveStr6Mandates } from "./str6Ingress.js";
-import { assertNoUsurpation } from "./swarmCoordinationStub.js";
+import { assertNoUsurpation, coordinateSwarmMotors } from "./swarmCoordinationStub.js";
+import {
+  CEP03_G1_GRANT_ID,
+  SUPERVISED_COORDINATION_PATH,
+  SUPERVISED_COORDINATION_SOURCE_MODE,
+  STUB_FALLBACK_COORDINATION_PATH,
+  executeSupervisedSwarmCoordination,
+  resolveSupervisedCoordinationOrStub,
+} from "./supervisedSwarmCoordinationAdapter.js";
 import { SwarmCoordinatorService } from "./swarmCoordinatorService.js";
+import { buildSwaIn } from "./swarmLifecycle.js";
 
 function createTempEnv() {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "cb12-validation-"));
@@ -359,6 +368,167 @@ export function validateOmcRisksDocumented() {
 }
 
 /**
+ * SP04 CEP-03 G1 — supervised NON-LIVE / NON-LLM swarm coordination honesty
+ * (DAG-SP04-CEP03-P3-G1).
+ */
+export async function validateSp04Cep03G1SupervisedCoordination() {
+  const errors = [];
+
+  const stubSwaIn = buildSwaIn("cep03-stub-honesty", "SWM-IDN-01", {
+    loopParent: "LOOP-FND-SUP-01",
+  });
+  const stub = coordinateSwarmMotors("SWM-IDN-01", stubSwaIn, {});
+  if (!String(stub.convergenceReport?.summary ?? "").startsWith("Stub coordination for")) {
+    errors.push("Historical stub summary must remain stub-only");
+  }
+  if (stub.convergenceReport?.aiExecution !== false) {
+    errors.push("Historical stub must keep aiExecution false");
+  }
+  if (stub.coordinationPath === SUPERVISED_COORDINATION_PATH) {
+    errors.push("Historical stub must not claim SUPERVISED coordinationPath");
+  }
+
+  const supervisedSwaIn = buildSwaIn("cep03-supervised", "SWM-IDN-01", {
+    loopParent: "LOOP-FND-SUP-01",
+    evidenceState: { registryId: "EVREG-cep03-supervised" },
+  });
+  const supervised = executeSupervisedSwarmCoordination("SWM-IDN-01", supervisedSwaIn, {
+    evidenceRegistryRef: "EVREG-cep03-supervised",
+  });
+  if (!supervised.ok) {
+    errors.push(`Supervised adapter should succeed with local SWA-IN: ${supervised.reason}`);
+  } else {
+    const out = supervised.coordination;
+    if (out.coordinationPath !== SUPERVISED_COORDINATION_PATH) {
+      errors.push("Supervised coordinationPath must be SUPERVISED");
+    }
+    if (out.sourceMode !== SUPERVISED_COORDINATION_SOURCE_MODE) {
+      errors.push("Supervised sourceMode must be RECORDED");
+    }
+    if (out.recordedOnly !== true || out.liveFetch !== false) {
+      errors.push("Supervised path must be recordedOnly with liveFetch false");
+    }
+    if (out.llmUsed !== false || out.vendorInference !== false || out.networkUsed !== false) {
+      errors.push("Supervised path must not use LLM / vendor / network");
+    }
+    if (out.aiExecution !== false || out.orchestrationOnly !== true) {
+      errors.push("Supervised path must remain orchestrationOnly with aiExecution false");
+    }
+    if (out.grantId !== CEP03_G1_GRANT_ID) {
+      errors.push("Supervised path must cite DAG-SP04-CEP03-P3-G1");
+    }
+    if (
+      out.livingIntelligenceProved === true ||
+      out.defSp0404Closed === true ||
+      out.defSp0404Satisfied === true ||
+      out.cep03Complete === true
+    ) {
+      errors.push("Supervised path must not claim PROVED / DEF-04 CLOSED / CEP-03 COMPLETE");
+    }
+    if (String(out.convergenceReport?.summary ?? "").startsWith("Stub coordination for")) {
+      errors.push("Supervised summary must be distinct from historical stub-only");
+    }
+    const usurpation = assertNoUsurpation(out);
+    if (!usurpation.valid) {
+      errors.push(`Supervised coordination failed usurpation guard: ${usurpation.violations.join("; ")}`);
+    }
+    if (out.motorDeltas?.some((d) => d.reExecuted === true)) {
+      errors.push("Supervised path must not re-execute motors");
+    }
+  }
+
+  const liveRefuse = executeSupervisedSwarmCoordination("SWM-IDN-01", supervisedSwaIn, {
+    attemptLiveFetch: true,
+  });
+  if (liveRefuse.ok || liveRefuse.code !== "LIVE_NOT_AUTHORIZED") {
+    errors.push("Supervised adapter must fail-closed on Live");
+  }
+  const llmRefuse = executeSupervisedSwarmCoordination("SWM-IDN-01", supervisedSwaIn, {
+    useLlm: true,
+  });
+  if (llmRefuse.ok || llmRefuse.code !== "LLM_NOT_AUTHORIZED") {
+    errors.push("Supervised adapter must fail-closed on LLM");
+  }
+  const netRefuse = executeSupervisedSwarmCoordination("SWM-IDN-01", supervisedSwaIn, {
+    network: true,
+  });
+  if (netRefuse.ok || netRefuse.code !== "NETWORK_NOT_AUTHORIZED") {
+    errors.push("Supervised adapter must fail-closed on network");
+  }
+
+  const fallback = resolveSupervisedCoordinationOrStub(
+    "SWM-IDN-01",
+    supervisedSwaIn,
+    { attemptLiveFetch: true },
+    coordinateSwarmMotors
+  );
+  if (fallback.usedStubFallback !== true || fallback.coordinationPath !== STUB_FALLBACK_COORDINATION_PATH) {
+    errors.push("Resolver must fail-closed to stub fallback when Live is requested");
+  }
+  if (!String(fallback.coordination?.convergenceReport?.summary ?? "").startsWith("Stub coordination for")) {
+    errors.push("Stub fallback must preserve historical stub summary");
+  }
+
+  const env = createTempEnv();
+  try {
+    const { coordinator } = createSwarmStack(env);
+    const loop = await coordinator.loopEngine.bootstrapLoopEngine("cep03-g1-mission", {
+      parcelId: "cep03-g1-001",
+      candidateRef: "cep03-g1",
+    });
+    const key = loop.factoryKey;
+
+    const mission = coordinator.executeSwarmMission(key, "SWM-IDN-01", {
+      loopParent: "LOOP-FND-SUP-01",
+    });
+    if (!mission.accepted) {
+      errors.push(`Real-path supervised mission rejected: ${mission.reason}`);
+    } else {
+      if (mission.coordinationPath !== SUPERVISED_COORDINATION_PATH) {
+        errors.push("Real mission path must select SUPERVISED coordination under G1");
+      }
+      if (mission.usedStubFallback === true) {
+        errors.push("Real mission must not use stub fallback for legitimate supervised inputs");
+      }
+      if (mission.coordination?.coordinationPath !== SUPERVISED_COORDINATION_PATH) {
+        errors.push("Mission coordination object must carry SUPERVISED coordinationPath");
+      }
+      if (String(mission.coordination?.convergenceReport?.summary ?? "").startsWith("Stub coordination for")) {
+        errors.push("Real mission must not emit stub-only COORDINATE summary under G1");
+      }
+      if (!mission.phases?.includes("COORDINATE") || !mission.dissolved) {
+        errors.push("Supervised mission must preserve lifecycle phases and dissolve");
+      }
+    }
+
+    const liveMission = coordinator.executeSwarmMission(key, "SWM-IDN-01", {
+      loopParent: "LOOP-FND-SUP-01",
+      attemptLiveFetch: true,
+    });
+    if (!liveMission.accepted) {
+      errors.push(`Live-request mission should still complete via stub fallback: ${liveMission.reason}`);
+    } else if (
+      liveMission.usedStubFallback !== true ||
+      liveMission.coordinationPath !== STUB_FALLBACK_COORDINATION_PATH
+    ) {
+      errors.push("Live-request mission must fail-closed to stub fallback");
+    } else if (
+      !String(liveMission.coordination?.convergenceReport?.summary ?? "").startsWith(
+        "Stub coordination for"
+      )
+    ) {
+      errors.push("Live-request stub fallback must preserve stub-only summary");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  } finally {
+    fs.rmSync(env.base, { recursive: true, force: true });
+  }
+
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb12Validation(options = {}) {
@@ -372,6 +542,7 @@ export async function runCb12Validation(options = {}) {
   const compliance = await validateComplianceBlocksSwarmBirth();
   const evidence = await validateEvidenceLinkage();
   const risks = validateOmcRisksDocumented();
+  const cep03g1 = await validateSp04Cep03G1SupervisedCoordination();
 
   const allErrors = [
     ...gov.errors,
@@ -384,6 +555,7 @@ export async function runCb12Validation(options = {}) {
     ...compliance.errors,
     ...evidence.errors,
     ...risks.errors,
+    ...cep03g1.errors,
   ];
 
   const checklist = [
@@ -419,6 +591,11 @@ export async function runCb12Validation(options = {}) {
       id: "CB12-06",
       criterion: "Compliance P0 bloquea SWA-IN",
       status: compliance.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB12-07",
+      criterion: "SP04 CEP-03 G1 supervised recorded coordination honesty",
+      status: cep03g1.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

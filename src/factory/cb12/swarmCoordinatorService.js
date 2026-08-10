@@ -27,6 +27,7 @@ import {
   resolveStr6Mandates,
 } from "./str6Ingress.js";
 import { assertNoUsurpation, coordinateSwarmMotors } from "./swarmCoordinationStub.js";
+import { resolveSupervisedCoordinationOrStub } from "./supervisedSwarmCoordinationAdapter.js";
 
 export class SwarmCoordinatorService {
   /**
@@ -121,9 +122,23 @@ export class SwarmCoordinatorService {
     recordSwarmMissionOpen(this.registry, factoryKey, swaIn, { actor: swmId });
     this.activeMissions.set(swaIn.swarmId, swaIn);
 
-    const coordination = coordinateSwarmMotors(swmId, swaIn, {
+    const coordinationContext = {
       evidenceRegistryRef: evidenceRef?.registryId ?? null,
-    });
+      attemptLiveFetch: mandate.attemptLiveFetch === true,
+      useLlm: mandate.useLlm === true,
+      attemptLlm: mandate.attemptLlm === true,
+      vendorInference: mandate.vendorInference === true,
+      network: mandate.network === true,
+      externalApi: mandate.externalApi === true,
+    };
+
+    const resolved = resolveSupervisedCoordinationOrStub(
+      swmId,
+      swaIn,
+      coordinationContext,
+      coordinateSwarmMotors
+    );
+    const coordination = resolved.coordination;
 
     const usurpation = assertNoUsurpation(coordination);
     if (!usurpation.valid) {
@@ -151,6 +166,9 @@ export class SwarmCoordinatorService {
       die,
       loopReturn,
       dissolved: true,
+      coordinationPath: resolved.coordinationPath,
+      usedStubFallback: resolved.usedStubFallback === true,
+      fallbackReason: resolved.fallbackReason ?? null,
     };
   }
 
