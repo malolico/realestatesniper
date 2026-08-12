@@ -89,9 +89,43 @@ export const LEGITIMACY_MOTOR_HANDLERS = {
   },
   "MOT-OWN-01": async (ctx) => {
     const fixtures = buildLegitimacyFixtureBundle(ctx.factoryKey);
-    const owner = ctx.inputs?.recordOwner ?? "Smith Family Trust";
-    record(ctx, "08", { motorId: "MOT-OWN-01", owner, mpiDomain: "08" }, [fixtures.recorder]);
-    return withStubTrust({ outputs: { recordOwner: owner }, knowledgeDelta: { domain: "08", owner: "stub" } });
+    const explicitOwner =
+      typeof ctx.inputs?.recordOwner === "string" && ctx.inputs.recordOwner.trim()
+        ? ctx.inputs.recordOwner.trim()
+        : null;
+    // PS05-02 M08: do not falsely attribute default stub owner as resolved Decision owner.
+    const ownerResolved = explicitOwner != null;
+    const owner = explicitOwner;
+    const ownerStatus = ownerResolved ? "RESOLVED" : "UNRESOLVED";
+    record(
+      ctx,
+      "08",
+      {
+        motorId: "MOT-OWN-01",
+        owner,
+        ownerStatus,
+        mpiDomain: "08",
+      },
+      [fixtures.recorder]
+    );
+    return withStubTrust({
+      outputs: {
+        recordOwner: owner,
+        ownerStatus,
+        ownerResolved,
+        ownerRef: {
+          status: ownerStatus,
+          name: owner,
+          decisionTrusted: false,
+          reason: ownerResolved ? "explicit_input_owner" : "owner_evidence_absent",
+        },
+      },
+      knowledgeDelta: {
+        domain: "08",
+        owner: ownerResolved ? "stub" : "unresolved",
+        ownerStatus,
+      },
+    });
   },
   "MOT-OWN-02": async (ctx) => {
     const fixtures = buildLegitimacyFixtureBundle(ctx.factoryKey);

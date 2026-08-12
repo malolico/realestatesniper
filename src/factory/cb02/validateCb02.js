@@ -19,6 +19,17 @@ import { IngestionLegitimacyGate } from "./ingestionLegitimacyGate.js";
 import { SourceIngestionLedger } from "./sourceIngestionLedger.js";
 import { SourceRegistry } from "./sourceRegistry.js";
 import { isSourceRef } from "./sourceRef.js";
+import { loadRecordedPackEnrichment } from "./connectors/recordedPackEnrichmentAdapter.js";
+import { buildCanonicalPropertyFact } from "./connectors/canonicalPropertyFactAdapter.js";
+import {
+  JURISDICTION_STATUS,
+  normalizeJurisdiction,
+} from "./jurisdictionRegistry.js";
+import {
+  PROPERTY_IDENTITY_STATUS,
+  resolvePropertyIdentity,
+} from "../cb05/propertyIdentityResolver.js";
+import { SOURCE_MODE } from "../cb05/decisionTrustBoundary.js";
 
 function createTempDirs() {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "cb02-validation-"));
@@ -177,6 +188,78 @@ export function validateRegistryElrIntegration() {
 }
 
 /**
+ * PS05-02 — Canonical fact / jurisdiction / identity proofs (T01–T09 subset at CB-02).
+ */
+export function validatePs0502CanonicalIdentityCb02() {
+  const errors = [];
+  try {
+    const loaded = loadRecordedPackEnrichment(undefined, { factoryKey: "ps05-02-t01" });
+    if (!loaded.ok) {
+      errors.push(`T01: recorded pack enrichment failed: ${loaded.reason}`);
+    } else {
+      if (loaded.propertyIdentity?.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+        errors.push("T01: Assessor+GIS(+RCR) must MATCH one canonical property identity");
+      }
+      if (!loaded.canonicalPropertyFact?.rawIdentifiers?.assessor?.parcelId) {
+        errors.push("T06: canonical fact must preserve raw assessor identifiers");
+      }
+      const j = loaded.canonicalPropertyFact?.jurisdiction;
+      if (!j || j.state !== "AZ" || j.county !== "Maricopa" || j.status !== JURISDICTION_STATUS.KNOWN) {
+        errors.push("T07: jurisdiction must be explicit machine-readable state+county");
+      }
+      if (loaded.canonicalPropertyFact?.ownerRef?.status !== "UNRESOLVED") {
+        errors.push("T08: pack without owner fields must yield UNRESOLVED ownerRef");
+      }
+      const viewParcel = loaded.canonicalPropertyFact?.parcelId;
+      if (!viewParcel || loaded.canonicalPropertyFact?.schemaId !== "rsn.canonical.property.fact.v1") {
+        errors.push("T05: Decision-facing canonical schema must be rsn.canonical.property.fact.v1");
+      }
+      if (loaded.canonicalPropertyFact?.trustMeta?.synthetic === true) {
+        errors.push("T09: recorded enrichment trustMeta must not mark synthetic");
+      }
+    }
+
+    const maricopa = normalizeJurisdiction({ sourceLabel: "Maricopa County, AZ" });
+    const other = normalizeJurisdiction({ state: "CA", county: "Los Angeles" });
+    const t04 = resolvePropertyIdentity({
+      sources: [
+        { organismId: "A", jurisdiction: maricopa, apn: "123-45-678", parcelId: "P-SAME" },
+        { organismId: "B", jurisdiction: other, apn: "123-45-678", parcelId: "P-SAME" },
+      ],
+    });
+    if (t04.status !== PROPERTY_IDENTITY_STATUS.NO_MATCH) {
+      errors.push("T04: same APN across jurisdictions must NOT MATCH");
+    }
+
+    const t02 = resolvePropertyIdentity({
+      sources: [
+        { organismId: "A", jurisdiction: maricopa, apn: "111", parcelId: "P1" },
+        { organismId: "B", jurisdiction: maricopa, apn: "222", parcelId: "P2" },
+      ],
+    });
+    if (t02.status !== PROPERTY_IDENTITY_STATUS.NO_MATCH) {
+      errors.push("T02: conflicting strong identifiers must NOT silently merge");
+    }
+
+    const t03 = resolvePropertyIdentity({ sources: [] });
+    if (t03.status !== PROPERTY_IDENTITY_STATUS.UNRESOLVED) {
+      errors.push("T03: missing identity evidence must be UNRESOLVED");
+    }
+
+    const synth = buildCanonicalPropertyFact({
+      payloadsByOrganism: null,
+      trustMeta: { synthetic: true, sourceMode: SOURCE_MODE.SYNTHETIC_FIXTURE },
+    });
+    if (synth.trustMeta?.decisionTrusted === true || synth.trustMeta?.synthetic !== true) {
+      errors.push("T09: synthetic trust markers must survive canonicalization");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export function runCb02Validation(options = {}) {
@@ -185,6 +268,7 @@ export function runCb02Validation(options = {}) {
   const conflict = validateConflictDerivation();
   const mapping = validateDdiPilotMapping();
   const elr = validateRegistryElrIntegration();
+  const ps0502 = validatePs0502CanonicalIdentityCb02();
 
   const allErrors = [
     ...gov.errors,
@@ -192,6 +276,7 @@ export function runCb02Validation(options = {}) {
     ...conflict.errors,
     ...mapping.errors,
     ...elr.errors,
+    ...ps0502.errors,
   ];
 
   const checklist = [
@@ -217,6 +302,11 @@ export function runCb02Validation(options = {}) {
       id: "CB02-04",
       criterion: "Mapeo DSO → DDI capas 1–2 verificable",
       status: mapping.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB02-PS05-02",
+      criterion: "PS05-02 Canonical fact / jurisdiction / identity (P03 bounded)",
+      status: ps0502.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

@@ -16,6 +16,9 @@ import { getOrganism } from "../sourceOrganismsCatalog.js";
 import { getMaricopaContractByOrganismId } from "./maricopaConnectorContracts.js";
 import { loadRecordedPackForIngest } from "./recordedPackLoader.js";
 import { LIVE_NOT_AUTHORIZED } from "./connectorContract.js";
+import { buildCanonicalPropertyFact } from "./canonicalPropertyFactAdapter.js";
+import { resolvePropertyIdentity } from "../../cb05/propertyIdentityResolver.js";
+import { SOURCE_MODE } from "../../cb05/decisionTrustBoundary.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -149,6 +152,20 @@ export function loadRecordedPackEnrichment(packRoot, options = {}) {
     };
   }
 
+  const packJurisdictionLabel = loaded.manifest?.jurisdiction ?? null;
+  const canonicalPropertyFact = buildCanonicalPropertyFact({
+    payloadsByOrganism: loaded.payloadsByOrganism,
+    sourceRefsByOrganism,
+    packJurisdictionLabel,
+    trustMeta: {
+      sourceMode: SOURCE_MODE.RECORDED_ENRICHMENT,
+      synthetic: false,
+      decisionTrusted: true,
+      trustClass: "TRUSTED",
+    },
+  });
+  const propertyIdentity = resolvePropertyIdentity({ canonicalFact: canonicalPropertyFact });
+
   return {
     ok: true,
     packRoot: root,
@@ -161,6 +178,9 @@ export function loadRecordedPackEnrichment(packRoot, options = {}) {
     assessor,
     gis,
     recorder: sourceRefsByOrganism["ORG-RCR-MC"] ?? null,
+    packJurisdictionLabel,
+    canonicalPropertyFact,
+    propertyIdentity,
     constitutionalPhase: "SP03-§15-ENG-IMPL",
     mandateClass: "INFORMATION_SOURCE_ENRICHMENT",
   };
@@ -188,6 +208,9 @@ export function buildFoundationRecordedEnrichmentBundle(factoryKey, options = {}
     liveFetch: false,
     packRoot: loaded.packRoot,
     sourceMode: "RECORDED_ENRICHMENT",
+    packJurisdictionLabel: loaded.packJurisdictionLabel ?? null,
+    canonicalPropertyFact: loaded.canonicalPropertyFact ?? null,
+    propertyIdentity: loaded.propertyIdentity ?? null,
     constitutionalPhase: "SP03-§15-ENG-IMPL",
     mandateRefs: ["§5.1#1", "§5.1#2", "§5.1#3", "§4-DEF-01", "§4-DEF-02"],
   });

@@ -31,6 +31,9 @@ import {
 } from "./foundationSourceFixtures.js";
 import { SOURCE_MODE } from "./decisionTrustBoundary.js";
 import { FOUNDATION_MOTOR_HANDLERS } from "./foundationMotorHandlers.js";
+import { PROPERTY_IDENTITY_STATUS } from "./propertyIdentityResolver.js";
+import { LEGITIMACY_MOTOR_HANDLERS } from "../cb07/legitimacyMotorHandlers.js";
+import { buildFoundationRecordedEnrichmentBundle } from "../cb02/connectors/recordedPackEnrichmentAdapter.js";
 
 function createTempEnv() {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "cb05-validation-"));
@@ -372,6 +375,59 @@ export async function validatePs0501TruthBoundaryCb05() {
 }
 
 /**
+ * PS05-02 — Foundation consume + owner honesty + Decision-facing identity.
+ */
+export async function validatePs0502CanonicalIdentityCb05() {
+  const errors = [];
+  try {
+    const enriched = buildFoundationRecordedEnrichmentBundle("ps05-02-fnd", {
+      preferRecordedEnrichment: true,
+    });
+    // buildFoundation doesn't take prefer — pack always loaded if present
+    if (enriched.ok !== true || enriched.propertyIdentity?.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+      errors.push("T01/P03: foundation enrichment must expose MATCH property identity");
+    }
+    if (enriched.canonicalPropertyFact?.jurisdiction?.state !== "AZ") {
+      errors.push("T07: foundation canonical jurisdiction.state must be explicit");
+    }
+
+    const idn = await FOUNDATION_MOTOR_HANDLERS["MOT-IDN-01"]({
+      factoryKey: "ps05-02-idn",
+      inputs: { preferRecordedEnrichment: true },
+    });
+    if (idn.outputs?.propertyIdentity?.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+      errors.push("T01: MOT-IDN-01 Decision-facing path must surface MATCH identity");
+    }
+    if (typeof idn.outputs?.jurisdiction === "string") {
+      errors.push("T05: MOT-IDN-01 jurisdiction must not be Maricopa free-text string");
+    }
+    if (!idn.outputs?.jurisdiction?.state || !idn.outputs?.jurisdiction?.county) {
+      errors.push("T07: MOT-IDN-01 jurisdiction must be machine-readable state+county");
+    }
+    if (String(idn.outputs?.definitiveKeyCandidate ?? "").startsWith("maricopa.parcel.")) {
+      errors.push("T05/I15: definitiveKeyCandidate must not use maricopa.parcel.* Maricopa-frozen form");
+    }
+    if (!idn.outputs?.canonicalProperty) {
+      errors.push("T05: MOT-IDN-01 must expose canonicalProperty Decision-facing view");
+    }
+
+    const unresolved = await LEGITIMACY_MOTOR_HANDLERS["MOT-OWN-01"]({
+      factoryKey: "ps05-02-own",
+      inputs: {},
+    });
+    if (unresolved.outputs?.ownerStatus !== "UNRESOLVED" || unresolved.outputs?.recordOwner != null) {
+      errors.push("T08: MOT-OWN-01 without evidence must not falsely attribute owner");
+    }
+    if (unresolved.outputs?.stubBusinessFact !== true || unresolved.outputs?.decisionTrusted !== false) {
+      errors.push("T09: owner path must retain PS05-01 stub/trust markers");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb05Validation(options = {}) {
@@ -383,6 +439,7 @@ export async function runCb05Validation(options = {}) {
   const stateKey = await validateStateTransitionsAndFactoryKey();
   const omcRisk = validateOmcCountRiskDocumented();
   const ps0501 = await validatePs0501TruthBoundaryCb05();
+  const ps0502 = await validatePs0502CanonicalIdentityCb05();
 
   const allErrors = [
     ...gov.errors,
@@ -393,6 +450,7 @@ export async function runCb05Validation(options = {}) {
     ...stateKey.errors,
     ...omcRisk.errors,
     ...ps0501.errors,
+    ...ps0502.errors,
   ];
 
   const checklist = [
@@ -425,6 +483,11 @@ export async function runCb05Validation(options = {}) {
       id: "CB05-PS05-01",
       criterion: "PS05-01 Truth Boundary — Decision-facing fail-closed + synthetic lane",
       status: ps0501.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB05-PS05-02",
+      criterion: "PS05-02 Canonical identity / jurisdiction / owner honesty",
+      status: ps0502.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

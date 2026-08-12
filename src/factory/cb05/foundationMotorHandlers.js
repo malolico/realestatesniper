@@ -7,6 +7,30 @@
 import { resolveFoundationSourceBundle } from "./foundationSourceFixtures.js";
 import { FoundationKnowledgeStore } from "./foundationKnowledgeStore.js";
 import { DECISION_TRUST, SOURCE_MODE } from "./decisionTrustBoundary.js";
+import {
+  PROPERTY_IDENTITY_STATUS,
+  resolvePropertyIdentity,
+} from "./propertyIdentityResolver.js";
+import {
+  buildCanonicalPropertyFact,
+  toDecisionFacingPropertyView,
+} from "../cb02/connectors/canonicalPropertyFactAdapter.js";
+import { normalizeJurisdiction } from "../cb02/jurisdictionRegistry.js";
+
+/**
+ * CB-01 factory_key-safe candidate (alphanumeric + ._- only).
+ * @param {string} raw
+ */
+function sanitizeFactoryKeyCandidate(raw) {
+  return String(raw)
+    .toLowerCase()
+    .replace(/:/g, ".")
+    .replace(/[^a-z0-9._-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/\.+/g, ".")
+    .replace(/^[^a-z0-9]+/, "k")
+    .slice(0, 128);
+}
 
 const storeCache = new WeakMap();
 
@@ -127,14 +151,51 @@ export const FOUNDATION_MOTOR_HANDLERS = {
       return unavailableMotorResult(fixtures, "MOT-IDN-01");
     }
     const inputs = ctx.inputs ?? {};
-    const packParcel =
-      fixtures.payloadsByOrganism?.["ORG-ASR-MC"]?.parcelId ??
-      fixtures.payloadsByOrganism?.["ORG-ASR-MC"]?.apn;
-    const parcelId =
-      inputs.parcelId ?? packParcel ?? `parcel-${ctx.factoryKey.slice(-8)}`;
-    const conflict = inputs.simulateConflict === true;
-    const confidence = conflict ? "C2" : "C1";
     const meta = sourceModeMeta(fixtures);
+
+    const canonicalPropertyFact =
+      fixtures.canonicalPropertyFact ??
+      (fixtures.payloadsByOrganism
+        ? buildCanonicalPropertyFact({
+            payloadsByOrganism: fixtures.payloadsByOrganism,
+            packJurisdictionLabel: fixtures.packJurisdictionLabel ?? null,
+            trustMeta: meta,
+          })
+        : null);
+
+    const propertyIdentity =
+      fixtures.propertyIdentity ??
+      (canonicalPropertyFact
+        ? resolvePropertyIdentity({ canonicalFact: canonicalPropertyFact })
+        : resolvePropertyIdentity({ sources: [] }));
+
+    const decisionView = canonicalPropertyFact
+      ? toDecisionFacingPropertyView(canonicalPropertyFact)
+      : null;
+
+    const packParcel = decisionView?.parcelId ?? decisionView?.apn ?? null;
+    const parcelId =
+      inputs.parcelId ??
+      packParcel ??
+      (meta.synthetic ? `parcel-${ctx.factoryKey.slice(-8)}` : null);
+
+    const conflict =
+      inputs.simulateConflict === true ||
+      propertyIdentity.status === PROPERTY_IDENTITY_STATUS.NO_MATCH;
+    const confidence = conflict ? "C2" : propertyIdentity.status === PROPERTY_IDENTITY_STATUS.MATCH ? "C1" : "C2";
+
+    const jurisdiction =
+      decisionView?.jurisdiction ??
+      normalizeJurisdiction({ sourceLabel: fixtures.packJurisdictionLabel ?? null });
+
+    const definitiveKeyCandidate =
+      propertyIdentity.status === PROPERTY_IDENTITY_STATUS.MATCH && propertyIdentity.canonicalKey
+        ? sanitizeFactoryKeyCandidate(propertyIdentity.canonicalKey)
+        : parcelId
+          ? sanitizeFactoryKeyCandidate(
+              `${jurisdiction?.id ?? "pending"}.parcel.${parcelId}`
+            )
+          : null;
 
     record(
       { ...ctx, knowledgeStore: ctx.knowledgeStore },
@@ -143,7 +204,8 @@ export const FOUNDATION_MOTOR_HANDLERS = {
         motorId: "MOT-IDN-01",
         parcelId,
         confidence,
-        jurisdiction: "Maricopa County, AZ",
+        jurisdiction,
+        propertyIdentityStatus: propertyIdentity.status,
         conflict,
         mpiDomain: "01",
         ...meta,
@@ -154,16 +216,22 @@ export const FOUNDATION_MOTOR_HANDLERS = {
     return {
       outputs: {
         parcelId,
+        apn: decisionView?.apn ?? null,
         confidence,
-        identityResolved: !conflict,
+        identityResolved: propertyIdentity.status === PROPERTY_IDENTITY_STATUS.MATCH && !conflict,
         conflict,
-        definitiveKeyCandidate: `maricopa.parcel.${parcelId}`,
+        definitiveKeyCandidate,
+        jurisdiction,
+        propertyIdentity,
+        canonicalProperty: decisionView,
         ...meta,
       },
       knowledgeDelta: {
         domain: "01",
         confidence,
         sourceRefs: [fixtures.assessor?.id, fixtures.gis?.id].filter(Boolean),
+        propertyIdentityStatus: propertyIdentity.status,
+        jurisdiction,
         ...meta,
       },
     };
@@ -213,7 +281,14 @@ export const FOUNDATION_MOTOR_HANDLERS = {
       [fixtures.gis]
     );
     return {
-      outputs: { geospatialAnchor: true, jurisdiction: "Maricopa County, AZ", ...meta },
+      outputs: {
+        geospatialAnchor: true,
+        jurisdiction:
+          fixtures.canonicalPropertyFact?.jurisdiction ??
+          fixtures.propertyIdentity?.jurisdiction ??
+          normalizeJurisdiction({ sourceLabel: fixtures.packJurisdictionLabel ?? null }),
+        ...meta,
+      },
       knowledgeDelta: {
         domain: "02",
         anchor: meta.synthetic ? "synthetic" : "recorded_enrichment",

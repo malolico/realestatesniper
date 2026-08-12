@@ -48,8 +48,12 @@ import {
   buildIntelligenceFixtureBundle,
   resolveIntelligenceSourceBundle,
 } from "./intelligenceSourceFixtures.js";
+import { INTELLIGENCE_MOTOR_HANDLERS } from "./intelligenceMotorHandlers.js";
+import { PROPERTY_IDENTITY_STATUS } from "../cb05/propertyIdentityResolver.js";
 import { buildIntelligenceRecordedEnrichmentBundle } from "./intelligenceRecordedEnrichmentAdapter.js";
 import { applyIntelligenceRecordedEvidenceCheckpoint } from "./intelligenceRecordedEvidenceCheckpoint.js";
+import { buildCanonicalPropertyFact } from "../cb02/connectors/canonicalPropertyFactAdapter.js";
+import { resolvePropertyIdentity } from "../cb05/propertyIdentityResolver.js";
 
 function createTempEnv() {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "cb13-validation-"));
@@ -577,6 +581,60 @@ export async function validatePs0501TruthBoundaryCb13() {
 }
 
 /**
+ * PS05-02 — INT Decision-facing canonical identity consume.
+ */
+export async function validatePs0502CanonicalIdentityCb13() {
+  const errors = [];
+  try {
+    const syn = await INTELLIGENCE_MOTOR_HANDLERS["MOT-SYN-01"]({
+      factoryKey: "ps05-02-int",
+      inputs: {},
+    });
+    if (syn.outputs?.fromRecordedPack !== true) {
+      errors.push("T08/T10: INT recorded path should remain operational");
+    }
+    // knowledgeDelta carries hints including jurisdiction/canonical when from recorded
+    const delta = syn.knowledgeDelta ?? {};
+    if (!delta.jurisdiction?.state || !delta.jurisdiction?.county) {
+      errors.push("T05/T07: INT recordedPackHints must expose canonical jurisdiction");
+    }
+    if (delta.propertyIdentity?.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+      errors.push("T01/P03: INT hints must surface MATCH property identity from pack");
+    }
+    if (!delta.rawIdentifiers?.assessor) {
+      errors.push("T06: INT must preserve rawIdentifiers via canonical fact");
+    }
+    if (delta.ownerRef?.status !== "UNRESOLVED") {
+      errors.push("T08: INT ownerRef from pack must remain UNRESOLVED");
+    }
+
+    const forced = await INTELLIGENCE_MOTOR_HANDLERS["MOT-SYN-01"]({
+      factoryKey: "ps05-02-int-syn",
+      inputs: { forceSynthetic: true },
+    });
+    if (forced.outputs?.synthetic !== true || forced.outputs?.decisionTrusted === true) {
+      errors.push("T09: INT synthetic markers must survive PS05-02 consume path");
+    }
+
+    // Direct adapter identity isolation (no Maricopa-frozen merge)
+    const fact = buildCanonicalPropertyFact({
+      payloadsByOrganism: {
+        "ORG-ASR-MC": { parcelId: "X", apn: "1", schemaId: "maricopa.assessor.payload.v1" },
+        "ORG-GIS-MC": { parcelId: "X", schemaId: "maricopa.gis.payload.v1" },
+      },
+      packJurisdictionLabel: "Maricopa County, AZ",
+    });
+    const id = resolvePropertyIdentity({ canonicalFact: fact });
+    if (id.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+      errors.push("T01: canonical adapter + resolver MATCH for ASR+GIS");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb13Validation(options = {}) {
@@ -591,6 +649,7 @@ export async function runCb13Validation(options = {}) {
   const risks = validateOmcRisksDocumented();
   const cep01 = await validateSp04Cep01RecordedEnrichment();
   const ps0501 = await validatePs0501TruthBoundaryCb13();
+  const ps0502 = await validatePs0502CanonicalIdentityCb13();
 
   const allErrors = [
     ...gov.errors,
@@ -604,6 +663,7 @@ export async function runCb13Validation(options = {}) {
     ...risks.errors,
     ...cep01.errors,
     ...ps0501.errors,
+    ...ps0502.errors,
   ];
 
   const checklist = [
@@ -641,6 +701,11 @@ export async function runCb13Validation(options = {}) {
       id: "CB13-PS05-01",
       criterion: "PS05-01 Truth Boundary — INT Decision-facing fail-closed",
       status: ps0501.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB13-PS05-02",
+      criterion: "PS05-02 Canonical identity / jurisdiction on INT Decision-facing path",
+      status: ps0502.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

@@ -8,6 +8,11 @@
 
 import { assertEvf02AiAssistCeiling } from "../cb06/evidenceVocabulary.js";
 import { DECISION_TRUST, SOURCE_MODE } from "../cb05/decisionTrustBoundary.js";
+import {
+  buildCanonicalPropertyFact,
+  toDecisionFacingPropertyView,
+} from "../cb02/connectors/canonicalPropertyFactAdapter.js";
+import { resolvePropertyIdentity } from "../cb05/propertyIdentityResolver.js";
 import { resolveIntelligenceSourceBundle } from "./intelligenceSourceFixtures.js";
 
 /**
@@ -87,32 +92,51 @@ function record(ctx, mpiDomain, delta, sourceRefs) {
 }
 
 /**
- * RECORDED pack payload → INT knowledge hints (DEF-SP04-01 / DEF-SP04-02 consume path).
- * Consumes published CB-02 payloadsByOrganism only — no Live, no LLM, no CB-02 mutation.
+ * RECORDED pack → INT knowledge hints via PS05-02 canonical property fact when possible.
+ * Falls back to payload projection only for compatibility fields not yet in canonical view.
  * @param {object} sources
  */
 function recordedPackHints(sources) {
   if (sources.synthetic === true || !sources.payloadsByOrganism) {
     return { fromRecordedPack: false };
   }
+
+  const canonicalPropertyFact =
+    sources.canonicalPropertyFact ??
+    buildCanonicalPropertyFact({
+      payloadsByOrganism: sources.payloadsByOrganism,
+      packJurisdictionLabel: sources.packJurisdictionLabel ?? null,
+      trustMeta: {
+        sourceMode: sources.sourceMode,
+        synthetic: sources.synthetic === true,
+        decisionTrusted: sources.decisionTrusted,
+        trustClass: sources.trustClass,
+      },
+    });
+  const propertyIdentity =
+    sources.propertyIdentity ??
+    resolvePropertyIdentity({ canonicalFact: canonicalPropertyFact });
+  const decisionView = toDecisionFacingPropertyView(canonicalPropertyFact);
+
+  // Compatibility fields still sourced from payloads (schema-specific enrichment),
+  // but Decision-facing identity/jurisdiction/address come from canonical view.
   const asr = sources.payloadsByOrganism["ORG-ASR-MC"] ?? {};
   const gis = sources.payloadsByOrganism["ORG-GIS-MC"] ?? {};
   const rcr = sources.payloadsByOrganism["ORG-RCR-MC"] ?? {};
   const organismsPresent = Object.keys(sources.payloadsByOrganism);
-  const situs = asr.situsAddress && typeof asr.situsAddress === "object" ? asr.situsAddress : {};
   const centroid = gis.centroid && typeof gis.centroid === "object" ? gis.centroid : {};
 
   return {
     fromRecordedPack: true,
     organismsPresent,
-    parcelId: asr.parcelId ?? asr.apn ?? gis.parcelId ?? rcr.parcelRef ?? null,
-    apn: asr.apn ?? null,
+    parcelId: decisionView?.parcelId ?? null,
+    apn: decisionView?.apn ?? null,
     landUseCode: asr.landUseCode ?? null,
     assessedYear: asr.assessedYear ?? null,
-    situsLine1: situs.line1 ?? null,
-    situsCity: situs.city ?? null,
-    situsState: situs.state ?? null,
-    situsPostalCode: situs.postalCode ?? null,
+    situsLine1: decisionView?.address?.line1 ?? null,
+    situsCity: decisionView?.address?.city ?? null,
+    situsState: decisionView?.address?.state ?? null,
+    situsPostalCode: decisionView?.address?.postalCode ?? null,
     geometryType: gis.geometryType ?? null,
     centroidLat: typeof centroid.lat === "number" ? centroid.lat : null,
     centroidLon: typeof centroid.lon === "number" ? centroid.lon : null,
@@ -124,6 +148,11 @@ function recordedPackHints(sources) {
     assessorSchemaId: asr.schemaId ?? null,
     gisSchemaId: gis.schemaId ?? null,
     recorderSchemaId: rcr.schemaId ?? null,
+    jurisdiction: decisionView?.jurisdiction ?? null,
+    propertyIdentity,
+    canonicalProperty: decisionView,
+    ownerRef: decisionView?.ownerRef ?? null,
+    rawIdentifiers: canonicalPropertyFact.rawIdentifiers ?? null,
   };
 }
 
