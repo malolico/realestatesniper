@@ -25,6 +25,12 @@ import { FOUNDATION_MPI_DOMAINS, OMC_MOTOR_COUNT_CONSTITUTIONAL } from "./founda
 import { FoundationKnowledgeStore } from "./foundationKnowledgeStore.js";
 import { FoundationLayerService } from "./foundationLayerService.js";
 import { DERIVATION_TARGETS } from "./foundationConflictRouter.js";
+import {
+  resolveFoundationSourceBundle,
+  buildFoundationFixtureBundle,
+} from "./foundationSourceFixtures.js";
+import { SOURCE_MODE } from "./decisionTrustBoundary.js";
+import { FOUNDATION_MOTOR_HANDLERS } from "./foundationMotorHandlers.js";
 
 function createTempEnv() {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "cb05-validation-"));
@@ -288,6 +294,84 @@ export function validateOmcCountRiskDocumented() {
 }
 
 /**
+ * PS05-01 Truth Boundary — CB-05 targeted proofs (T01–T04, T08–T09).
+ */
+export async function validatePs0501TruthBoundaryCb05() {
+  const errors = [];
+  try {
+    const missing = resolveFoundationSourceBundle("ps05-t01", {
+      decisionFacing: true,
+      packRoot: path.join(os.tmpdir(), "ps05-no-pack-" + Date.now()),
+    });
+    if (missing.sourceMode !== SOURCE_MODE.UNAVAILABLE || missing.synthetic === true) {
+      errors.push("T01: Decision-facing missing pack must be UNAVAILABLE, not synthetic");
+    }
+    if (missing.decisionTrusted === true) {
+      errors.push("T01: UNAVAILABLE bundle must not be decisionTrusted");
+    }
+
+    const stale = resolveFoundationSourceBundle("ps05-t02", { decisionFacing: true });
+    if (stale.sourceMode !== SOURCE_MODE.UNAVAILABLE) {
+      errors.push("T02: Decision-facing stale/freshness breach must be UNAVAILABLE");
+    }
+    if (stale.recordedSkippedReason !== "freshness_sla_breach" && stale.synthetic === true) {
+      errors.push("T02: must not silently substitute synthetic on Decision path");
+    }
+
+    const forced = resolveFoundationSourceBundle("ps05-t03", {
+      forceSynthetic: true,
+      decisionFacing: true,
+    });
+    if (forced.synthetic !== true || forced.sourceMode !== SOURCE_MODE.SYNTHETIC_FIXTURE) {
+      errors.push("T03: forceSynthetic must remain identifiable SYNTHETIC_FIXTURE");
+    }
+    if (forced.decisionTrusted === true) {
+      errors.push("T03: synthetic fixture must not be decisionTrusted");
+    }
+
+    const fixture = buildFoundationFixtureBundle("ps05-t03b");
+    if (fixture.stubBusinessFact !== true || fixture.decisionTrusted !== false) {
+      errors.push("T03: foundation fixture bundle must mark stub/non-trusted");
+    }
+
+    const motor = await FOUNDATION_MOTOR_HANDLERS["MOT-IDN-01"]({
+      factoryKey: "ps05-t04",
+      inputs: { forceSynthetic: true },
+    });
+    if (motor.outputs?.synthetic !== true || motor.outputs?.sourceMode !== SOURCE_MODE.SYNTHETIC_FIXTURE) {
+      errors.push("T04: synthetic marker must survive into MOT-IDN-01 outputs");
+    }
+    if (motor.outputs?.decisionTrusted === true) {
+      errors.push("T04: synthetic motor outputs must not be decisionTrusted");
+    }
+
+    const happy = resolveFoundationSourceBundle("ps05-t08", {
+      decisionFacing: true,
+      preferRecordedEnrichment: true,
+    });
+    if (happy.sourceMode !== SOURCE_MODE.RECORDED_ENRICHMENT || happy.synthetic === true) {
+      errors.push("T08: recorded enrichment happy path must remain operational");
+    }
+
+    const synthLane = resolveFoundationSourceBundle("ps05-t09", { forceSynthetic: true });
+    if (synthLane.synthetic !== true) {
+      errors.push("T09: explicit synthetic test lane must remain operational");
+    }
+
+    const unavailMotor = await FOUNDATION_MOTOR_HANDLERS["MOT-LOC-01"]({
+      factoryKey: "ps05-t01m",
+      inputs: { decisionFacing: true },
+    });
+    if (unavailMotor.outputs?.sourceMode !== SOURCE_MODE.UNAVAILABLE) {
+      errors.push("T01/M03: Decision-facing motor must surface UNAVAILABLE, not synthetic facts");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb05Validation(options = {}) {
@@ -298,6 +382,7 @@ export async function runCb05Validation(options = {}) {
   const conflict = await validateConflictDerivation();
   const stateKey = await validateStateTransitionsAndFactoryKey();
   const omcRisk = validateOmcCountRiskDocumented();
+  const ps0501 = await validatePs0501TruthBoundaryCb05();
 
   const allErrors = [
     ...gov.errors,
@@ -307,6 +392,7 @@ export async function runCb05Validation(options = {}) {
     ...conflict.errors,
     ...stateKey.errors,
     ...omcRisk.errors,
+    ...ps0501.errors,
   ];
 
   const checklist = [
@@ -334,6 +420,11 @@ export async function runCb05Validation(options = {}) {
       id: "CB05-05",
       criterion: "Transiciones ST-NASC → ST-IDN → ST-PROD y factory_key C1–C2",
       status: stateKey.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB05-PS05-01",
+      criterion: "PS05-01 Truth Boundary — Decision-facing fail-closed + synthetic lane",
+      status: ps0501.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

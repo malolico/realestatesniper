@@ -44,6 +44,10 @@ export function buildDistressFixtureBundle(factoryKey) {
     signal: buildDistressSignalFixtureRef(factoryKey),
     court: buildCourtDistressFixtureRef(factoryKey),
     synthetic: true,
+    sourceMode: "SYNTHETIC_FIXTURE",
+    trustClass: "STUB",
+    stubBusinessFact: true,
+    decisionTrusted: false,
     constitutionalPhase: "CB-08",
   });
 }

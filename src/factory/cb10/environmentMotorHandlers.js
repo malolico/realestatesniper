@@ -2,6 +2,7 @@
  * CB-10 — Environment motor scaffolding handlers
  */
 
+import { stubBusinessTrustMeta } from "../cb05/decisionTrustBoundary.js";
 import { buildEnvironmentFixtureBundle } from "./environmentSourceFixtures.js";
 
 /**
@@ -14,7 +15,20 @@ function record(ctx, mpiDomain, delta, sourceRefs) {
   ctx.knowledgeStore?.recordDomainProduction(ctx.factoryKey, mpiDomain, { delta, sourceRefs });
 }
 
-export const ENVIRONMENT_MOTOR_HANDLERS = {
+/**
+ * PS05-01 marking-only — stub values remain; Decision trust blocked.
+ * @param {{ outputs?: object, knowledgeDelta?: object }} result
+ */
+function withStubTrust(result) {
+  const trust = stubBusinessTrustMeta();
+  return {
+    ...result,
+    outputs: { ...(result.outputs ?? {}), ...trust },
+    knowledgeDelta: { ...(result.knowledgeDelta ?? {}), ...trust },
+  };
+}
+
+const ENVIRONMENT_MOTOR_HANDLERS_IMPL = {
   "MOT-CTX-01": async (ctx) => {
     const fixtures = buildEnvironmentFixtureBundle(ctx.factoryKey);
     record(
@@ -94,6 +108,13 @@ export const ENVIRONMENT_MOTOR_HANDLERS = {
     };
   },
 };
+
+export const ENVIRONMENT_MOTOR_HANDLERS = Object.fromEntries(
+  Object.entries(ENVIRONMENT_MOTOR_HANDLERS_IMPL).map(([motorId, handler]) => [
+    motorId,
+    async (ctx) => withStubTrust(await handler(ctx)),
+  ])
+);
 
 /**
  * @param {import('../cb04/motorRuntime.js').MotorRuntime} runtime

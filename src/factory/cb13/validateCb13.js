@@ -517,6 +517,66 @@ export async function validateSp04Cep01RecordedEnrichment() {
 }
 
 /**
+ * PS05-01 Truth Boundary — CB-13 targeted proofs.
+ */
+export async function validatePs0501TruthBoundaryCb13() {
+  const errors = [];
+  try {
+    const missing = resolveIntelligenceSourceBundle("ps05-i-t01", {
+      decisionFacing: true,
+      packRoot: path.join(os.tmpdir(), "ps05-int-no-pack-" + Date.now()),
+    });
+    if (missing.sourceMode !== "UNAVAILABLE" || missing.synthetic === true) {
+      errors.push("T01: Decision-facing INT missing pack must be UNAVAILABLE, not synthetic");
+    }
+
+    const forced = resolveIntelligenceSourceBundle("ps05-i-t03", {
+      forceSynthetic: true,
+      decisionFacing: true,
+    });
+    if (forced.synthetic !== true || forced.sourceMode !== "SYNTHETIC_FIXTURE") {
+      errors.push("T03: INT forceSynthetic must remain identifiable");
+    }
+    if (forced.decisionTrusted === true) {
+      errors.push("T03: INT synthetic must not be decisionTrusted");
+    }
+
+    const fixture = buildIntelligenceFixtureBundle("ps05-i-t03b");
+    if (fixture.stubBusinessFact !== true) {
+      errors.push("T03: INT fixture must mark stubBusinessFact");
+    }
+
+    const happy = resolveIntelligenceSourceBundle("ps05-i-t08", { decisionFacing: true });
+    if (happy.sourceMode !== "RECORDED_ENRICHMENT" || happy.synthetic === true) {
+      errors.push("T08: INT recorded enrichment happy path must remain operational");
+    }
+
+    const { INTELLIGENCE_MOTOR_HANDLERS } = await import("./intelligenceMotorHandlers.js");
+    const syn = await INTELLIGENCE_MOTOR_HANDLERS["MOT-SYN-01"]({
+      factoryKey: "ps05-i-t04",
+      inputs: { forceSynthetic: true },
+    });
+    if (syn.outputs?.synthetic !== true || syn.outputs?.decisionTrusted === true) {
+      errors.push("T04: INT synthetic marker must survive MOT-SYN-01 outputs as non-trusted");
+    }
+
+    const unavail = await INTELLIGENCE_MOTOR_HANDLERS["MOT-DCN-01"]({
+      factoryKey: "ps05-i-t01m",
+      inputs: {
+        decisionFacing: true,
+        recordedPackRoot: path.join(os.tmpdir(), "ps05-int-miss-" + Date.now()),
+      },
+    });
+    if (unavail.outputs?.sourceMode !== "UNAVAILABLE") {
+      errors.push("T01: Decision-facing INT motor must return UNAVAILABLE");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb13Validation(options = {}) {
@@ -530,6 +590,7 @@ export async function runCb13Validation(options = {}) {
   const reproducible = validateReadinessGatesReproducible();
   const risks = validateOmcRisksDocumented();
   const cep01 = await validateSp04Cep01RecordedEnrichment();
+  const ps0501 = await validatePs0501TruthBoundaryCb13();
 
   const allErrors = [
     ...gov.errors,
@@ -542,6 +603,7 @@ export async function runCb13Validation(options = {}) {
     ...reproducible.errors,
     ...risks.errors,
     ...cep01.errors,
+    ...ps0501.errors,
   ];
 
   const checklist = [
@@ -574,6 +636,11 @@ export async function runCb13Validation(options = {}) {
       id: "CB13-06",
       criterion: "Sufficiency gaps derivan XVR-EVD / SWM-SUF-01",
       status: gaps.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB13-PS05-01",
+      criterion: "PS05-01 Truth Boundary — INT Decision-facing fail-closed",
+      status: ps0501.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

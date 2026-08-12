@@ -61,6 +61,10 @@ export function buildLegitimacyFixtureBundle(factoryKey) {
     titleCommitment: buildTitleCommitmentFixtureRef(factoryKey),
     courtIndex: buildCourtIndexFixtureRef(factoryKey),
     synthetic: true,
+    sourceMode: "SYNTHETIC_FIXTURE",
+    trustClass: "STUB",
+    stubBusinessFact: true,
+    decisionTrusted: false,
     constitutionalPhase: "CB-07",
   });
 }

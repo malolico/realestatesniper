@@ -6,6 +6,7 @@
 
 import { resolveFoundationSourceBundle } from "./foundationSourceFixtures.js";
 import { FoundationKnowledgeStore } from "./foundationKnowledgeStore.js";
+import { DECISION_TRUST, SOURCE_MODE } from "./decisionTrustBoundary.js";
 
 const storeCache = new WeakMap();
 
@@ -28,6 +29,8 @@ function resolveSources(ctx) {
     preferRecordedEnrichment: ctx.inputs?.preferRecordedEnrichment,
     forceSynthetic: ctx.inputs?.forceSynthetic === true,
     allowStaleRecordedEnrichment: ctx.inputs?.allowStaleRecordedEnrichment === true,
+    decisionFacing: ctx.inputs?.decisionFacing === true,
+    decisionPath: ctx.inputs?.decisionPath === true,
   });
 }
 
@@ -64,11 +67,44 @@ function resolveImprovementsFromPack(assessorPayload, synthetic) {
  * @param {object} sources
  */
 function sourceModeMeta(sources) {
+  const sourceMode =
+    sources.sourceMode ??
+    (sources.synthetic ? SOURCE_MODE.SYNTHETIC_FIXTURE : SOURCE_MODE.RECORDED_ENRICHMENT);
+  const unavailable = sourceMode === SOURCE_MODE.UNAVAILABLE;
+  const synthetic = sources.synthetic === true;
   return {
-    sourceMode: sources.sourceMode ?? (sources.synthetic ? "SYNTHETIC_FIXTURE" : "RECORDED_ENRICHMENT"),
-    synthetic: sources.synthetic === true,
-    recordedOnly: sources.recordedOnly === true || sources.synthetic !== true,
+    sourceMode,
+    synthetic,
+    recordedOnly: sources.recordedOnly === true || (!synthetic && !unavailable),
     enrichmentMandate: sources.constitutionalPhase === "SP03-§15-ENG-IMPL" ? "SP03-§15-ENG-IMPL" : null,
+    trustClass: unavailable
+      ? DECISION_TRUST.UNAVAILABLE
+      : synthetic
+        ? "STUB"
+        : sources.trustClass ?? DECISION_TRUST.TRUSTED,
+    stubBusinessFact: synthetic === true,
+    decisionTrusted: !synthetic && !unavailable,
+    recordedSkippedReason: sources.recordedSkippedReason ?? null,
+  };
+}
+
+/**
+ * @param {object} sources
+ * @param {string} motorId
+ */
+function unavailableMotorResult(sources, motorId) {
+  const meta = sourceModeMeta(sources);
+  return {
+    outputs: {
+      motorId,
+      unavailable: true,
+      ...meta,
+    },
+    knowledgeDelta: {
+      motorId,
+      unavailable: true,
+      ...meta,
+    },
   };
 }
 
@@ -80,12 +116,16 @@ function sourceModeMeta(sources) {
  */
 function record(ctx, mpiDomain, delta, sourceRefs) {
   const knowledgeStore = ctx.knowledgeStore ?? getStore(ctx);
-  knowledgeStore.recordDomainProduction(ctx.factoryKey, mpiDomain, { delta, sourceRefs });
+  const refs = (sourceRefs ?? []).filter(Boolean);
+  knowledgeStore.recordDomainProduction(ctx.factoryKey, mpiDomain, { delta, sourceRefs: refs });
 }
 
 export const FOUNDATION_MOTOR_HANDLERS = {
   "MOT-IDN-01": async (ctx) => {
     const fixtures = resolveSources(ctx);
+    if (fixtures.sourceMode === SOURCE_MODE.UNAVAILABLE) {
+      return unavailableMotorResult(fixtures, "MOT-IDN-01");
+    }
     const inputs = ctx.inputs ?? {};
     const packParcel =
       fixtures.payloadsByOrganism?.["ORG-ASR-MC"]?.parcelId ??
@@ -123,7 +163,7 @@ export const FOUNDATION_MOTOR_HANDLERS = {
       knowledgeDelta: {
         domain: "01",
         confidence,
-        sourceRefs: [fixtures.assessor.id, fixtures.gis.id],
+        sourceRefs: [fixtures.assessor?.id, fixtures.gis?.id].filter(Boolean),
         ...meta,
       },
     };
@@ -131,6 +171,9 @@ export const FOUNDATION_MOTOR_HANDLERS = {
 
   "MOT-IDN-02": async (ctx) => {
     const fixtures = resolveSources(ctx);
+    if (fixtures.sourceMode === SOURCE_MODE.UNAVAILABLE) {
+      return unavailableMotorResult(fixtures, "MOT-IDN-02");
+    }
     const reconciled = ctx.inputs?.reconciled !== false;
     const meta = sourceModeMeta(fixtures);
 
@@ -154,6 +197,9 @@ export const FOUNDATION_MOTOR_HANDLERS = {
 
   "MOT-LOC-01": async (ctx) => {
     const fixtures = resolveSources(ctx);
+    if (fixtures.sourceMode === SOURCE_MODE.UNAVAILABLE) {
+      return unavailableMotorResult(fixtures, "MOT-LOC-01");
+    }
     const meta = sourceModeMeta(fixtures);
     record(
       { ...ctx, knowledgeStore: ctx.knowledgeStore },
@@ -178,6 +224,9 @@ export const FOUNDATION_MOTOR_HANDLERS = {
 
   "MOT-LOC-02": async (ctx) => {
     const fixtures = resolveSources(ctx);
+    if (fixtures.sourceMode === SOURCE_MODE.UNAVAILABLE) {
+      return unavailableMotorResult(fixtures, "MOT-LOC-02");
+    }
     const meta = sourceModeMeta(fixtures);
     record(
       { ...ctx, knowledgeStore: ctx.knowledgeStore },
@@ -202,6 +251,9 @@ export const FOUNDATION_MOTOR_HANDLERS = {
 
   "MOT-PHY-01": async (ctx) => {
     const fixtures = resolveSources(ctx);
+    if (fixtures.sourceMode === SOURCE_MODE.UNAVAILABLE) {
+      return unavailableMotorResult(fixtures, "MOT-PHY-01");
+    }
     const meta = sourceModeMeta(fixtures);
     const assessorPayload = fixtures.payloadsByOrganism?.["ORG-ASR-MC"];
     const profile = assessorPayload
@@ -238,6 +290,9 @@ export const FOUNDATION_MOTOR_HANDLERS = {
 
   "MOT-PHY-02": async (ctx) => {
     const fixtures = resolveSources(ctx);
+    if (fixtures.sourceMode === SOURCE_MODE.UNAVAILABLE) {
+      return unavailableMotorResult(fixtures, "MOT-PHY-02");
+    }
     const meta = sourceModeMeta(fixtures);
     const improvements = resolveImprovementsFromPack(
       fixtures.payloadsByOrganism?.["ORG-ASR-MC"],

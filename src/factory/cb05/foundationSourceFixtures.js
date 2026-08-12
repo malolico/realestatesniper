@@ -3,11 +3,21 @@
  * Synthetic fixtures retained for catalog-only / regression paths.
  * Prefer RECORDED_ONLY pack enrichment when pack loads AND within LOOP-FND-FRS-01 SLA
  * (SP03-§15-ENG-IMPL Phase 2 / OBS-01). No live connectors.
+ *
+ * PS05-01: Decision-facing path (decisionFacing/decisionPath) fails closed —
+ * pack miss / freshness breach → UNAVAILABLE, not silent synthetic substitute.
+ * Explicit forceSynthetic remains the synthetic test lane.
  */
 
 import { buildSourceRef } from "../cb02/sourceRef.js";
 import { buildFoundationRecordedEnrichmentBundle } from "../cb02/connectors/recordedPackEnrichmentAdapter.js";
 import { evaluateFreshness } from "./loopFndFrs01.js";
+import {
+  SOURCE_MODE,
+  allowExplicitSynthetic,
+  buildUnavailableSourceBundle,
+  isDecisionFacingPath,
+} from "./decisionTrustBoundary.js";
 
 /**
  * @param {string} factoryKey
@@ -58,7 +68,10 @@ export function buildFoundationFixtureBundle(factoryKey, options = {}) {
     gis: buildGisFixtureRef(factoryKey, { vintageAt }),
     synthetic: true,
     recordedOnly: false,
-    sourceMode: "SYNTHETIC_FIXTURE",
+    sourceMode: SOURCE_MODE.SYNTHETIC_FIXTURE,
+    trustClass: "STUB",
+    stubBusinessFact: true,
+    decisionTrusted: false,
     constitutionalPhase: "CB-05",
   });
 }
@@ -76,7 +89,8 @@ export function isRecordedEnrichmentFreshForFoundation(bundle) {
 
 /**
  * Resolve foundation source bundle: prefer RECORDED_ONLY pack enrichment
- * when pack loads and is within freshness SLA (OBS-01); else synthetic fixtures.
+ * when pack loads and is within freshness SLA (OBS-01); else synthetic fixtures
+ * unless Decision-facing path (PS05-01) — then UNAVAILABLE.
  * Explicit preferRecordedEnrichment=true keeps recorded even if stale (honest vintages).
  *
  * @param {string} factoryKey
@@ -86,13 +100,16 @@ export function isRecordedEnrichmentFreshForFoundation(bundle) {
  *   forceSynthetic?: boolean,
  *   allowStaleRecordedEnrichment?: boolean,
  *   stale?: boolean,
+ *   decisionFacing?: boolean,
+ *   decisionPath?: boolean,
  * }} [options]
  */
 export function resolveFoundationSourceBundle(factoryKey, options = {}) {
-  if (options.forceSynthetic === true) {
+  if (allowExplicitSynthetic(options)) {
     return buildFoundationFixtureBundle(factoryKey, options);
   }
 
+  const decisionFacing = isDecisionFacingPath(options);
   const prefer = options.preferRecordedEnrichment !== false;
   if (prefer) {
     const enriched = buildFoundationRecordedEnrichmentBundle(factoryKey, {
@@ -104,6 +121,13 @@ export function resolveFoundationSourceBundle(factoryKey, options = {}) {
         options.preferRecordedEnrichment === true;
       if (allowStale || isRecordedEnrichmentFreshForFoundation(enriched)) {
         return enriched;
+      }
+      if (decisionFacing) {
+        return buildUnavailableSourceBundle(
+          factoryKey,
+          "freshness_sla_breach",
+          "PS05-01"
+        );
       }
       const fallback = buildFoundationFixtureBundle(factoryKey, options);
       return Object.freeze({
@@ -117,6 +141,17 @@ export function resolveFoundationSourceBundle(factoryKey, options = {}) {
         obsRefs: ["OBS-01", "OBS-P2-03"],
       });
     }
+    if (decisionFacing) {
+      return buildUnavailableSourceBundle(
+        factoryKey,
+        enriched.reason ?? "pack_unavailable",
+        "PS05-01"
+      );
+    }
+  }
+
+  if (decisionFacing) {
+    return buildUnavailableSourceBundle(factoryKey, "pack_unavailable", "PS05-01");
   }
 
   return buildFoundationFixtureBundle(factoryKey, options);

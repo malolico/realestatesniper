@@ -7,6 +7,7 @@
  */
 
 import { assertEvf02AiAssistCeiling } from "../cb06/evidenceVocabulary.js";
+import { DECISION_TRUST, SOURCE_MODE } from "../cb05/decisionTrustBoundary.js";
 import { resolveIntelligenceSourceBundle } from "./intelligenceSourceFixtures.js";
 
 /**
@@ -17,6 +18,8 @@ function resolveSources(ctx) {
     packRoot: ctx.inputs?.recordedPackRoot,
     preferRecordedEnrichment: ctx.inputs?.preferRecordedEnrichment,
     forceSynthetic: ctx.inputs?.forceSynthetic === true,
+    decisionFacing: ctx.inputs?.decisionFacing === true,
+    decisionPath: ctx.inputs?.decisionPath === true,
   });
 }
 
@@ -24,9 +27,14 @@ function resolveSources(ctx) {
  * @param {object} sources
  */
 function sourceModeMeta(sources) {
+  const sourceMode =
+    sources.sourceMode ??
+    (sources.synthetic ? SOURCE_MODE.SYNTHETIC_FIXTURE : SOURCE_MODE.RECORDED_ENRICHMENT);
+  const unavailable = sourceMode === SOURCE_MODE.UNAVAILABLE;
+  const synthetic = sources.synthetic === true;
   return {
-    sourceMode: sources.sourceMode ?? (sources.synthetic ? "SYNTHETIC_FIXTURE" : "RECORDED_ENRICHMENT"),
-    synthetic: sources.synthetic === true,
+    sourceMode,
+    synthetic,
     recordedOnly: sources.recordedOnly === true,
     liveFetch: sources.liveFetch === true,
     enrichmentMandate:
@@ -35,6 +43,36 @@ function sourceModeMeta(sources) {
     residualGrantId: sources.residualGrantId ?? null,
     livingIntelligenceProved: false,
     phase1Complete: false,
+    trustClass: unavailable
+      ? DECISION_TRUST.UNAVAILABLE
+      : synthetic
+        ? "STUB"
+        : sources.trustClass ?? DECISION_TRUST.TRUSTED,
+    stubBusinessFact: synthetic === true,
+    decisionTrusted: !synthetic && !unavailable,
+    recordedSkippedReason: sources.recordedSkippedReason ?? null,
+  };
+}
+
+/**
+ * @param {object} sources
+ * @param {string} motorId
+ */
+function unavailableMotorResult(sources, motorId) {
+  const meta = sourceModeMeta(sources);
+  return {
+    outputs: {
+      motorId,
+      unavailable: true,
+      livingIntelligenceProved: false,
+      phase1Complete: false,
+      ...meta,
+    },
+    knowledgeDelta: {
+      motorId,
+      unavailable: true,
+      ...meta,
+    },
   };
 }
 
@@ -92,6 +130,9 @@ function recordedPackHints(sources) {
 export const INTELLIGENCE_MOTOR_HANDLERS = {
   "MOT-SYN-01": async (ctx) => {
     const sources = resolveSources(ctx);
+    if (sources.sourceMode === SOURCE_MODE.UNAVAILABLE) {
+      return unavailableMotorResult(sources, "MOT-SYN-01");
+    }
     const meta = sourceModeMeta(sources);
     const hints = recordedPackHints(sources);
     const eLevel = assertEvf02AiAssistCeiling("E2", { aiAssist: false, motorElevated: false });
@@ -122,6 +163,10 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
         parcelId: hints.parcelId ?? null,
         livingIntelligenceProved: false,
         phase1Complete: false,
+        synthetic: meta.synthetic,
+        trustClass: meta.trustClass,
+        stubBusinessFact: meta.stubBusinessFact,
+        decisionTrusted: meta.decisionTrusted,
       },
       knowledgeDelta: {
         domain: "38",
@@ -133,6 +178,9 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
   },
   "MOT-SYN-02": async (ctx) => {
     const sources = resolveSources(ctx);
+    if (sources.sourceMode === SOURCE_MODE.UNAVAILABLE) {
+      return unavailableMotorResult(sources, "MOT-SYN-02");
+    }
     const meta = sourceModeMeta(sources);
     const hints = recordedPackHints(sources);
     const state = ctx.knowledgeStore?.read(ctx.factoryKey);
@@ -178,6 +226,9 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
   },
   "MOT-DCN-01": async (ctx) => {
     const sources = resolveSources(ctx);
+    if (sources.sourceMode === SOURCE_MODE.UNAVAILABLE) {
+      return unavailableMotorResult(sources, "MOT-DCN-01");
+    }
     const meta = sourceModeMeta(sources);
     const hints = recordedPackHints(sources);
     record(
@@ -214,6 +265,9 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
   },
   "MOT-COM-01": async (ctx) => {
     const sources = resolveSources(ctx);
+    if (sources.sourceMode === SOURCE_MODE.UNAVAILABLE) {
+      return unavailableMotorResult(sources, "MOT-COM-01");
+    }
     const meta = sourceModeMeta(sources);
     const hints = recordedPackHints(sources);
     record(
@@ -251,6 +305,9 @@ export const INTELLIGENCE_MOTOR_HANDLERS = {
   },
   "MOT-EXE-01": async (ctx) => {
     const sources = resolveSources(ctx);
+    if (sources.sourceMode === SOURCE_MODE.UNAVAILABLE) {
+      return unavailableMotorResult(sources, "MOT-EXE-01");
+    }
     const meta = sourceModeMeta(sources);
     const hints = recordedPackHints(sources);
     record(

@@ -2,6 +2,7 @@
  * CB-08 — Distress motor scaffolding handlers
  */
 
+import { stubBusinessTrustMeta } from "../cb05/decisionTrustBoundary.js";
 import { buildDistressFixtureBundle } from "./distressSourceFixtures.js";
 
 /**
@@ -14,6 +15,19 @@ function record(ctx, mpiDomain, delta, sourceRefs) {
   ctx.knowledgeStore?.recordDomainProduction(ctx.factoryKey, mpiDomain, { delta, sourceRefs });
 }
 
+/**
+ * PS05-01 marking-only — stub values remain; Decision trust blocked.
+ * @param {{ outputs?: object, knowledgeDelta?: object }} result
+ */
+function withStubTrust(result) {
+  const trust = stubBusinessTrustMeta();
+  return {
+    ...result,
+    outputs: { ...(result.outputs ?? {}), ...trust },
+    knowledgeDelta: { ...(result.knowledgeDelta ?? {}), ...trust },
+  };
+}
+
 function shouldEmitSignal(ctx, motorId) {
   if (ctx.inputs?.simulateSingleSignal === true) {
     return motorId === "MOT-MOT-01";
@@ -21,7 +35,7 @@ function shouldEmitSignal(ctx, motorId) {
   return true;
 }
 
-export const DISTRESS_MOTOR_HANDLERS = {
+const DISTRESS_MOTOR_HANDLERS_IMPL = {
   "MOT-MOT-01": async (ctx) => {
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     const active = shouldEmitSignal(ctx, "MOT-MOT-01");
@@ -277,6 +291,13 @@ export const DISTRESS_MOTOR_HANDLERS = {
     };
   },
 };
+
+export const DISTRESS_MOTOR_HANDLERS = Object.fromEntries(
+  Object.entries(DISTRESS_MOTOR_HANDLERS_IMPL).map(([motorId, handler]) => [
+    motorId,
+    async (ctx) => withStubTrust(await handler(ctx)),
+  ])
+);
 
 /**
  * @param {import('../cb04/motorRuntime.js').MotorRuntime} runtime

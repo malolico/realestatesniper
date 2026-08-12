@@ -46,10 +46,18 @@ import {
   REQUIRED_HANDOFF_MOTORS,
   isBlockedHandoffOperation,
   validateDecisionPackageShape,
+  validateTrustedDecisionPackage,
 } from "./decisionPackageSchema.js";
 import { assertHandoffBoundary, createDecisionHandoffPort } from "./decisionHandoffInterface.js";
 import { DecisionHandoffService } from "./decisionHandoffService.js";
 import { collectDecisionHandoffLedger } from "./decisionLedger.js";
+import { buildDecisionPackage } from "./decisionPackageBuilder.js";
+import { ECONOMY_MOTOR_HANDLERS } from "../cb09/economyMotorHandlers.js";
+import {
+  evaluateDecisionTrustContamination,
+  isDecisionPackageTrusted,
+} from "../cb05/decisionTrustBoundary.js";
+import { LEGITIMACY_MOTOR_HANDLERS } from "../cb07/legitimacyMotorHandlers.js";
 
 function createTempEnv() {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "cb16-validation-"));
@@ -412,6 +420,69 @@ export function validateCb15Unaffected() {
 }
 
 /**
+ * PS05-01 Truth Boundary — CB-16 trust refuse/mark proofs (T05–T07, T10 posture).
+ */
+export async function validatePs0501TruthBoundaryCb16() {
+  const errors = [];
+  const env = createTempEnv();
+  try {
+    const eco = await ECONOMY_MOTOR_HANDLERS["MOT-FIN-01"]({ factoryKey: "ps05-eco", inputs: {} });
+    const leg = await LEGITIMACY_MOTOR_HANDLERS["MOT-REG-01"]({ factoryKey: "ps05-leg", inputs: {} });
+    if (eco.outputs?.stubBusinessFact !== true || eco.outputs?.decisionTrusted !== false) {
+      errors.push("T05: CB-09 stub facts must be marked non Decision-trusted");
+    }
+    if (leg.outputs?.stubBusinessFact !== true || eco.outputs?.equity !== 125000) {
+      errors.push("T05: stub marking must preserve stub values (no PS05-04 formula change)");
+    }
+
+    const contamination = evaluateDecisionTrustContamination({
+      motor_manifests: [
+        { motorId: "MOT-FIN-01", outputs: eco.outputs, knowledgeDelta: eco.knowledgeDelta },
+        { motorId: "MOT-REG-01", outputs: leg.outputs, knowledgeDelta: leg.knowledgeDelta },
+      ],
+    });
+    if (contamination.contaminated !== true || isDecisionPackageTrusted(contamination)) {
+      errors.push("T05/T06: stub facts must contaminate Decision trust");
+    }
+
+    const { bus, handoff, registry } = createHandoffStack(env);
+    const orchestration = await bus.orchestrateExpediente("cb16-ps05-trust", {
+      parcelId: "dhi-ps05-001",
+      runLoopEngine: false,
+    });
+    const result = handoff.prepareAndDeliver(orchestration.factoryKey, {
+      maturity: orchestration.maturity,
+    });
+    const pkg = result.decisionPackage;
+    const shape = validateDecisionPackageShape(pkg);
+    if (!shape.valid) {
+      errors.push(...shape.errors.map((e) => `T10 shape: ${e}`));
+    }
+    if (!pkg.trust || pkg.trust.decisionTrusted === true || pkg.trust.status === "TRUSTED") {
+      errors.push("T06: contaminated CB-16 package must not pass as Decision-trusted");
+    }
+    const trustedCheck = validateTrustedDecisionPackage(pkg);
+    if (trustedCheck.valid) {
+      errors.push("T07: validateTrustedDecisionPackage must FAIL for contaminated package");
+    }
+
+    const record = registry.getExpediente(result.factoryKey);
+    const refused = buildDecisionPackage(record, {
+      maturity_score: orchestration.maturity?.maturity_score ?? pkg.scores?.maturity_score,
+      requireTrustedDecisionFacts: true,
+    });
+    if (refused.ok !== false) {
+      errors.push("T07: requireTrustedDecisionFacts must refuse contaminated package");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  } finally {
+    fs.rmSync(env.base, { recursive: true, force: true });
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb16Validation(options = {}) {
@@ -422,6 +493,7 @@ export async function runCb16Validation(options = {}) {
   const gates = await validateGatesAndElrHandoffs();
   const commercial = await validateNoCommercialCrossing();
   const isolation = validateCb15Unaffected();
+  const ps0501 = await validatePs0501TruthBoundaryCb16();
 
   const allErrors = [
     ...gov.errors,
@@ -431,6 +503,7 @@ export async function runCb16Validation(options = {}) {
     ...gates.errors,
     ...commercial.errors,
     ...isolation.errors,
+    ...ps0501.errors,
   ];
 
   const checklist = [
@@ -470,6 +543,11 @@ export async function runCb16Validation(options = {}) {
       criterion: "CB-15 no modificado — CB-16 desacoplado",
       status: isolation.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
+    {
+      id: "CB16-PS05-01",
+      criterion: "PS05-01 Truth Boundary — trust mark/refuse for contaminated packages",
+      status: ps0501.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
   ];
 
   const passed = allErrors.length === 0 && checklist.every((i) => i.status === CHECKLIST_STATUS.PASS);
@@ -495,6 +573,8 @@ export async function runCb16Validation(options = {}) {
       projectionNotBuilt: true,
       productCatalogNotBuilt: true,
       syntheticFixturesOnly: true,
+      ps0501TruthBoundaryActive: true,
+      decisionTrustedRequiresCleanCorpus: true,
     },
     phaseRecord,
     cb17Unlocked: passed ? isPhaseApproved("CB-16") : false,

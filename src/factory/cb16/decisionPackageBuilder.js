@@ -3,8 +3,15 @@
  *
  * Assembles a single Decision Package from the ST-RDY expediente.
  * Does not execute motors, IA, or commercial classification.
+ *
+ * PS05-01: attaches trust boundary classification; refuses when
+ * requireTrustedDecisionFacts and corpus is synthetic/stub/unavailable contaminated.
  */
 
+import {
+  evaluateDecisionTrustContamination,
+  isDecisionPackageTrusted,
+} from "../cb05/decisionTrustBoundary.js";
 import {
   DECISION_HANDOFF_INTERFACE_ID,
   DECISION_PACKAGE_VERSION,
@@ -70,6 +77,7 @@ function buildElrExport(elr) {
  *   sufficiencyStatus?: string|null,
  *   maturity_score?: number,
  *   elrSnapshot?: object|null,
+ *   requireTrustedDecisionFacts?: boolean,
  * }} [hints]
  */
 export function buildDecisionPackage(record, hints = {}) {
@@ -89,6 +97,21 @@ export function buildDecisionPackage(record, hints = {}) {
   const motors = {};
   for (const motorId of REQUIRED_HANDOFF_MOTORS) {
     motors[motorId] = findMotorSlice(manifests, motorId);
+  }
+
+  const trust = evaluateDecisionTrustContamination(elr, { motors });
+
+  if (hints.requireTrustedDecisionFacts === true && !isDecisionPackageTrusted(trust)) {
+    return {
+      ok: false,
+      errors: [
+        "PS05-01: Decision Package refused — contaminated synthetic/stub/unavailable facts",
+        ...trust.reasons,
+      ],
+      package: null,
+      readiness,
+      trust,
+    };
   }
 
   const pkg = {
@@ -137,6 +160,13 @@ export function buildDecisionPackage(record, hints = {}) {
       target: "DecisionEngine",
       rules: ["FFO-06", "LFF-07"],
     },
+    trust: {
+      status: trust.status,
+      decisionTrusted: trust.decisionTrusted,
+      contaminated: trust.contaminated,
+      reasons: [...trust.reasons],
+      rule: trust.rule,
+    },
   };
 
   if (hints.elrSnapshot) {
@@ -145,8 +175,8 @@ export function buildDecisionPackage(record, hints = {}) {
 
   const shape = validateDecisionPackageShape(pkg);
   if (!shape.valid) {
-    return { ok: false, errors: shape.errors, package: null, readiness };
+    return { ok: false, errors: shape.errors, package: null, readiness, trust };
   }
 
-  return { ok: true, errors: [], package: pkg, readiness };
+  return { ok: true, errors: [], package: pkg, readiness, trust };
 }

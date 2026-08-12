@@ -2,6 +2,7 @@
  * CB-07 — Legitimacy motor scaffolding handlers
  */
 
+import { stubBusinessTrustMeta } from "../cb05/decisionTrustBoundary.js";
 import { buildLegitimacyFixtureBundle } from "./legitimacySourceFixtures.js";
 import { C1_BLOCKER_CODES } from "./legitimacyCatalog.js";
 
@@ -15,20 +16,33 @@ function record(ctx, mpiDomain, delta, sourceRefs) {
   ctx.knowledgeStore?.recordDomainProduction(ctx.factoryKey, mpiDomain, { delta, sourceRefs });
 }
 
+/**
+ * PS05-01 marking-only — stub values remain; Decision trust blocked.
+ * @param {{ outputs?: object, knowledgeDelta?: object }} result
+ */
+function withStubTrust(result) {
+  const trust = stubBusinessTrustMeta();
+  return {
+    ...result,
+    outputs: { ...(result.outputs ?? {}), ...trust },
+    knowledgeDelta: { ...(result.knowledgeDelta ?? {}), ...trust },
+  };
+}
+
 export const LEGITIMACY_MOTOR_HANDLERS = {
   "MOT-REG-01": async (ctx) => {
     const fixtures = buildLegitimacyFixtureBundle(ctx.factoryKey);
     record(ctx, "04", { motorId: "MOT-REG-01", permits: 2, mpiDomain: "04" }, [fixtures.recorder]);
-    return { outputs: { permitCount: 2 }, knowledgeDelta: { domain: "04", permits: "stub" } };
+    return withStubTrust({ outputs: { permitCount: 2 }, knowledgeDelta: { domain: "04", permits: "stub" } });
   },
   "MOT-REG-02": async (ctx) => {
     const fixtures = buildLegitimacyFixtureBundle(ctx.factoryKey);
     record(ctx, "04", { motorId: "MOT-REG-02", zoning: "R-1", mpiDomain: "04" }, [fixtures.recorder]);
-    return { outputs: { zoning: "R-1" }, knowledgeDelta: { domain: "04", zoning: "stub" } };
+    return withStubTrust({ outputs: { zoning: "R-1" }, knowledgeDelta: { domain: "04", zoning: "stub" } });
   },
   "MOT-REG-03": async (ctx) => {
     record(ctx, "04", { motorId: "MOT-REG-03", far: 0.45, mpiDomain: "04" }, []);
-    return { outputs: { far: 0.45 }, knowledgeDelta: { domain: "04", envelope: "stub" } };
+    return withStubTrust({ outputs: { far: 0.45 }, knowledgeDelta: { domain: "04", envelope: "stub" } });
   },
   "MOT-LEG-01": async (ctx) => {
     const fixtures = buildLegitimacyFixtureBundle(ctx.factoryKey);
@@ -68,16 +82,16 @@ export const LEGITIMACY_MOTOR_HANDLERS = {
         motorId: "MOT-LEG-01",
       });
     }
-    return {
+    return withStubTrust({
       outputs: { marketable, titleCloud },
       knowledgeDelta: { domain: "07", marketability: marketable ? "clear" : "clouded" },
-    };
+    });
   },
   "MOT-OWN-01": async (ctx) => {
     const fixtures = buildLegitimacyFixtureBundle(ctx.factoryKey);
     const owner = ctx.inputs?.recordOwner ?? "Smith Family Trust";
     record(ctx, "08", { motorId: "MOT-OWN-01", owner, mpiDomain: "08" }, [fixtures.recorder]);
-    return { outputs: { recordOwner: owner }, knowledgeDelta: { domain: "08", owner: "stub" } };
+    return withStubTrust({ outputs: { recordOwner: owner }, knowledgeDelta: { domain: "08", owner: "stub" } });
   },
   "MOT-OWN-02": async (ctx) => {
     const fixtures = buildLegitimacyFixtureBundle(ctx.factoryKey);
@@ -96,10 +110,10 @@ export const LEGITIMACY_MOTOR_HANDLERS = {
         motorId: "MOT-OWN-02",
       });
     }
-    return {
+    return withStubTrust({
       outputs: { verified, mismatch },
       knowledgeDelta: { domain: "08", ownerVerified: verified },
-    };
+    });
   },
   "MOT-LIEN-01": async (ctx) => {
     const fixtures = buildLegitimacyFixtureBundle(ctx.factoryKey);
@@ -117,10 +131,10 @@ export const LEGITIMACY_MOTOR_HANDLERS = {
         motorId: "MOT-LIEN-01",
       });
     }
-    return {
+    return withStubTrust({
       outputs: { lienCount: 2, juniorUnresolved },
       knowledgeDelta: { domain: "09", liens: "stub" },
-    };
+    });
   },
   "MOT-OCR-01": async (ctx) => {
     const fixtures = buildLegitimacyFixtureBundle(ctx.factoryKey);
@@ -138,10 +152,10 @@ export const LEGITIMACY_MOTOR_HANDLERS = {
         motorId: "MOT-OCR-01",
       });
     }
-    return {
+    return withStubTrust({
       outputs: { deedAcquired: !docGap },
       knowledgeDelta: { domain: "10", corpus: docGap ? "gap" : "acquired" },
-    };
+    });
   },
   "MOT-OCR-02": async (ctx) => {
     const fixtures = buildLegitimacyFixtureBundle(ctx.factoryKey);
@@ -159,10 +173,10 @@ export const LEGITIMACY_MOTOR_HANDLERS = {
         motorId: "MOT-OCR-02",
       });
     }
-    return {
+    return withStubTrust({
       outputs: { authentic },
       knowledgeDelta: { domain: "10", authenticity: authentic ? "pass" : "fail" },
-    };
+    });
   },
 };
 

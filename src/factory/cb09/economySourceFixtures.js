@@ -61,6 +61,10 @@ export function buildEconomyFixtureBundle(factoryKey) {
     market: buildMarketFixtureRef(factoryKey),
     hazard: buildHazardFixtureRef(factoryKey),
     synthetic: true,
+    sourceMode: "SYNTHETIC_FIXTURE",
+    trustClass: "STUB",
+    stubBusinessFact: true,
+    decisionTrusted: false,
     constitutionalPhase: "CB-09",
   });
 }

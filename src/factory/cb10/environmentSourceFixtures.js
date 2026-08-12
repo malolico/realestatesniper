@@ -64,6 +64,10 @@ export function buildEnvironmentFixtureBundle(factoryKey) {
     livability: buildLivabilityFixtureRef(factoryKey),
     planning: buildPlanningFixtureRef(factoryKey),
     synthetic: true,
+    sourceMode: "SYNTHETIC_FIXTURE",
+    trustClass: "STUB",
+    stubBusinessFact: true,
+    decisionTrusted: false,
     constitutionalPhase: "CB-10",
   });
 }

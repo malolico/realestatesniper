@@ -35,6 +35,7 @@ export const DECISION_PACKAGE_SECTIONS = Object.freeze([
   "scores",
   "elrExport",
   "boundary",
+  "trust",
 ]);
 
 /** Operations CB-16 must never perform (Decision Engine territory). */
@@ -113,6 +114,37 @@ export function validateDecisionPackageShape(pkg) {
     }
   }
 
+  if (!pkg.trust || typeof pkg.trust !== "object") {
+    errors.push("Missing package section: trust");
+  } else {
+    if (typeof pkg.trust.status !== "string") {
+      errors.push("trust.status must be present");
+    }
+    if (typeof pkg.trust.decisionTrusted !== "boolean") {
+      errors.push("trust.decisionTrusted must be boolean");
+    }
+    if (pkg.trust.decisionTrusted === true && pkg.trust.status !== "TRUSTED") {
+      errors.push("trust.decisionTrusted true requires trust.status TRUSTED");
+    }
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+/**
+ * Trusted Decision Package validation (PS05-01).
+ * Shape-valid + trust.status TRUSTED + decisionTrusted true.
+ * @param {object} pkg
+ */
+export function validateTrustedDecisionPackage(pkg) {
+  const shape = validateDecisionPackageShape(pkg);
+  const errors = [...shape.errors];
+  if (pkg?.trust?.status !== "TRUSTED" || pkg?.trust?.decisionTrusted !== true) {
+    errors.push("Decision Package is not Decision-trusted (PS05-01)");
+  }
+  if (pkg?.trust?.contaminated === true) {
+    errors.push("Decision Package trust.contaminated must be false for trusted consumption");
+  }
   return { valid: errors.length === 0, errors };
 }
 
