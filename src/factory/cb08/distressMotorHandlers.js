@@ -1,9 +1,15 @@
 /**
  * CB-08 — Distress motor scaffolding handlers
+ * PS05-04: RECORDED_REAL path emits NONE/UNKNOWN only when no distress evidence.
+ * Synthetic/stub lane preserved for explicit tests (PS05-01).
  */
 
 import { stubBusinessTrustMeta } from "../cb05/decisionTrustBoundary.js";
 import { buildDistressFixtureBundle } from "./distressSourceFixtures.js";
+import {
+  resolveDistressRecordedRealContext,
+  withRecordedRealDistressTrust,
+} from "./distressRecordedEnrichment.js";
 
 /**
  * @param {object} ctx
@@ -35,8 +41,62 @@ function shouldEmitSignal(ctx, motorId) {
   return true;
 }
 
+const UNKNOWN = "UNKNOWN";
+const NONE = "NONE";
+
+/**
+ * @param {object} ctx
+ */
+function tryRecordedReal(ctx) {
+  const loaded = resolveDistressRecordedRealContext(ctx);
+  if (!loaded) return null;
+  if (!loaded.ok) {
+    return { error: loaded };
+  }
+  return loaded;
+}
+
+/**
+ * Honest RECORDED_REAL distress: no fabricated signals/weights.
+ * @param {object} ctx
+ * @param {object} real
+ * @param {string} motorId
+ * @param {string} mpiDomain
+ * @param {string} signalKey
+ */
+function recordedRealNoDistress(ctx, real, motorId, mpiDomain, signalKey) {
+  const refs = [real.assessor, real.gis].filter(Boolean);
+  record(
+    ctx,
+    mpiDomain,
+    {
+      motorId,
+      signal: NONE,
+      [signalKey]: UNKNOWN,
+      active: false,
+      mpiDomain,
+      distressStatus: real.distress?.status ?? NONE,
+    },
+    refs
+  );
+  return withRecordedRealDistressTrust({
+    outputs: {
+      signal: NONE,
+      [signalKey]: UNKNOWN,
+      distressStatus: real.distress?.status ?? NONE,
+      governmentExemptionIsNotDistress: true,
+    },
+    knowledgeDelta: { domain: mpiDomain, distress: "none_unknown_no_evidence" },
+  });
+}
+
 const DISTRESS_MOTOR_HANDLERS_IMPL = {
   "MOT-MOT-01": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      return recordedRealNoDistress(ctx, real, "MOT-MOT-01", "12", "pre_foreclosure");
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     const active = shouldEmitSignal(ctx, "MOT-MOT-01");
     record(
@@ -58,6 +118,11 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     };
   },
   "MOT-MOT-02": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      return recordedRealNoDistress(ctx, real, "MOT-MOT-02", "09", "tax_delinquency");
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     const active = shouldEmitSignal(ctx, "MOT-MOT-02");
     record(
@@ -79,6 +144,11 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     };
   },
   "MOT-MOT-03": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      return recordedRealNoDistress(ctx, real, "MOT-MOT-03", "11", "repricing");
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     const active = shouldEmitSignal(ctx, "MOT-MOT-03");
     record(
@@ -100,6 +170,11 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     };
   },
   "MOT-MOT-04": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      return recordedRealNoDistress(ctx, real, "MOT-MOT-04", "08", "municipal_enforcement");
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     const active = shouldEmitSignal(ctx, "MOT-MOT-04");
     const conflict = ctx.inputs?.simulateMultiSignalFailure === true && active;
@@ -123,6 +198,41 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     };
   },
   "MOT-MOT-05": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      const store = ctx.knowledgeStore?.read(ctx.factoryKey);
+      if (store) {
+        store.motivationSufficient = false;
+        store.motivationExhausted = true;
+        store.signals = [];
+        ctx.knowledgeStore?.write(ctx.factoryKey, store);
+      }
+      record(
+        ctx,
+        "12",
+        {
+          motorId: "MOT-MOT-05",
+          score: 0,
+          signalCount: 0,
+          sufficient: false,
+          exhausted: true,
+          distressStatus: NONE,
+          mpiDomain: "12",
+        },
+        [real.assessor, real.gis].filter(Boolean)
+      );
+      return withRecordedRealDistressTrust({
+        outputs: {
+          score: 0,
+          signalCount: 0,
+          sufficient: false,
+          exhausted: true,
+          distressStatus: NONE,
+        },
+        knowledgeDelta: { domain: "12", convergence: "none_no_evidenced_distress" },
+      });
+    }
+
     const state = ctx.knowledgeStore?.read(ctx.factoryKey) ?? { signals: [] };
     const signals = state.signals ?? [];
     const conflictSignals = signals.filter((s) => s.conflict === true);
@@ -150,10 +260,21 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     }
     return {
       outputs: { score, signalCount: signals.length, sufficient, exhausted },
-      knowledgeDelta: { domain: "12", convergence: sufficient ? "sufficient" : exhausted ? "exhausted" : "pending" },
+      knowledgeDelta: {
+        domain: "12",
+        convergence: sufficient ? "sufficient" : exhausted ? "exhausted" : "pending",
+      },
     };
   },
   "MOT-CHR-01": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      return withRecordedRealDistressTrust({
+        outputs: { eventCount: UNKNOWN, distressStatus: NONE },
+        knowledgeDelta: { domain: "11", timeline: "unknown_no_evidence" },
+      });
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     record(
       ctx,
@@ -167,6 +288,14 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     };
   },
   "MOT-CHR-02": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      return withRecordedRealDistressTrust({
+        outputs: { transactionCount: UNKNOWN, distressStatus: NONE },
+        knowledgeDelta: { domain: "10", history: "unknown_no_evidence" },
+      });
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     record(
       ctx,
@@ -180,6 +309,14 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     };
   },
   "MOT-JUD-01": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      return withRecordedRealDistressTrust({
+        outputs: { caseCount: UNKNOWN, distressStatus: NONE },
+        knowledgeDelta: { domain: "12", litigation: "unknown_no_evidence" },
+      });
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     record(
       ctx,
@@ -193,6 +330,14 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     };
   },
   "MOT-LFE-01": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      return withRecordedRealDistressTrust({
+        outputs: { probateActive: UNKNOWN, probate: UNKNOWN, distressStatus: NONE },
+        knowledgeDelta: { domain: "16", lifeEvent: "unknown_no_evidence" },
+      });
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     record(
       ctx,
@@ -206,6 +351,14 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     };
   },
   "MOT-LFE-02": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      return withRecordedRealDistressTrust({
+        outputs: { divorceImpediment: UNKNOWN, distressStatus: NONE },
+        knowledgeDelta: { domain: "17", lifeEvent: "unknown_no_evidence" },
+      });
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     record(
       ctx,
@@ -219,6 +372,14 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     };
   },
   "MOT-LFE-03": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      return withRecordedRealDistressTrust({
+        outputs: { heirCount: UNKNOWN, distressStatus: NONE },
+        knowledgeDelta: { domain: "18", inheritance: "unknown_no_evidence" },
+      });
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     record(
       ctx,
@@ -232,6 +393,14 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     };
   },
   "MOT-LFE-04": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      return withRecordedRealDistressTrust({
+        outputs: { auctionNotice: UNKNOWN, auction: UNKNOWN, distressStatus: NONE },
+        knowledgeDelta: { domain: "19", auction: "unknown_no_evidence" },
+      });
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     record(
       ctx,
@@ -245,6 +414,14 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     };
   },
   "MOT-COD-01": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      return withRecordedRealDistressTrust({
+        outputs: { violationCount: UNKNOWN, distressStatus: NONE },
+        knowledgeDelta: { domain: "26", codeEnforcement: "unknown_no_evidence" },
+      });
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     record(
       ctx,
@@ -258,6 +435,19 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     };
   },
   "MOT-CNT-01": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      const store = ctx.knowledgeStore?.read(ctx.factoryKey);
+      if (store) {
+        store.contactGated = true;
+        ctx.knowledgeStore?.write(ctx.factoryKey, store);
+      }
+      return withRecordedRealDistressTrust({
+        outputs: { contactGated: true, dep06Satisfied: true, distressStatus: NONE },
+        knowledgeDelta: { domain: "08", contact: "gated" },
+      });
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     const gated = true;
     record(
@@ -277,6 +467,14 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
     };
   },
   "MOT-CNT-02": async (ctx) => {
+    const real = tryRecordedReal(ctx);
+    if (real && !real.error) {
+      return withRecordedRealDistressTrust({
+        outputs: { ownerAuthorized: UNKNOWN, distressStatus: NONE },
+        knowledgeDelta: { domain: "08", authorization: "unknown_no_contact_enrichment" },
+      });
+    }
+
     const fixtures = buildDistressFixtureBundle(ctx.factoryKey);
     const authorized = ctx.inputs?.simulateContactDenied !== true;
     record(
@@ -295,7 +493,13 @@ const DISTRESS_MOTOR_HANDLERS_IMPL = {
 export const DISTRESS_MOTOR_HANDLERS = Object.fromEntries(
   Object.entries(DISTRESS_MOTOR_HANDLERS_IMPL).map(([motorId, handler]) => [
     motorId,
-    async (ctx) => withStubTrust(await handler(ctx)),
+    async (ctx) => {
+      const result = await handler(ctx);
+      if (result?.outputs?.contentClass === "RECORDED_REAL") {
+        return result;
+      }
+      return withStubTrust(result);
+    },
   ])
 );
 

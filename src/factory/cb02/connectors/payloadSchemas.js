@@ -1,11 +1,14 @@
 /**
- * P-INT-02 Offline — minimal payload schemas for Maricopa ASR / GIS / RCR.
- * Structural fidelity only; synthetic / redacted data. No PII.
+ * P-INT-02 Offline — minimal payload schemas for Maricopa ASR / GIS / RCR
+ * and PS05-04 Pima RECORDED_REAL ASR / GIS.
+ * Structural fidelity only. No PII.
  */
 
 export const SCHEMA_ASR_MC_V1 = "maricopa.assessor.payload.v1";
 export const SCHEMA_GIS_MC_V1 = "maricopa.gis.payload.v1";
 export const SCHEMA_RCR_MC_V1 = "maricopa.recorder.payload.v1";
+export const SCHEMA_ASR_PC_V1 = "pima.assessor.payload.v1";
+export const SCHEMA_GIS_PC_V1 = "pima.gis.payload.v1";
 
 const SCHEMAS = Object.freeze({
   [SCHEMA_ASR_MC_V1]: Object.freeze({
@@ -42,6 +45,29 @@ const SCHEMAS = Object.freeze({
       "parcelRef",
     ]),
   }),
+  /** Pima: situs may be null/absent — do not require situsAddress. */
+  [SCHEMA_ASR_PC_V1]: Object.freeze({
+    schemaId: SCHEMA_ASR_PC_V1,
+    organismId: "ORG-ASR-PC",
+    required: Object.freeze([
+      "schemaId",
+      "parcelId",
+      "apn",
+      "landUseCode",
+      "assessedYear",
+    ]),
+  }),
+  [SCHEMA_GIS_PC_V1]: Object.freeze({
+    schemaId: SCHEMA_GIS_PC_V1,
+    organismId: "ORG-GIS-PC",
+    required: Object.freeze([
+      "schemaId",
+      "parcelId",
+      "geometryType",
+      "centroid",
+      "crs",
+    ]),
+  }),
 });
 
 /**
@@ -72,7 +98,7 @@ export function validatePayloadAgainstSchema(schemaId, payload) {
       return { ok: false, reason: `missing_required_field:${field}` };
     }
   }
-  if (schemaId === SCHEMA_GIS_MC_V1) {
+  if (schemaId === SCHEMA_GIS_MC_V1 || schemaId === SCHEMA_GIS_PC_V1) {
     const c = payload.centroid;
     if (
       !c ||

@@ -1,0 +1,6 @@
+# algorithm: SHA-256
+# authority: CHECKSUMS.sha256 (external)
+1469c51dc49b8e5c07e45204cc820a3210c3dd61faa897454e4f86c4dc7646f4  pack.manifest.json
+261e6ec94daefff5fb112858c628de1fee49b31dabbe8405cfa8f81407053abb  provenance.json
+4679b64aae652d0cc414ad03c0bbbb72912045669b1bc354c74a078f873ce3b6  response/ORG-ASR-PC.json
+05df557c475ffaa12c9d84930b0f326440b2e622868b62a5fbe1fc18dd25fe50  response/ORG-GIS-PC.json

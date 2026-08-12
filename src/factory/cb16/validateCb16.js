@@ -53,6 +53,7 @@ import { DecisionHandoffService } from "./decisionHandoffService.js";
 import { collectDecisionHandoffLedger } from "./decisionLedger.js";
 import { buildDecisionPackage } from "./decisionPackageBuilder.js";
 import { ECONOMY_MOTOR_HANDLERS } from "../cb09/economyMotorHandlers.js";
+import { DISTRESS_MOTOR_HANDLERS } from "../cb08/distressMotorHandlers.js";
 import {
   evaluateDecisionTrustContamination,
   isDecisionPackageTrusted,
@@ -431,8 +432,13 @@ export async function validatePs0501TruthBoundaryCb16() {
     if (eco.outputs?.stubBusinessFact !== true || eco.outputs?.decisionTrusted !== false) {
       errors.push("T05: CB-09 stub facts must be marked non Decision-trusted");
     }
+    // PS05-01: default synthetic lane preserves stub equity; PS05-04 unlocks CB-16
+    // from requiring fabricated equity on the RECORDED_REAL honesty path (see T14).
     if (leg.outputs?.stubBusinessFact !== true || eco.outputs?.equity !== 125000) {
-      errors.push("T05: stub marking must preserve stub values (no PS05-04 formula change)");
+      errors.push("T05: default stub lane must preserve stub equity marking");
+    }
+    if (eco.outputs?.synthetic !== true) {
+      errors.push("T05: default economy path must remain identifiable synthetic/stub");
     }
 
     const contamination = evaluateDecisionTrustContamination({
@@ -589,6 +595,65 @@ export async function validatePs0503TruthAccountingCb16() {
 }
 
 /**
+ * PS05-04 — CB-16 receives evidenced/UNKNOWN economics without equity===125000 lock (T14).
+ */
+export async function validatePs0504RecordedRealHonestyCb16() {
+  const errors = [];
+  try {
+    const pimaRoot = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "../../../data/factory-dso-packs/pima/real-pilot-001"
+    );
+    const inputs = {
+      recordedPackRoot: pimaRoot,
+      contentClass: "RECORDED_REAL",
+      recordedReal: true,
+    };
+    const eco = await ECONOMY_MOTOR_HANDLERS["MOT-FIN-01"]({
+      factoryKey: "ps05-04-cb16-eco",
+      inputs,
+    });
+    const debt = await ECONOMY_MOTOR_HANDLERS["MOT-FIN-02"]({
+      factoryKey: "ps05-04-cb16-debt",
+      inputs,
+    });
+    const roi = await ECONOMY_MOTOR_HANDLERS["MOT-INV-01"]({
+      factoryKey: "ps05-04-cb16-roi",
+      inputs,
+    });
+    const dst = await DISTRESS_MOTOR_HANDLERS["MOT-MOT-01"]({
+      factoryKey: "ps05-04-cb16-dst",
+      inputs,
+    });
+
+    if (eco.outputs?.equity === 125000) {
+      errors.push("T14: RECORDED_REAL path must not emit fabricated equity 125000");
+    }
+    if (eco.outputs?.equity !== "UNKNOWN") {
+      errors.push("T14: missing debt evidence → equity must be UNKNOWN");
+    }
+    if (eco.outputs?.fullCashValue !== 21956) {
+      errors.push("T14: evidenced FCV must reach CB-16 path");
+    }
+    if (eco.outputs?.stubBusinessFact === true || eco.outputs?.synthetic === true) {
+      errors.push("T14: RECORDED_REAL economics must not carry stub/synthetic markers");
+    }
+    if (debt.outputs?.mortgageBalance !== "UNKNOWN" || roi.outputs?.roi !== "UNKNOWN") {
+      errors.push("T14: mortgage/ROI must be UNKNOWN without sufficient inputs");
+    }
+    if (dst.outputs?.signal === "pre_foreclosure" || dst.outputs?.stubBusinessFact === true) {
+      errors.push("T14: distress must be NONE/UNKNOWN, not fabricated stub signal");
+    }
+    if (dst.outputs?.contentClass !== "RECORDED_REAL") {
+      errors.push("T14: distress outputs must retain RECORDED_REAL contentClass");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb16Validation(options = {}) {
@@ -601,6 +666,7 @@ export async function runCb16Validation(options = {}) {
   const isolation = validateCb15Unaffected();
   const ps0501 = await validatePs0501TruthBoundaryCb16();
   const ps0503 = await validatePs0503TruthAccountingCb16();
+  const ps0504 = await validatePs0504RecordedRealHonestyCb16();
 
   const allErrors = [
     ...gov.errors,
@@ -612,6 +678,7 @@ export async function runCb16Validation(options = {}) {
     ...isolation.errors,
     ...ps0501.errors,
     ...ps0503.errors,
+    ...ps0504.errors,
   ];
 
   const checklist = [
@@ -660,6 +727,11 @@ export async function runCb16Validation(options = {}) {
       id: "CB16-PS05-03",
       criterion: "PS05-03 Truth accounting slice on Decision Package",
       status: ps0503.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB16-PS05-04",
+      criterion: "PS05-04 RECORDED_REAL honesty path reaches CB-16 without equity 125000 lock",
+      status: ps0504.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

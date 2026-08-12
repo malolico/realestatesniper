@@ -5,6 +5,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   assertPhaseUnlocked,
   isPhaseApproved,
@@ -339,6 +340,82 @@ export function validateOmcAndLienRisksDocumented() {
 }
 
 /**
+ * PS05-04 — Distress honesty for RECORDED_REAL (T05–T06, T08, P07).
+ */
+export async function validatePs0504RecordedRealHonestyCb08() {
+  const errors = [];
+  const pimaRoot = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../../../data/factory-dso-packs/pima/real-pilot-001"
+  );
+  const inputs = {
+    recordedPackRoot: pimaRoot,
+    contentClass: "RECORDED_REAL",
+    recordedReal: true,
+  };
+
+  try {
+    const { DISTRESS_MOTOR_HANDLERS } = await import("./distressMotorHandlers.js");
+    const { validateRecordedPack } = await import("../cb02/connectors/recordedPackValidator.js");
+
+    const pack = validateRecordedPack(pimaRoot);
+    if (!pack.ok || !pack.manifest?.organisms?.some((o) => o.organismId === "ORG-GIS-PC")) {
+      errors.push("T08: Pima GIS organism/pack must be recognized");
+    }
+
+    const mot01 = await DISTRESS_MOTOR_HANDLERS["MOT-MOT-01"]({
+      factoryKey: "ps05-04-dst-t05",
+      inputs,
+    });
+    const mot02 = await DISTRESS_MOTOR_HANDLERS["MOT-MOT-02"]({
+      factoryKey: "ps05-04-dst-t06",
+      inputs,
+    });
+    const mot05 = await DISTRESS_MOTOR_HANDLERS["MOT-MOT-05"]({
+      factoryKey: "ps05-04-dst-conv",
+      inputs,
+    });
+    const lfe = await DISTRESS_MOTOR_HANDLERS["MOT-LFE-01"]({
+      factoryKey: "ps05-04-dst-probate",
+      inputs,
+    });
+    const stub = await DISTRESS_MOTOR_HANDLERS["MOT-MOT-01"]({
+      factoryKey: "ps05-04-dst-stub",
+      inputs: {},
+    });
+
+    if (mot01.outputs?.signal === "pre_foreclosure") {
+      errors.push("T05: no fabricated real distress (pre_foreclosure)");
+    }
+    if (mot01.outputs?.signal !== "NONE" && mot01.outputs?.pre_foreclosure !== "UNKNOWN") {
+      errors.push("T05: RECORDED_REAL distress must be NONE/UNKNOWN");
+    }
+    if (mot02.outputs?.signal === "tax_delinquency") {
+      errors.push("T05: tax delinquency must not be invented");
+    }
+    if (mot05.outputs?.score !== 0 || mot05.outputs?.signalCount !== 0) {
+      errors.push("T06: stub distress weights/counts must not become RECORDED_REAL facts");
+    }
+    if (lfe.outputs?.probateActive === true || lfe.outputs?.probate === true) {
+      errors.push("T05: probate must not be invented for RECORDED_REAL Pima");
+    }
+    if (mot01.outputs?.stubBusinessFact === true || mot01.outputs?.synthetic === true) {
+      errors.push("P07: RECORDED_REAL distress must not carry stub/synthetic markers");
+    }
+    if (stub.outputs?.signal !== "pre_foreclosure" || stub.outputs?.stubBusinessFact !== true) {
+      errors.push("T06: synthetic stub distress lane must remain identifiable");
+    }
+    if (mot01.outputs?.governmentExemptionIsNotDistress !== true) {
+      errors.push("P07: government exemption must not be treated as distress");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb08Validation(options = {}) {
@@ -349,6 +426,7 @@ export async function runCb08Validation(options = {}) {
   const mpi = await validateMpiDistressDomains();
   const evidence = await validateEvidenceIngestAndConflicts();
   const risks = validateOmcAndLienRisksDocumented();
+  const ps0504 = await validatePs0504RecordedRealHonestyCb08();
 
   const allErrors = [
     ...gov.errors,
@@ -358,6 +436,7 @@ export async function runCb08Validation(options = {}) {
     ...mpi.errors,
     ...evidence.errors,
     ...risks.errors,
+    ...ps0504.errors,
   ];
 
   const checklist = [
@@ -393,6 +472,11 @@ export async function runCb08Validation(options = {}) {
       id: "CB08-06",
       criterion: "Evidencias DST registradas en EVF/ELR",
       status: evidence.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB08-PS05-04",
+      criterion: "PS05-04 RECORDED_REAL distress honesty (NONE/UNKNOWN)",
+      status: ps0504.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

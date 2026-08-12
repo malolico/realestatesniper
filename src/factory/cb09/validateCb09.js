@@ -5,6 +5,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   assertPhaseUnlocked,
   isPhaseApproved,
@@ -317,6 +318,125 @@ export function validateOmcAndDeferredRisksDocumented() {
 }
 
 /**
+ * PS05-04 — Economy honesty + Pima RECORDED_REAL proofs (T01–T04, T07, T10, P01/P06).
+ */
+export async function validatePs0504RecordedRealHonestyCb09() {
+  const errors = [];
+  const pimaRoot = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../../../data/factory-dso-packs/pima/real-pilot-001"
+  );
+  const maricopaRoot = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../../../data/factory-dso-packs/maricopa/pilot-001"
+  );
+  const inputs = {
+    recordedPackRoot: pimaRoot,
+    contentClass: "RECORDED_REAL",
+    recordedReal: true,
+  };
+
+  try {
+    const { validateRecordedPack } = await import("../cb02/connectors/recordedPackValidator.js");
+    const { loadEconomyRecordedRealEnrichment } = await import("./economyRecordedEnrichment.js");
+    const { ECONOMY_MOTOR_HANDLERS } = await import("./economyMotorHandlers.js");
+
+    const pimaPack = validateRecordedPack(pimaRoot);
+    if (!pimaPack.ok || pimaPack.manifest?.contentClass !== "RECORDED_REAL") {
+      errors.push("T07: Pima pack must validate as RECORDED_REAL");
+    }
+    if (!pimaPack.manifest?.organisms?.some((o) => o.organismId === "ORG-ASR-PC")) {
+      errors.push("T07: Pima Assessor organism must be recognized in pack");
+    }
+
+    const mcPack = validateRecordedPack(maricopaRoot);
+    if (!mcPack.ok) {
+      errors.push("T09: Maricopa pilot-001 must continue to validate");
+    }
+    if (mcPack.manifest?.contentClass === "RECORDED_REAL") {
+      errors.push("T09: Maricopa synthetic pilot must not be classified RECORDED_REAL");
+    }
+    const mcReal = loadEconomyRecordedRealEnrichment(maricopaRoot, {
+      factoryKey: "t09-mc",
+    });
+    if (mcReal.ok === true) {
+      errors.push("T09: Maricopa pilot cannot satisfy RECORDED_REAL enrichment proof");
+    }
+
+    const loaded = loadEconomyRecordedRealEnrichment(pimaRoot, {
+      factoryKey: "ps05-04-eco",
+    });
+    if (!loaded.ok) {
+      errors.push(`P01/P02 load failed: ${loaded.reason}`);
+    } else {
+      if (loaded.assessorOrganismId !== "ORG-ASR-PC") {
+        errors.push("T07: Assessor organism must be ORG-ASR-PC");
+      }
+      if (loaded.gisOrganismId !== "ORG-GIS-PC") {
+        errors.push("T08: GIS organism must be ORG-GIS-PC");
+      }
+      if (!loaded.identity?.match) {
+        errors.push("T10: Pima ASR + GIS must resolve same identity");
+      }
+      if (loaded.economics?.fullCashValue !== 21956) {
+        errors.push("T04: evidenced FCV 21956 must retain in economics envelope");
+      }
+      if (!loaded.economics?.provenance?.fields?.includes("valuation.fullCashValue")) {
+        errors.push("T04: evidenced valuation must retain provenance fields");
+      }
+    }
+
+    const fin01 = await ECONOMY_MOTOR_HANDLERS["MOT-FIN-01"]({
+      factoryKey: "ps05-04-t01",
+      inputs,
+    });
+    const fin02 = await ECONOMY_MOTOR_HANDLERS["MOT-FIN-02"]({
+      factoryKey: "ps05-04-t02",
+      inputs,
+    });
+    const inv01 = await ECONOMY_MOTOR_HANDLERS["MOT-INV-01"]({
+      factoryKey: "ps05-04-t03",
+      inputs,
+    });
+    const mkt01 = await ECONOMY_MOTOR_HANDLERS["MOT-MKT-01"]({
+      factoryKey: "ps05-04-t-sub",
+      inputs,
+    });
+
+    if (fin01.outputs?.equity === 125000) {
+      errors.push("T01: hardcoded equity 125000 must not enter RECORDED_REAL");
+    }
+    if (fin01.outputs?.equity !== "UNKNOWN") {
+      errors.push("T01: equity without debt evidence must be UNKNOWN");
+    }
+    if (fin02.outputs?.mortgageBalance !== "UNKNOWN") {
+      errors.push("T02: missing debt/mortgage must be UNKNOWN");
+    }
+    if (inv01.outputs?.roi !== "UNKNOWN") {
+      errors.push("T03: missing ROI must be UNKNOWN");
+    }
+    if (mkt01.outputs?.submarket === "Phoenix-NW") {
+      errors.push("T01: fabricated Phoenix-NW must not enter RECORDED_REAL");
+    }
+    if (fin01.outputs?.contentClass !== "RECORDED_REAL" || fin01.outputs?.synthetic === true) {
+      errors.push("P01: RECORDED_REAL economy outputs must be non-synthetic");
+    }
+    if (fin01.outputs?.fullCashValue !== 21956 || fin01.outputs?.limitedValue !== 18346) {
+      errors.push("P06: evidenced FCV/Limited Value must surface on Decision-facing path");
+    }
+
+    // Freshness/provenance survive on SourceRefs
+    if (!loaded.ok || loaded.assessor?.freshness?.recordedOnly !== true) {
+      errors.push("T11: provenance/trust/freshness markers must survive on SourceRefs");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb09Validation(options = {}) {
@@ -326,6 +446,7 @@ export async function runCb09Validation(options = {}) {
   const swarm = await validateSwarmDerivation();
   const evidence = await validateEvidenceIngestAndConflicts();
   const risks = validateOmcAndDeferredRisksDocumented();
+  const ps0504 = await validatePs0504RecordedRealHonestyCb09();
 
   const allErrors = [
     ...gov.errors,
@@ -334,6 +455,7 @@ export async function runCb09Validation(options = {}) {
     ...swarm.errors,
     ...evidence.errors,
     ...risks.errors,
+    ...ps0504.errors,
   ];
 
   const checklist = [
@@ -366,6 +488,11 @@ export async function runCb09Validation(options = {}) {
       id: "CB09-06",
       criterion: "Handoff DST→ECO respetado",
       status: handoff.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB09-PS05-04",
+      criterion: "PS05-04 RECORDED_REAL economy honesty (evidenced/UNKNOWN)",
+      status: ps0504.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

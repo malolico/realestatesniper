@@ -1,0 +1,54 @@
+{
+  "schemaId": "pima.assessor.payload.v1",
+  "contentClass": "RECORDED_REAL",
+  "acquisitionMode": "MANUAL_OFFLINE_PUBLIC_RECORD",
+  "sourceAuthority": "Pima County Assessor's Office",
+  "sourceClass": "REGISTRAL_ASSESSOR",
+  "sourceUrl": "https://asr.pima.gov/parcel-details",
+  "sourceHost": "asr.pima.gov",
+  "retrievedAt": "2026-08-12T15:18:00.000Z",
+  "taxYear": 2027,
+  "parcelId": "209010680",
+  "apn": "209-01-0680",
+  "apnFormatted": "209-01-0680",
+  "ownerInstitutionalName": "PIMA COUNTY FLOOD CONTROL DISTRICT",
+  "ownerIsInstitutional": true,
+  "situsAddress": null,
+  "situsNote": "No situs address published on Assessor parcel detail for this parcel",
+  "mailingAgencyAddress": {
+    "line1": "130 W CONGRESS ST",
+    "city": "TUCSON",
+    "state": "AZ",
+    "postalCode": "85701"
+  },
+  "propertyDescription": "MILLSTONE INDUSTRIAL DISTRICT NO 1 NE4 LOT 4 EXC E 50' BLK 1",
+  "landUseCode": "9600",
+  "landUseDescription": "COUNTY VACANT LAND",
+  "propertyClass": "VACANT/AG/GOLF (2)",
+  "assessedYear": 2027,
+  "valuation": {
+    "fullCashValue": 21956,
+    "landFcv": 21956,
+    "improvementFcv": 0,
+    "limitedValue": 18346,
+    "limitedAssessed": 2752,
+    "assessmentRatioPercent": 15,
+    "currency": "USD"
+  },
+  "plss": {
+    "section": "1",
+    "township": "15",
+    "range": "11E"
+  },
+  "mapAndPlat": "13 / 51",
+  "taxArea": "5101",
+  "recordingSequenceNoPrimary": "20210040409",
+  "notesPublic": [
+    "Government exempt / 100% Government Exempt (Assessor notes)"
+  ],
+  "redactions": [
+    "Assessor staff personal phone/name excluded",
+    "No personal contact enrichment retained"
+  ],
+  "jurisdiction": "Pima County, AZ"
+}

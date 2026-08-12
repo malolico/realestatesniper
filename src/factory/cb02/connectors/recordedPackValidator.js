@@ -6,11 +6,24 @@ import fs from "node:fs";
 import path from "node:path";
 import { getOrganism, isOrganismProhibited } from "../sourceOrganismsCatalog.js";
 import { getMaricopaContractByOrganismId } from "./maricopaConnectorContracts.js";
+import { getPimaContractByOrganismId } from "./pimaConnectorContracts.js";
 import {
   sha256File,
   verifyChecksumsAuthority,
 } from "./recordedPackChecksums.js";
 import { validatePayloadAgainstSchema } from "./payloadSchemas.js";
+
+/**
+ * Resolve RECORDED_ONLY contract for a registered organism (jurisdiction-agnostic).
+ * @param {string} organismId
+ */
+export function getRecordedContractByOrganismId(organismId) {
+  return (
+    getMaricopaContractByOrganismId(organismId) ??
+    getPimaContractByOrganismId(organismId) ??
+    null
+  );
+}
 
 const SECRET_PATTERNS = [
   new RegExp(`sk${"_"}live${"_"}`, "i"),
@@ -118,7 +131,7 @@ export function validateRecordedPack(packRoot) {
       return { ok: false, reason: `organism_prohibited:${organismId}` };
     }
 
-    const contract = getMaricopaContractByOrganismId(organismId);
+    const contract = getRecordedContractByOrganismId(organismId);
     if (!contract) {
       return { ok: false, reason: `contract_missing_for_organism:${organismId}` };
     }

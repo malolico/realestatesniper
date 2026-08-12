@@ -1,0 +1,38 @@
+{
+  "packId": "pima-real-pilot-001",
+  "schemaVersion": "pint02.offline.pack.v1",
+  "contentClass": "RECORDED_REAL",
+  "acquisitionMode": "MANUAL_OFFLINE_PUBLIC_RECORD",
+  "jurisdiction": "Pima County, AZ",
+  "jurisdictionCode": "US-AZ-PIMA",
+  "pilotId": "real-pilot-001",
+  "factoryKey": "prov-ps05-04-pima-real-001",
+  "organisms": [
+    {
+      "organismId": "ORG-ASR-PC",
+      "familyId": "REGISTRAL_ASSESSOR",
+      "responsePath": "response/ORG-ASR-PC.json",
+      "payloadSchemaId": "pima.assessor.payload.v1",
+      "vintageAt": "2026-08-12T15:18:00.000Z",
+      "contentChecksum": "4679b64aae652d0cc414ad03c0bbbb72912045669b1bc354c74a078f873ce3b6"
+    },
+    {
+      "organismId": "ORG-GIS-PC",
+      "familyId": "GIS_OFFICIAL",
+      "responsePath": "response/ORG-GIS-PC.json",
+      "payloadSchemaId": "pima.gis.payload.v1",
+      "vintageAt": "2026-08-12T15:20:00.000Z",
+      "contentChecksum": "05df557c475ffaa12c9d84930b0f326440b2e622868b62a5fbe1fc18dd25fe50"
+    }
+  ],
+  "acquiredAt": "2026-08-12T15:21:36.564Z",
+  "vintageAt": "2026-08-12T15:18:00.000Z",
+  "sourceMode": "RECORDED",
+  "liveFetch": false,
+  "contractIds": [
+    "pima.assessor.recorded.v1",
+    "pima.gis.recorded.v1"
+  ],
+  "createdBy": "factory-ops-ps05-04-acquisition",
+  "notes": "PS05-04 RECORDED_REAL Pima ASR+GIS substrate for APN 209-01-0680. Distinct from maricopa/pilot-001 synthetic. Provisional organism IDs ORG-ASR-PC/ORG-GIS-PC pending catalog registration in later IMPL."
+}

@@ -1,0 +1,65 @@
+{
+  "contentClass": "RECORDED_REAL",
+  "acquisitionMode": "MANUAL_OFFLINE_PUBLIC_RECORD",
+  "liveFetch": false,
+  "jurisdiction": "Pima County, AZ",
+  "jurisdictionCode": "US-AZ-PIMA",
+  "parcelId": "209010680",
+  "apn": "209-01-0680",
+  "acquiredAt": "2026-08-12T15:21:36.564Z",
+  "sources": [
+    {
+      "organismId": "ORG-ASR-PC",
+      "sourceClass": "REGISTRAL_ASSESSOR",
+      "authority": "Pima County Assessor's Office",
+      "host": "asr.pima.gov",
+      "retrievalMethod": "manual_browser_public_parcel_detail",
+      "retrievedAt": "2026-08-12T15:18:00.000Z",
+      "responsePath": "response/ORG-ASR-PC.json"
+    },
+    {
+      "organismId": "ORG-GIS-PC",
+      "sourceClass": "GIS_OFFICIAL",
+      "authority": "Pima County ITD Geographic Information Systems",
+      "host": "gis.pima.gov",
+      "retrievalMethod": "manual_public_gis_parcel_detail_page",
+      "retrievedAt": "2026-08-12T15:20:00.000Z",
+      "responsePath": "response/ORG-GIS-PC.json"
+    }
+  ],
+  "identityResolution": {
+    "status": "MATCH",
+    "matchedOn": [
+      "apn_209-01-0680",
+      "parcelId_209010680",
+      "institutional_owner_PIMA_COUNTY_FLOOD_CONTROL_DISTRICT",
+      "legal_description_text",
+      "recording_sequence_20210040409",
+      "plss_section_1_twp_15_rng_11E"
+    ],
+    "conflicts": []
+  },
+  "privacy": {
+    "minimumData": true,
+    "institutionalOwnerPreferred": true,
+    "excluded": [
+      "personal phone",
+      "personal email",
+      "skip tracing",
+      "contact enrichment",
+      "assessor staff personal identifiers"
+    ]
+  },
+  "economicsObserved": {
+    "fullCashValue": 21956,
+    "limitedValue": 18346,
+    "debtMortgage": "UNKNOWN",
+    "equity": "UNKNOWN",
+    "roi": "UNKNOWN"
+  },
+  "distressObserved": "NONE_UNKNOWN",
+  "prohibitedFlags": [],
+  "lowConfidenceFlags": [],
+  "conflictDetected": false,
+  "notes": "PS05-04 RECORDED_REAL substrate — Pima County ASR+GIS for one institutional parcel. Maricopa pilot-001 remains synthetic/parking. No Live connectors. gisdata.pima.gov ArcGIS REST was Cloudflare-challenged; GIS evidence taken from official gis.pima.gov parcel detail page."
+}
