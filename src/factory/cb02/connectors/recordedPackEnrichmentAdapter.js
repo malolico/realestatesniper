@@ -18,6 +18,7 @@ import { loadRecordedPackForIngest } from "./recordedPackLoader.js";
 import { LIVE_NOT_AUTHORIZED } from "./connectorContract.js";
 import { buildCanonicalPropertyFact } from "./canonicalPropertyFactAdapter.js";
 import { resolvePropertyIdentity } from "../../cb05/propertyIdentityResolver.js";
+import { evaluateFactCompleteness } from "../factCompleteness.js";
 import { SOURCE_MODE } from "../../cb05/decisionTrustBoundary.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -157,6 +158,7 @@ export function loadRecordedPackEnrichment(packRoot, options = {}) {
     payloadsByOrganism: loaded.payloadsByOrganism,
     sourceRefsByOrganism,
     packJurisdictionLabel,
+    factoryKey,
     trustMeta: {
       sourceMode: SOURCE_MODE.RECORDED_ENRICHMENT,
       synthetic: false,
@@ -165,6 +167,21 @@ export function loadRecordedPackEnrichment(packRoot, options = {}) {
     },
   });
   const propertyIdentity = resolvePropertyIdentity({ canonicalFact: canonicalPropertyFact });
+
+  // PS05-03: re-bind fact completeness with resolved identity + SourceRef lineage.
+  const factCompleteness = evaluateFactCompleteness({
+    canonicalFact: canonicalPropertyFact,
+    propertyIdentity,
+    factoryKey,
+    sourceCompleteness: canonicalPropertyFact.sourceCompleteness,
+  });
+  const enrichedCanonical = Object.freeze({
+    ...canonicalPropertyFact,
+    factCompleteness,
+    factEnvelopes: Object.freeze(
+      Object.fromEntries(factCompleteness.facts.map((f) => [f.factClass, f]))
+    ),
+  });
 
   return {
     ok: true,
@@ -179,8 +196,10 @@ export function loadRecordedPackEnrichment(packRoot, options = {}) {
     gis,
     recorder: sourceRefsByOrganism["ORG-RCR-MC"] ?? null,
     packJurisdictionLabel,
-    canonicalPropertyFact,
+    canonicalPropertyFact: enrichedCanonical,
     propertyIdentity,
+    sourceCompleteness: enrichedCanonical.sourceCompleteness,
+    factCompleteness,
     constitutionalPhase: "SP03-§15-ENG-IMPL",
     mandateClass: "INFORMATION_SOURCE_ENRICHMENT",
   };
@@ -211,6 +230,8 @@ export function buildFoundationRecordedEnrichmentBundle(factoryKey, options = {}
     packJurisdictionLabel: loaded.packJurisdictionLabel ?? null,
     canonicalPropertyFact: loaded.canonicalPropertyFact ?? null,
     propertyIdentity: loaded.propertyIdentity ?? null,
+    sourceCompleteness: loaded.sourceCompleteness ?? null,
+    factCompleteness: loaded.factCompleteness ?? null,
     constitutionalPhase: "SP03-§15-ENG-IMPL",
     mandateRefs: ["§5.1#1", "§5.1#2", "§5.1#3", "§4-DEF-01", "§4-DEF-02"],
   });

@@ -13,6 +13,8 @@ import {
   toDecisionFacingPropertyView,
 } from "../cb02/connectors/canonicalPropertyFactAdapter.js";
 import { resolvePropertyIdentity } from "../cb05/propertyIdentityResolver.js";
+import { buildComputedKnownUnknowns } from "./knownUnknownsRegistry.js";
+import { FRESHNESS_STATE } from "../cb02/decisionFactEnvelope.js";
 import { resolveIntelligenceSourceBundle } from "./intelligenceSourceFixtures.js";
 
 /**
@@ -153,6 +155,18 @@ function recordedPackHints(sources) {
     canonicalProperty: decisionView,
     ownerRef: decisionView?.ownerRef ?? null,
     rawIdentifiers: canonicalPropertyFact.rawIdentifiers ?? null,
+    factEnvelopes: decisionView?.factEnvelopes ?? null,
+    sourceCompleteness: decisionView?.sourceCompleteness ?? null,
+    factCompleteness: decisionView?.factCompleteness ?? null,
+    freshnessState: decisionView?.freshnessState ?? FRESHNESS_STATE.UNKNOWN_FRESHNESS,
+    provenanceMeta: decisionView?.provenanceMeta ?? null,
+    knownUnknowns: buildComputedKnownUnknowns("int-hints", [], {
+      canonicalFact: canonicalPropertyFact,
+      propertyIdentity,
+      payloadsByOrganism: sources.payloadsByOrganism,
+      sourceRefsByOrganism: sources.sourceRefsByOrganism ?? null,
+      skipPackLoad: true,
+    }).unknowns,
   };
 }
 

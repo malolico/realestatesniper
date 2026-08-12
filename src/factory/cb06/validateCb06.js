@@ -28,6 +28,42 @@ import { MotEvd02 } from "./motEvd02.js";
 import { assertEvf02AiAssistCeiling, OMC_MOTOR_COUNT_CONSTITUTIONAL } from "./evidenceVocabulary.js";
 import { evaluateSufficiency, SUFFICIENCY_STATUS } from "./sufficiencyGate.js";
 import { isMaterialMotorManifest } from "./evidenceIntercept.js";
+import { exportFromMotEvd02Result } from "./conflictExport.js";
+import { CONFLICT_STATE } from "../cb02/decisionFactEnvelope.js";
+
+/**
+ * PS05-03 — Conflict preservation export proofs.
+ */
+export function validatePs0503ConflictExportCb06() {
+  const errors = [];
+  try {
+    const evd = new MotEvd02();
+    const arb = evd.arbitrate({
+      factoryKey: "ps05-03-evd",
+      field: "landUse",
+      sources: [
+        { sourceRefId: "SRC-1", value: "R1", eLevel: "E4", organismId: "ORG-ASR-MC" },
+        { sourceRefId: "SRC-2", value: "C1", eLevel: "E3", organismId: "ORG-GIS-MC" },
+      ],
+    });
+    const exported = exportFromMotEvd02Result(arb);
+    if (exported.silentOverwriteProhibited !== true || exported.averagingProhibited !== true) {
+      errors.push("T05: conflict export must prohibit silent overwrite/averaging");
+    }
+    if (!exported.conflicts[0]?.rejected?.length) {
+      errors.push("T05/P08: losing lineage must be retained");
+    }
+    if (
+      exported.conflicts[0]?.conflictState !== CONFLICT_STATE.RESOLVED_WITH_AUTHORITY &&
+      exported.conflicts[0]?.conflictState !== CONFLICT_STATE.OPEN
+    ) {
+      errors.push("T05: conflict state must be OPEN or RESOLVED_WITH_AUTHORITY");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
 
 function createTempEnv() {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "cb06-validation-"));
@@ -262,6 +298,7 @@ export async function runCb06Validation(options = {}) {
   const sufficiency = await validateSufficiencyReproducible();
   const evf02 = validateEvf02AiAssistCeiling();
   const omcRisk = validateOmcCountRiskDocumented();
+  const ps0503 = validatePs0503ConflictExportCb06();
 
   const allErrors = [
     ...gov.errors,
@@ -270,6 +307,7 @@ export async function runCb06Validation(options = {}) {
     ...sufficiency.errors,
     ...evf02.errors,
     ...omcRisk.errors,
+    ...ps0503.errors,
   ];
 
   const checklist = [
@@ -292,6 +330,11 @@ export async function runCb06Validation(options = {}) {
       id: "CB06-04",
       criterion: "IA assist E1/E2 máximo — EVF-02",
       status: evf02.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB06-PS05-03",
+      criterion: "PS05-03 Conflict export preserves lineage (no silent overwrite)",
+      status: ps0503.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

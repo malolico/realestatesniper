@@ -11,6 +11,12 @@ import {
 } from "../jurisdictionRegistry.js";
 import { getOrganism } from "../sourceOrganismsCatalog.js";
 import { SOURCE_MODE } from "../../cb05/decisionTrustBoundary.js";
+import {
+  FRESHNESS_STATE,
+  resolveFreshnessState,
+} from "../decisionFactEnvelope.js";
+import { evaluateSourceCompleteness } from "../sourceCompleteness.js";
+import { evaluateFactCompleteness } from "../factCompleteness.js";
 
 export const OWNER_RESOLUTION = Object.freeze({
   RESOLVED: "RESOLVED",
@@ -177,7 +183,27 @@ export function buildCanonicalPropertyFact(input = {}) {
     jurisdictionStatus: jurisdiction.status,
   });
 
-  return Object.freeze({
+  // PS05-03: provenance timing from SourceRefs only — never invent timestamps.
+  const primaryRef =
+    sourceRefs["ORG-ASR-MC"] ?? sourceRefs["ORG-GIS-MC"] ?? sourceRefs["ORG-RCR-MC"] ?? null;
+  const vintageAt = primaryRef?.vintageAt ?? null;
+  const acquiredAt = primaryRef?.acquiredAt ?? null;
+  const freshnessResolved = resolveFreshnessState(
+    primaryRef?.freshness?.profileKey ??
+      primaryRef?.freshness?.profile ??
+      (vintageAt ? "ASSESSOR_ROLL" : null),
+    vintageAt
+  );
+
+  const provenanceMeta = Object.freeze({
+    acquiredAt,
+    vintageAt,
+    freshnessState: freshnessResolved.freshnessState,
+    freshnessResult: freshnessResolved.freshnessResult,
+    primarySourceRefId: primaryRef?.id ?? null,
+  });
+
+  const baseFact = {
     schemaId: "rsn.canonical.property.fact.v1",
     propertyIdentity: propertyIdentitySeed,
     jurisdiction: Object.freeze({
@@ -195,7 +221,42 @@ export function buildCanonicalPropertyFact(input = {}) {
     rawIdentifiers,
     ownerRef,
     trustMeta,
+    provenanceMeta,
     constitutionalPhase: "PS05-02",
+  };
+
+  const sourceCompleteness = evaluateSourceCompleteness({
+    payloadsByOrganism: payloads,
+    sourceRefsByOrganism: sourceRefs,
+  });
+
+  // Identity resolver runs outside; provisional completeness uses seed only.
+  const factCompleteness = evaluateFactCompleteness({
+    canonicalFact: {
+      ...baseFact,
+      factEnvelopes: {
+        parcelId: { freshnessState: freshnessResolved.freshnessState },
+        jurisdiction: { freshnessState: freshnessResolved.freshnessState },
+        propertyIdentity: { freshnessState: freshnessResolved.freshnessState },
+      },
+    },
+    propertyIdentity: input.propertyIdentity ?? null,
+    factoryKey: input.factoryKey ?? "canonical",
+    sourceCompleteness,
+  });
+
+  return Object.freeze({
+    ...baseFact,
+    sourceCompleteness,
+    factCompleteness,
+    factEnvelopes: Object.freeze(
+      Object.fromEntries(factCompleteness.facts.map((f) => [f.factClass, f]))
+    ),
+    ps0503: Object.freeze({
+      freshnessState: freshnessResolved.freshnessState,
+      unknownFreshnessIsNotCurrent:
+        freshnessResolved.freshnessState !== FRESHNESS_STATE.CURRENT,
+    }),
   });
 }
 
@@ -216,6 +277,11 @@ export function toDecisionFacingPropertyView(fact) {
     ownerRef: fact.ownerRef,
     trustMeta: fact.trustMeta,
     sourceOrganismCount: fact.sourceIdentity?.organismsPresent?.length ?? 0,
+    provenanceMeta: fact.provenanceMeta ?? null,
+    factEnvelopes: fact.factEnvelopes ?? null,
+    sourceCompleteness: fact.sourceCompleteness ?? null,
+    factCompleteness: fact.factCompleteness ?? null,
+    freshnessState: fact.ps0503?.freshnessState ?? fact.provenanceMeta?.freshnessState ?? null,
   });
 }
 

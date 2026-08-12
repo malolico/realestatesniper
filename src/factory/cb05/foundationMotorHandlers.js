@@ -16,6 +16,9 @@ import {
   toDecisionFacingPropertyView,
 } from "../cb02/connectors/canonicalPropertyFactAdapter.js";
 import { normalizeJurisdiction } from "../cb02/jurisdictionRegistry.js";
+import { evaluateFactCompleteness } from "../cb02/factCompleteness.js";
+import { CONFLICT_STATE } from "../cb02/decisionFactEnvelope.js";
+import { exportConflicts } from "../cb06/conflictExport.js";
 
 /**
  * CB-01 factory_key-safe candidate (alphanumeric + ._- only).
@@ -179,10 +182,35 @@ export const FOUNDATION_MOTOR_HANDLERS = {
       packParcel ??
       (meta.synthetic ? `parcel-${ctx.factoryKey.slice(-8)}` : null);
 
+    const factCompleteness =
+      fixtures.factCompleteness ??
+      (canonicalPropertyFact
+        ? evaluateFactCompleteness({
+            canonicalFact: canonicalPropertyFact,
+            propertyIdentity,
+            factoryKey: ctx.factoryKey,
+            sourceCompleteness: canonicalPropertyFact.sourceCompleteness,
+          })
+        : null);
+
     const conflict =
       inputs.simulateConflict === true ||
       propertyIdentity.status === PROPERTY_IDENTITY_STATUS.NO_MATCH;
     const confidence = conflict ? "C2" : propertyIdentity.status === PROPERTY_IDENTITY_STATUS.MATCH ? "C1" : "C2";
+
+    const conflictExport = conflict
+      ? exportConflicts([
+          {
+            conflictId: `CNF-identity-${ctx.factoryKey}`,
+            field: "propertyIdentity",
+            status: "OPEN",
+            strategy: "HIERARCHY",
+            prevailing: null,
+            rejected: [],
+            policy: "R6",
+          },
+        ])
+      : exportConflicts([]);
 
     const jurisdiction =
       decisionView?.jurisdiction ??
@@ -220,10 +248,18 @@ export const FOUNDATION_MOTOR_HANDLERS = {
         confidence,
         identityResolved: propertyIdentity.status === PROPERTY_IDENTITY_STATUS.MATCH && !conflict,
         conflict,
+        conflictState: conflict ? CONFLICT_STATE.OPEN : CONFLICT_STATE.NONE,
         definitiveKeyCandidate,
         jurisdiction,
         propertyIdentity,
         canonicalProperty: decisionView,
+        factEnvelopes: decisionView?.factEnvelopes ?? factCompleteness?.facts ?? null,
+        sourceCompleteness:
+          decisionView?.sourceCompleteness ?? canonicalPropertyFact?.sourceCompleteness ?? null,
+        factCompleteness,
+        conflicts: conflictExport,
+        freshnessState: decisionView?.freshnessState ?? null,
+        provenanceMeta: decisionView?.provenanceMeta ?? null,
         ...meta,
       },
       knowledgeDelta: {
@@ -232,6 +268,8 @@ export const FOUNDATION_MOTOR_HANDLERS = {
         sourceRefs: [fixtures.assessor?.id, fixtures.gis?.id].filter(Boolean),
         propertyIdentityStatus: propertyIdentity.status,
         jurisdiction,
+        factCompleteness,
+        conflictState: conflict ? CONFLICT_STATE.OPEN : CONFLICT_STATE.NONE,
         ...meta,
       },
     };

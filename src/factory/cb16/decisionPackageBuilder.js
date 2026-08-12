@@ -19,6 +19,66 @@ import {
   validateDecisionPackageShape,
 } from "./decisionPackageSchema.js";
 import { evaluateDecisionReadiness } from "./decisionReadiness.js";
+import { FRESHNESS_STATE } from "../cb02/decisionFactEnvelope.js";
+import { exportConflicts } from "../cb06/conflictExport.js";
+import { buildComputedKnownUnknowns } from "../cb13/knownUnknownsRegistry.js";
+
+/**
+ * Build PS05-03 truth-accounting slice (completeness ≠ quality).
+ * @param {object} record
+ * @param {object} hints
+ * @param {object} trust
+ */
+function buildTruthAccounting(record, hints, trust) {
+  const canonicalFact = hints.canonicalPropertyFact ?? hints.canonicalFact ?? null;
+  const propertyIdentity = hints.propertyIdentity ?? null;
+  const sourceCompleteness =
+    hints.sourceCompleteness ?? canonicalFact?.sourceCompleteness ?? null;
+  const factCompleteness = hints.factCompleteness ?? canonicalFact?.factCompleteness ?? null;
+  const conflicts =
+    hints.conflicts ??
+    exportConflicts(hints.conflictRecords ?? record.elr?.conflict_resolutions ?? []);
+  const computedUnknowns =
+    hints.unknowns ??
+    buildComputedKnownUnknowns(record.factory_key ?? "decision", [], {
+      canonicalFact,
+      propertyIdentity,
+      payloadsByOrganism: hints.payloadsByOrganism ?? null,
+      sourceRefsByOrganism: hints.sourceRefsByOrganism ?? null,
+      skipPackLoad: hints.skipPackLoad === true || !canonicalFact,
+    }).unknowns;
+
+  const freshnessState =
+    hints.freshnessState ??
+    canonicalFact?.provenanceMeta?.freshnessState ??
+    FRESHNESS_STATE.UNKNOWN_FRESHNESS;
+
+  return {
+    schemaId: "rsn.decision.truthAccounting.v1",
+    facts: factCompleteness?.facts ?? hints.factEnvelopes ?? [],
+    sourceCompleteness,
+    factCompleteness,
+    conflicts,
+    unknowns: computedUnknowns,
+    freshness: {
+      freshnessState,
+      unknownFreshnessIsNotCurrent: freshnessState !== FRESHNESS_STATE.CURRENT,
+      stalePreserved: freshnessState === FRESHNESS_STATE.STALE,
+    },
+    provenance: {
+      hasSourceRefLineage: Boolean(
+        canonicalFact?.provenanceMeta?.primarySourceRefId ||
+          canonicalFact?.sourceIdentity?.sourceRefIds
+      ),
+      primarySourceRefId: canonicalFact?.provenanceMeta?.primarySourceRefId ?? null,
+    },
+    completenessIsNotQuality: true,
+    readinessIsNotQuality: true,
+    trustStatus: trust.status,
+    decisionTrusted: trust.decisionTrusted === true,
+    constitutionalPhase: "PS05-03",
+  };
+}
 
 /**
  * @param {object[]} manifests
@@ -167,6 +227,7 @@ export function buildDecisionPackage(record, hints = {}) {
       reasons: [...trust.reasons],
       rule: trust.rule,
     },
+    truthAccounting: buildTruthAccounting(record, hints, trust),
   };
 
   if (hints.elrSnapshot) {

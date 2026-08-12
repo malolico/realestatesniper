@@ -428,6 +428,45 @@ export async function validatePs0502CanonicalIdentityCb05() {
 }
 
 /**
+ * PS05-03 — Foundation consume of fact envelopes / completeness / freshness.
+ */
+export async function validatePs0503TruthAccountingCb05() {
+  const errors = [];
+  try {
+    const idn = await FOUNDATION_MOTOR_HANDLERS["MOT-IDN-01"]({
+      factoryKey: "ps05-03-idn",
+      inputs: { preferRecordedEnrichment: true },
+    });
+    if (!idn.outputs?.provenanceMeta?.primarySourceRefId && !idn.outputs?.factEnvelopes) {
+      errors.push("T01: MOT-IDN-01 must expose provenance/fact envelopes");
+    }
+    if (idn.outputs?.propertyIdentity?.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+      errors.push("T09: PS05-02 identity must remain MATCH on FND path");
+    }
+    if (idn.outputs?.factCompleteness?.completenessIsNotQuality !== true) {
+      errors.push("T10: factCompleteness must not be treated as quality");
+    }
+    if (
+      idn.outputs?.freshnessState === "CURRENT" &&
+      !idn.outputs?.provenanceMeta?.vintageAt
+    ) {
+      errors.push("T07: freshness CURRENT without vintage is forbidden");
+    }
+
+    const syn = await FOUNDATION_MOTOR_HANDLERS["MOT-IDN-01"]({
+      factoryKey: "ps05-03-syn",
+      inputs: { forceSynthetic: true },
+    });
+    if (syn.outputs?.decisionTrusted === true || syn.outputs?.synthetic !== true) {
+      errors.push("T08: synthetic FND path must remain non-trusted");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb05Validation(options = {}) {
@@ -440,6 +479,7 @@ export async function runCb05Validation(options = {}) {
   const omcRisk = validateOmcCountRiskDocumented();
   const ps0501 = await validatePs0501TruthBoundaryCb05();
   const ps0502 = await validatePs0502CanonicalIdentityCb05();
+  const ps0503 = await validatePs0503TruthAccountingCb05();
 
   const allErrors = [
     ...gov.errors,
@@ -451,6 +491,7 @@ export async function runCb05Validation(options = {}) {
     ...omcRisk.errors,
     ...ps0501.errors,
     ...ps0502.errors,
+    ...ps0503.errors,
   ];
 
   const checklist = [
@@ -488,6 +529,11 @@ export async function runCb05Validation(options = {}) {
       id: "CB05-PS05-02",
       criterion: "PS05-02 Canonical identity / jurisdiction / owner honesty",
       status: ps0502.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB05-PS05-03",
+      criterion: "PS05-03 Truth accounting envelopes on Foundation Decision path",
+      status: ps0503.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

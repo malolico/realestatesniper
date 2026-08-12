@@ -54,13 +54,38 @@ export function evaluateGateG4(ctx) {
 }
 
 /**
+ * G5 — Known unknowns honesty (PS05-03).
+ * Empty invented Obl no longer required. Pass when:
+ * - no undeclared Obl unknowns; AND
+ * - evaluation completed (Meta marker) OR declared Obl gaps OR legacy declared Obl present.
+ * Inventing Obl solely to satisfy G5 is forbidden upstream.
+ *
  * @param {object} ctx
  */
 export function evaluateGateG5(ctx) {
   const unknowns = ctx.knownUnknowns ?? [];
-  const openObl = unknowns.filter((u) => u.obligation === "Obl" && u.declared !== true);
-  const pass = openObl.length === 0 && unknowns.length > 0;
-  return { gate: "G5", pass, detail: { declaredCount: unknowns.filter((u) => u.declared).length } };
+  const undeclaredObl = unknowns.filter(
+    (u) => u.obligation === "Obl" && u.declared !== true
+  );
+  const declaredObl = unknowns.filter(
+    (u) => u.obligation === "Obl" && u.declared === true
+  );
+  const evaluationComplete =
+    ctx.unknownsHonestyComplete === true ||
+    unknowns.some((u) => u.evaluationComplete === true || u.honestyComplete === true);
+  const pass =
+    undeclaredObl.length === 0 &&
+    (evaluationComplete || declaredObl.length > 0);
+  return {
+    gate: "G5",
+    pass,
+    detail: {
+      declaredCount: declaredObl.length,
+      unknownCount: unknowns.length,
+      evaluationComplete,
+      inventedOblForbidden: true,
+    },
+  };
 }
 
 /**

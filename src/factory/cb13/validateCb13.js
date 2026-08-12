@@ -42,6 +42,8 @@ import {
 import { IntelligenceKnowledgeStore } from "./intelligenceKnowledgeStore.js";
 import { IntelligenceLayerService } from "./intelligenceLayerService.js";
 import { evaluateAllReadinessGates } from "./readinessGates.js";
+import { evaluateGateG5 } from "./readinessGates.js";
+import { buildDefaultKnownUnknowns, validateKnownUnknowns } from "./knownUnknownsRegistry.js";
 import { routeSufficiencyGap } from "./sufficiencyGapRouter.js";
 import { isDecisionHandoffEnabled } from "./decisionHandoffPrep.js";
 import {
@@ -635,6 +637,58 @@ export async function validatePs0502CanonicalIdentityCb13() {
 }
 
 /**
+ * PS05-03 — Dynamic unknowns / G5 honesty / INT envelope consume.
+ */
+export async function validatePs0503TruthAccountingCb13() {
+  const errors = [];
+  try {
+    const computed = buildDefaultKnownUnknowns("ps05-03-dkn");
+    const validation = validateKnownUnknowns(computed);
+    if (!validation.evaluationComplete && !validation.honestyComplete && validation.obligationCount === 0) {
+      errors.push("T03: computed unknowns must complete evaluation");
+    }
+    if (validation.inventedCount > 0) {
+      errors.push("T03/P05: invented Obl unknowns are forbidden");
+    }
+    // Must not invent valuation/distress Obl defaults
+    if (
+      computed.some(
+        (u) =>
+          u.description === "Comp set vintage — minor uncertainty" ||
+          u.description === "Contact authorization window pending"
+      )
+    ) {
+      errors.push("T03: hardcoded valuation/distress Obl defaults must be removed");
+    }
+
+    const g5 = evaluateGateG5({ knownUnknowns: computed });
+    if (!g5.pass) {
+      errors.push("T03: G5 must PASS on computed declared unknowns/honesty marker");
+    }
+
+    const emptyG5 = evaluateGateG5({ knownUnknowns: [] });
+    if (emptyG5.pass) {
+      errors.push("T03: empty unevaluated unknowns must not PASS G5");
+    }
+
+    const syn = await INTELLIGENCE_MOTOR_HANDLERS["MOT-SYN-01"]({
+      factoryKey: "ps05-03-int",
+      inputs: {},
+    });
+    const delta = syn.knowledgeDelta ?? {};
+    if (!delta.factCompleteness && !delta.knownUnknowns) {
+      errors.push("T01: INT hints must expose factCompleteness or knownUnknowns");
+    }
+    if (delta.propertyIdentity?.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+      errors.push("T09: PS05-02 identity must remain MATCH on INT path");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb13Validation(options = {}) {
@@ -650,6 +704,7 @@ export async function runCb13Validation(options = {}) {
   const cep01 = await validateSp04Cep01RecordedEnrichment();
   const ps0501 = await validatePs0501TruthBoundaryCb13();
   const ps0502 = await validatePs0502CanonicalIdentityCb13();
+  const ps0503 = await validatePs0503TruthAccountingCb13();
 
   const allErrors = [
     ...gov.errors,
@@ -664,6 +719,7 @@ export async function runCb13Validation(options = {}) {
     ...cep01.errors,
     ...ps0501.errors,
     ...ps0502.errors,
+    ...ps0503.errors,
   ];
 
   const checklist = [
@@ -706,6 +762,11 @@ export async function runCb13Validation(options = {}) {
       id: "CB13-PS05-02",
       criterion: "PS05-02 Canonical identity / jurisdiction on INT Decision-facing path",
       status: ps0502.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB13-PS05-03",
+      criterion: "PS05-03 Dynamic unknowns / G5 honesty / INT truth accounting",
+      status: ps0503.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

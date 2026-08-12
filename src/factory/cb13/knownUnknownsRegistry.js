@@ -1,53 +1,98 @@
 /**
  * CB-13 — Known unknowns registry (DKN / G5)
+ * PS05-03: unknowns computed from missing expected facts/sources — no invented Obl.
  */
+
+import { loadRecordedPackEnrichment } from "../cb02/connectors/recordedPackEnrichmentAdapter.js";
+import { evaluateSourceCompleteness } from "../cb02/sourceCompleteness.js";
+import {
+  evaluateFactCompleteness,
+  buildUnknownsFromCompleteness,
+} from "../cb02/factCompleteness.js";
 
 /**
+ * Compute known unknowns from bounded evidence. Does not invent Obl to satisfy G5.
+ *
  * @param {string} factoryKey
- * @param {object[]} layerBlockers
+ * @param {object[]} [layerBlockers]
+ * @param {{
+ *   canonicalFact?: object|null,
+ *   propertyIdentity?: object|null,
+ *   payloadsByOrganism?: Record<string, object>|null,
+ *   sourceRefsByOrganism?: Record<string, object>|null,
+ *   skipPackLoad?: boolean,
+ * }} [evidence]
  */
-export function buildDefaultKnownUnknowns(factoryKey, layerBlockers = []) {
-  const base = [
-    {
-      id: `DKN-${factoryKey}-001`,
-      domain: "valuation",
-      description: "Comp set vintage — minor uncertainty",
-      obligation: "Obl",
-      declared: true,
-    },
-    {
-      id: `DKN-${factoryKey}-002`,
-      domain: "distress",
-      description: "Contact authorization window pending",
-      obligation: "Obl",
-      declared: true,
-    },
-  ];
+export function buildComputedKnownUnknowns(factoryKey, layerBlockers = [], evidence = {}) {
+  let canonicalFact = evidence.canonicalFact ?? null;
+  let propertyIdentity = evidence.propertyIdentity ?? null;
+  let payloadsByOrganism = evidence.payloadsByOrganism ?? null;
+  let sourceRefsByOrganism = evidence.sourceRefsByOrganism ?? null;
 
-  for (const blocker of layerBlockers) {
-    if (blocker.documented === true) {
-      base.push({
-        id: `DKN-${factoryKey}-BLK-${blocker.id ?? base.length}`,
-        domain: blocker.domain ?? "layer",
-        description: blocker.message ?? "Documented blocker",
-        obligation: "Obl",
-        declared: true,
-      });
+  if (!evidence.skipPackLoad && !canonicalFact && !payloadsByOrganism) {
+    const loaded = loadRecordedPackEnrichment(undefined, { factoryKey });
+    if (loaded.ok) {
+      canonicalFact = loaded.canonicalPropertyFact;
+      propertyIdentity = loaded.propertyIdentity;
+      payloadsByOrganism = loaded.payloadsByOrganism;
+      sourceRefsByOrganism = loaded.sourceRefsByOrganism;
     }
   }
 
-  return base;
+  const sourceCompleteness = evaluateSourceCompleteness({
+    payloadsByOrganism,
+    sourceRefsByOrganism,
+    unavailableOrganisms: evidence.unavailableOrganisms,
+    failedOrganisms: evidence.failedOrganisms,
+    notCheckedOrganisms: evidence.notCheckedOrganisms,
+  });
+
+  const factCompleteness = evaluateFactCompleteness({
+    canonicalFact,
+    propertyIdentity,
+    factoryKey,
+    sourceCompleteness,
+  });
+
+  return buildUnknownsFromCompleteness(factoryKey, {
+    factCompleteness,
+    sourceCompleteness,
+    layerBlockers,
+  });
+}
+
+/**
+ * Backward-compatible entry used by INT bootstrap.
+ * Replaces hardcoded Obl DKN-001/002 with computed unknowns.
+ *
+ * @param {string} factoryKey
+ * @param {object[]} [layerBlockers]
+ */
+export function buildDefaultKnownUnknowns(factoryKey, layerBlockers = []) {
+  const computed = buildComputedKnownUnknowns(factoryKey, layerBlockers);
+  return computed.unknowns;
 }
 
 /**
  * @param {object[]} unknowns
  */
 export function validateKnownUnknowns(unknowns) {
-  const obl = unknowns.filter((u) => u.obligation === "Obl");
+  const list = unknowns ?? [];
+  const evaluationComplete = list.some((u) => u.evaluationComplete === true);
+  const honestyComplete = list.some((u) => u.honestyComplete === true);
+  const obl = list.filter((u) => u.obligation === "Obl");
   const undeclared = obl.filter((u) => u.declared !== true);
+  const invented = obl.filter((u) => u.invented === true);
+
   return {
-    valid: undeclared.length === 0 && obl.length > 0,
+    valid:
+      undeclared.length === 0 &&
+      invented.length === 0 &&
+      (evaluationComplete || honestyComplete || obl.length > 0),
     declaredCount: obl.filter((u) => u.declared).length,
     obligationCount: obl.length,
+    evaluationComplete,
+    honestyComplete,
+    inventedCount: invented.length,
   };
 }

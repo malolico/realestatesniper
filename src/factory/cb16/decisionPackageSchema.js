@@ -36,6 +36,7 @@ export const DECISION_PACKAGE_SECTIONS = Object.freeze([
   "elrExport",
   "boundary",
   "trust",
+  "truthAccounting",
 ]);
 
 /** Operations CB-16 must never perform (Decision Engine territory). */
@@ -125,6 +126,21 @@ export function validateDecisionPackageShape(pkg) {
     }
     if (pkg.trust.decisionTrusted === true && pkg.trust.status !== "TRUSTED") {
       errors.push("trust.decisionTrusted true requires trust.status TRUSTED");
+    }
+  }
+
+  // PS05-03 thin truth-accounting hooks (additive honesty — not quality/ranking).
+  if (!pkg.truthAccounting || typeof pkg.truthAccounting !== "object") {
+    errors.push("Missing package section: truthAccounting");
+  } else {
+    if (pkg.truthAccounting.completenessIsNotQuality !== true) {
+      errors.push("truthAccounting.completenessIsNotQuality must be true");
+    }
+    if (!pkg.truthAccounting.freshness || typeof pkg.truthAccounting.freshness !== "object") {
+      errors.push("truthAccounting.freshness must be present");
+    }
+    if (!Array.isArray(pkg.truthAccounting.unknowns)) {
+      errors.push("truthAccounting.unknowns must be an array");
     }
   }
 

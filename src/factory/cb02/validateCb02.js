@@ -30,6 +30,20 @@ import {
   resolvePropertyIdentity,
 } from "../cb05/propertyIdentityResolver.js";
 import { SOURCE_MODE } from "../cb05/decisionTrustBoundary.js";
+import {
+  FACT_TYPE,
+  FRESHNESS_STATE,
+  buildDecisionFactEnvelope,
+  buildUnknownFactEnvelope,
+  mapFreshnessState,
+} from "./decisionFactEnvelope.js";
+import {
+  SOURCE_COMPLETENESS_STATUS,
+  evaluateSourceCompleteness,
+} from "./sourceCompleteness.js";
+import { evaluateFactCompleteness } from "./factCompleteness.js";
+import { MotEvd02 } from "../cb06/motEvd02.js";
+import { exportFromMotEvd02Result } from "../cb06/conflictExport.js";
 
 function createTempDirs() {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "cb02-validation-"));
@@ -260,6 +274,137 @@ export function validatePs0502CanonicalIdentityCb02() {
 }
 
 /**
+ * PS05-03 — Provenance / typing / unknown / exhaustion / conflict / freshness proofs.
+ */
+export function validatePs0503TruthAccountingCb02() {
+  const errors = [];
+  try {
+    const loaded = loadRecordedPackEnrichment(undefined, { factoryKey: "ps05-03-t01" });
+    if (!loaded.ok) {
+      errors.push(`T01: pack load failed: ${loaded.reason}`);
+    } else {
+      if (!loaded.canonicalPropertyFact?.provenanceMeta?.primarySourceRefId) {
+        errors.push("T01/P04: observed parcel fact must retain SourceRef lineage");
+      }
+      if (loaded.propertyIdentity?.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+        errors.push("T09: PS05-02 property identity MATCH must remain intact");
+      }
+      if (loaded.canonicalPropertyFact?.jurisdiction?.state !== "AZ") {
+        errors.push("T09: PS05-02 jurisdiction must remain intact");
+      }
+      if (!loaded.canonicalPropertyFact?.rawIdentifiers?.assessor) {
+        errors.push("T09: rawIdentifiers must remain intact");
+      }
+      const owner = loaded.factCompleteness?.facts?.find((f) => f.factClass === "ownerRef");
+      if (owner?.status !== "UNKNOWN") {
+        errors.push("T03: unresolved owner must surface as UNKNOWN fact status");
+      }
+    }
+
+    const derived = buildDecisionFactEnvelope({
+      factClass: "trustMeta",
+      value: { trustClass: "STUB" },
+      factType: FACT_TYPE.DERIVED,
+      derivationRef: { kind: "test_derivation", inputs: ["SRC-A", "SRC-B"] },
+      trustMeta: { decisionTrusted: false, stubBusinessFact: true, synthetic: true },
+    });
+    if (!derived.derivationRef?.inputs || derived.trustMeta.decisionTrusted === true) {
+      errors.push("T02/T08: derived/stub fact must keep derivation lineage and remain non-trusted");
+    }
+
+    const missing = buildUnknownFactEnvelope("ownerRef", { reason: "absent" });
+    if (missing.factType !== FACT_TYPE.UNKNOWN || missing.value != null) {
+      errors.push("T03/P05: missing expected fact must be UNKNOWN with null value");
+    }
+
+    const src = evaluateSourceCompleteness({
+      payloadsByOrganism: { "ORG-ASR-MC": {} },
+      sourceRefsByOrganism: {},
+      unavailableOrganisms: ["ORG-GIS-MC"],
+      notCheckedOrganisms: ["ORG-RCR-MC"],
+    });
+    const asr = src.sources.find((s) => s.organismId === "ORG-ASR-MC");
+    const gis = src.sources.find((s) => s.organismId === "ORG-GIS-MC");
+    if (asr?.status === SOURCE_COMPLETENESS_STATUS.CHECKED) {
+      errors.push("T04: payload without SourceRef must not be CHECKED");
+    }
+    if (gis?.status !== SOURCE_COMPLETENESS_STATUS.UNAVAILABLE) {
+      errors.push("T04: unavailable source must be explicit UNAVAILABLE");
+    }
+
+    const evd = new MotEvd02();
+    const arb = evd.arbitrate({
+      factoryKey: "ps05-03-conflict",
+      field: "apn",
+      sources: [
+        { sourceRefId: "SRC-A", value: "111", eLevel: "E3", organismId: "ORG-ASR-MC" },
+        { sourceRefId: "SRC-B", value: "222", eLevel: "E3", organismId: "ORG-GIS-MC" },
+      ],
+      resolvable: true,
+    });
+    const exported = exportFromMotEvd02Result(arb);
+    if (exported.conflicts[0]?.retainedLosingLineage !== true) {
+      errors.push("T05/P08: conflict export must retain losing-source lineage");
+    }
+    if (exported.averagingProhibited !== true) {
+      errors.push("T05: averaging must remain prohibited");
+    }
+
+    const stale = buildDecisionFactEnvelope({
+      factClass: "parcelId",
+      value: "P1",
+      factType: FACT_TYPE.OBSERVED,
+      vintageAt: "2010-01-01T00:00:00.000Z",
+      freshnessProfileKey: "ASSESSOR_ROLL",
+      sourceRefId: "SRC-STALE",
+      trustMeta: { decisionTrusted: true },
+    });
+    if (stale.freshnessState !== FRESHNESS_STATE.STALE || stale.status !== "STALE") {
+      errors.push("T06/P09: stale fact must remain STALE downstream");
+    }
+
+    if (mapFreshnessState(null, null) !== FRESHNESS_STATE.UNKNOWN_FRESHNESS) {
+      errors.push("T07: missing freshness must be UNKNOWN_FRESHNESS not CURRENT");
+    }
+    const unknownFresh = buildDecisionFactEnvelope({
+      factClass: "parcelId",
+      value: "P2",
+      sourceRefId: "SRC-X",
+      trustMeta: { decisionTrusted: true },
+    });
+    if (unknownFresh.freshnessState !== FRESHNESS_STATE.UNKNOWN_FRESHNESS) {
+      errors.push("T07: absent vintage must not become CURRENT");
+    }
+
+    const synth = buildDecisionFactEnvelope({
+      factClass: "parcelId",
+      value: "SYN",
+      trustMeta: {
+        synthetic: true,
+        stubBusinessFact: true,
+        decisionTrusted: true,
+        sourceMode: SOURCE_MODE.SYNTHETIC_FIXTURE,
+      },
+    });
+    if (synth.factType !== FACT_TYPE.SYNTHETIC || synth.trustMeta.decisionTrusted !== false) {
+      errors.push("T08: synthetic facts must be typed SYNTHETIC and non-trusted");
+    }
+
+    const fc = evaluateFactCompleteness({
+      canonicalFact: loaded.ok ? loaded.canonicalPropertyFact : null,
+      propertyIdentity: loaded.ok ? loaded.propertyIdentity : null,
+      factoryKey: "ps05-03-fc",
+    });
+    if (fc.completenessIsNotQuality !== true) {
+      errors.push("T10: fact completeness must declare completenessIsNotQuality");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export function runCb02Validation(options = {}) {
@@ -269,6 +414,7 @@ export function runCb02Validation(options = {}) {
   const mapping = validateDdiPilotMapping();
   const elr = validateRegistryElrIntegration();
   const ps0502 = validatePs0502CanonicalIdentityCb02();
+  const ps0503 = validatePs0503TruthAccountingCb02();
 
   const allErrors = [
     ...gov.errors,
@@ -277,6 +423,7 @@ export function runCb02Validation(options = {}) {
     ...mapping.errors,
     ...elr.errors,
     ...ps0502.errors,
+    ...ps0503.errors,
   ];
 
   const checklist = [
@@ -307,6 +454,11 @@ export function runCb02Validation(options = {}) {
       id: "CB02-PS05-02",
       criterion: "PS05-02 Canonical fact / jurisdiction / identity (P03 bounded)",
       status: ps0502.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB02-PS05-03",
+      criterion: "PS05-03 Provenance / typing / unknown / exhaustion / conflict / freshness",
+      status: ps0503.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 
