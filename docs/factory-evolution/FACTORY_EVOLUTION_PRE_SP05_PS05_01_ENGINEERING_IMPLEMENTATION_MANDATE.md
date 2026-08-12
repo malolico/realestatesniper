@@ -165,7 +165,7 @@ After code:
 2. Independent post-IMPL Technical Audit
 3. PS05-01 Block Status / closure
 4. commit → push → LOCAL=REMOTE · ahead=0 · behind=0 · WT CLEAN
-5. Only then PS05-02 may open  
+5. Only then PS05-02 may open
 
 ---
 
