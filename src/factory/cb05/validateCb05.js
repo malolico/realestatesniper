@@ -33,7 +33,8 @@ import { SOURCE_MODE } from "./decisionTrustBoundary.js";
 import { FOUNDATION_MOTOR_HANDLERS } from "./foundationMotorHandlers.js";
 import { PROPERTY_IDENTITY_STATUS } from "./propertyIdentityResolver.js";
 import { LEGITIMACY_MOTOR_HANDLERS } from "../cb07/legitimacyMotorHandlers.js";
-import { buildFoundationRecordedEnrichmentBundle } from "../cb02/connectors/recordedPackEnrichmentAdapter.js";
+import { buildFoundationRecordedEnrichmentBundle, PIMA_RECORDED_REAL_PACK_ROOT } from "../cb02/connectors/recordedPackEnrichmentAdapter.js";
+import { ECONOMY_MOTOR_HANDLERS } from "../cb09/economyMotorHandlers.js";
 
 function createTempEnv() {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "cb05-validation-"));
@@ -467,6 +468,83 @@ export async function validatePs0503TruthAccountingCb05() {
 }
 
 /**
+ * PS05-06 — FND path I15 final + multi-key / regression themes (T03/T09/T10/T11).
+ */
+export async function validatePs0506GeneralizationIsolationCb05() {
+  const errors = [];
+  try {
+    const enriched = buildFoundationRecordedEnrichmentBundle("ps05-06-fnd-pima", {
+      packRoot: PIMA_RECORDED_REAL_PACK_ROOT,
+    });
+    if (enriched.ok !== true) {
+      errors.push(`T03: FND Pima enrichment failed: ${enriched.reason ?? "not_ok"}`);
+    } else {
+      if (enriched.canonicalPropertyFact?.jurisdiction?.id !== "US-AZ-PIMA") {
+        errors.push("T03: FND Pima jurisdiction must be US-AZ-PIMA");
+      }
+      if (enriched.propertyIdentity?.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+        errors.push("T03: FND Pima identity must MATCH");
+      }
+      const cand = String(enriched.propertyIdentity?.definitiveKeyCandidate ?? "");
+      if (cand.startsWith("maricopa.parcel.")) {
+        errors.push("T09/I15: FND Pima definitiveKeyCandidate must not be maricopa.parcel.*");
+      }
+    }
+
+    const idn = await FOUNDATION_MOTOR_HANDLERS["MOT-IDN-01"]({
+      factoryKey: "ps05-06-idn-pima",
+      inputs: {
+        preferRecordedEnrichment: true,
+        recordedPackRoot: PIMA_RECORDED_REAL_PACK_ROOT,
+      },
+    });
+    if (idn.outputs?.propertyIdentity?.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+      errors.push("T03: MOT-IDN-01 Pima path must surface MATCH identity");
+    }
+    if (idn.outputs?.jurisdiction?.id !== "US-AZ-PIMA") {
+      errors.push("T03/I15: MOT-IDN-01 Pima jurisdiction must be US-AZ-PIMA");
+    }
+    if (String(idn.outputs?.definitiveKeyCandidate ?? "").startsWith("maricopa.parcel.")) {
+      errors.push("T09/I15: MOT-IDN-01 Pima key must not use maricopa.parcel.*");
+    }
+    if (!idn.outputs?.canonicalProperty) {
+      errors.push("T03: MOT-IDN-01 must expose canonicalProperty Decision-facing view for Pima");
+    }
+
+    // T04 Maricopa FND still works
+    const mc = buildFoundationRecordedEnrichmentBundle("ps05-06-fnd-mc", {});
+    if (mc.ok !== true || mc.canonicalPropertyFact?.jurisdiction?.id !== "US-AZ-MARICOPA") {
+      errors.push("T04: Maricopa FND enrichment regression must remain intact");
+    }
+
+    // T10: PS05-01 stub isolation still present
+    const eco = await ECONOMY_MOTOR_HANDLERS["MOT-FIN-01"]({
+      factoryKey: "ps05-06-stub",
+      inputs: {},
+    });
+    if (eco.outputs?.stubBusinessFact !== true || eco.outputs?.equity !== 125000) {
+      errors.push("T10: PS05-01 stub equity lane must remain intact");
+    }
+
+    // T11: PS05-04 Pima RECORDED_REAL honesty
+    const ecoReal = await ECONOMY_MOTOR_HANDLERS["MOT-FIN-01"]({
+      factoryKey: "ps05-06-real",
+      inputs: {
+        recordedPackRoot: PIMA_RECORDED_REAL_PACK_ROOT,
+        contentClass: "RECORDED_REAL",
+        recordedReal: true,
+      },
+    });
+    if (ecoReal.outputs?.equity === 125000 || ecoReal.outputs?.contentClass !== "RECORDED_REAL") {
+      errors.push("T11: PS05-04 RECORDED_REAL honesty must remain intact");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb05Validation(options = {}) {
@@ -480,6 +558,7 @@ export async function runCb05Validation(options = {}) {
   const ps0501 = await validatePs0501TruthBoundaryCb05();
   const ps0502 = await validatePs0502CanonicalIdentityCb05();
   const ps0503 = await validatePs0503TruthAccountingCb05();
+  const ps0506 = await validatePs0506GeneralizationIsolationCb05();
 
   const allErrors = [
     ...gov.errors,
@@ -492,6 +571,7 @@ export async function runCb05Validation(options = {}) {
     ...ps0501.errors,
     ...ps0502.errors,
     ...ps0503.errors,
+    ...ps0506.errors,
   ];
 
   const checklist = [
@@ -534,6 +614,11 @@ export async function runCb05Validation(options = {}) {
       id: "CB05-PS05-03",
       criterion: "PS05-03 Truth accounting envelopes on Foundation Decision path",
       status: ps0503.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB05-PS05-06",
+      criterion: "PS05-06 Generalization + isolation — Pima FND path / I15 final",
+      status: ps0506.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

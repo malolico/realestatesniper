@@ -9,7 +9,7 @@ export const JURISDICTION_STATUS = Object.freeze({
   UNKNOWN: "UNKNOWN",
 });
 
-/** Bounded known instances for current Factory sources. */
+/** Bounded known instances for current Factory sources (not a 50-state catalog). */
 export const KNOWN_JURISDICTIONS = Object.freeze({
   "US-AZ-MARICOPA": Object.freeze({
     id: "US-AZ-MARICOPA",
@@ -17,6 +17,14 @@ export const KNOWN_JURISDICTIONS = Object.freeze({
     county: "Maricopa",
     country: "US",
     sourceLabels: Object.freeze(["Maricopa County, AZ", "maricopa", "AZ-Maricopa"]),
+  }),
+  /** PS05-06 — Pima instance for generic-contract / multi-key isolation proof (not Scale Out). */
+  "US-AZ-PIMA": Object.freeze({
+    id: "US-AZ-PIMA",
+    state: "AZ",
+    county: "Pima",
+    country: "US",
+    sourceLabels: Object.freeze(["Pima County, AZ", "pima", "AZ-Pima"]),
   }),
 });
 

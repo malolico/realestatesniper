@@ -19,12 +19,15 @@ import { IngestionLegitimacyGate } from "./ingestionLegitimacyGate.js";
 import { SourceIngestionLedger } from "./sourceIngestionLedger.js";
 import { SourceRegistry } from "./sourceRegistry.js";
 import { isSourceRef } from "./sourceRef.js";
-import { loadRecordedPackEnrichment } from "./connectors/recordedPackEnrichmentAdapter.js";
+import { loadRecordedPackEnrichment, PIMA_RECORDED_REAL_PACK_ROOT } from "./connectors/recordedPackEnrichmentAdapter.js";
 import { buildCanonicalPropertyFact } from "./connectors/canonicalPropertyFactAdapter.js";
 import {
   JURISDICTION_STATUS,
+  KNOWN_JURISDICTIONS,
   normalizeJurisdiction,
 } from "./jurisdictionRegistry.js";
+import { getRecordedContractByOrganismId } from "./connectors/recordedPackValidator.js";
+import { getMaricopaContractByOrganismId } from "./connectors/maricopaConnectorContracts.js";
 import {
   PROPERTY_IDENTITY_STATUS,
   resolvePropertyIdentity,
@@ -405,6 +408,110 @@ export function validatePs0503TruthAccountingCb02() {
 }
 
 /**
+ * PS05-06 — Generalization + isolation (T01–T12 themes at CB-02).
+ */
+export function validatePs0506GeneralizationIsolationCb02() {
+  const errors = [];
+  try {
+    // T01: generic recorded-contract lookup (not Maricopa-only)
+    const pimaContract = getRecordedContractByOrganismId("ORG-ASR-PC");
+    const mcContract = getRecordedContractByOrganismId("ORG-ASR-MC");
+    if (!pimaContract || pimaContract.mode !== "RECORDED_ONLY") {
+      errors.push("T01: generic recorded-contract must resolve ORG-ASR-PC");
+    }
+    if (!mcContract || mcContract.mode !== "RECORDED_ONLY") {
+      errors.push("T01: generic recorded-contract must still resolve ORG-ASR-MC");
+    }
+    if (getMaricopaContractByOrganismId("ORG-ASR-PC") != null) {
+      errors.push("T01: Maricopa-only lookup must not silently own Pima organisms");
+    }
+
+    // T02/T03: Pima organisms accepted; Pima pack enriches on generalized path
+    const pima = loadRecordedPackEnrichment(PIMA_RECORDED_REAL_PACK_ROOT, {
+      factoryKey: "ps05-06-pima",
+    });
+    if (!pima.ok) {
+      errors.push(`T02/T03: Pima enrichment failed: ${pima.reason}`);
+    } else {
+      if (!pima.sourceRefsByOrganism?.["ORG-ASR-PC"] || !pima.sourceRefsByOrganism?.["ORG-GIS-PC"]) {
+        errors.push("T02: Pima ORG-ASR-PC / ORG-GIS-PC must be accepted");
+      }
+      if (pima.canonicalPropertyFact?.schemaId !== "rsn.canonical.property.fact.v1") {
+        errors.push("T03: Pima Decision-facing schema must be rsn.canonical.property.fact.v1");
+      }
+      const j = pima.canonicalPropertyFact?.jurisdiction;
+      if (!j || j.id !== "US-AZ-PIMA" || j.county !== "Pima" || j.state !== "AZ") {
+        errors.push("T03: Pima canonical jurisdiction must be US-AZ-PIMA");
+      }
+      if (pima.propertyIdentity?.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+        errors.push("T03: Pima ASR+GIS must MATCH identity");
+      }
+      const cand = String(pima.propertyIdentity?.definitiveKeyCandidate ?? "");
+      if (cand.startsWith("maricopa.parcel.") || cand.startsWith("maricopa.")) {
+        errors.push("T09: Pima definitiveKeyCandidate must not use maricopa.* form");
+      }
+      if (!cand.toLowerCase().includes("pima") && !String(pima.propertyIdentity?.canonicalKey ?? "").includes("US-AZ-PIMA")) {
+        errors.push("T09: Pima key must be jurisdiction-honest (Pima / US-AZ-PIMA)");
+      }
+    }
+
+    // T04: Maricopa path still works
+    const mc = loadRecordedPackEnrichment(undefined, { factoryKey: "ps05-06-mc" });
+    if (!mc.ok) {
+      errors.push(`T04: Maricopa enrichment regression failed: ${mc.reason}`);
+    } else if (mc.canonicalPropertyFact?.jurisdiction?.id !== "US-AZ-MARICOPA") {
+      errors.push("T04: Maricopa jurisdiction must remain US-AZ-MARICOPA");
+    } else if (mc.propertyIdentity?.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+      errors.push("T04: Maricopa identity MATCH must remain intact");
+    }
+
+    // T05: registry includes US-AZ-PIMA
+    if (!KNOWN_JURISDICTIONS["US-AZ-PIMA"]) {
+      errors.push("T05: KNOWN_JURISDICTIONS must include US-AZ-PIMA");
+    }
+    const pimaJ = normalizeJurisdiction({ sourceLabel: "Pima County, AZ" });
+    if (pimaJ.id !== "US-AZ-PIMA" || pimaJ.status !== JURISDICTION_STATUS.KNOWN) {
+      errors.push("T05: Pima County, AZ label must resolve to US-AZ-PIMA");
+    }
+
+    // T06/T07: multi-key isolation
+    const maricopa = normalizeJurisdiction({ sourceLabel: "Maricopa County, AZ" });
+    const pimaNorm = normalizeJurisdiction({ sourceLabel: "Pima County, AZ" });
+    const cross = resolvePropertyIdentity({
+      sources: [
+        { organismId: "A", jurisdiction: maricopa, apn: "209-01-0680", parcelId: "209010680" },
+        { organismId: "B", jurisdiction: pimaNorm, apn: "209-01-0680", parcelId: "209010680" },
+      ],
+    });
+    if (cross.status !== PROPERTY_IDENTITY_STATUS.NO_MATCH) {
+      errors.push("T06: same APN across Maricopa/Pima must NOT MATCH");
+    }
+    if (mc.ok && pima.ok) {
+      const mcKey = mc.propertyIdentity?.canonicalKey;
+      const pimaKey = pima.propertyIdentity?.canonicalKey;
+      if (!mcKey || !pimaKey || mcKey === pimaKey) {
+        errors.push("T07: Maricopa and Pima canonical keys must coexist and differ");
+      }
+      if (!String(mcKey).startsWith("US-AZ-MARICOPA:") || !String(pimaKey).startsWith("US-AZ-PIMA:")) {
+        errors.push("T07: canonical keys must be jurisdiction-prefixed");
+      }
+    }
+
+    // T08: unknown jurisdiction does not silently become Maricopa
+    const unknown = normalizeJurisdiction({ sourceLabel: "Somewhere Unknown" });
+    if (unknown.status === JURISDICTION_STATUS.KNOWN && unknown.id === "US-AZ-MARICOPA") {
+      errors.push("T08: unknown jurisdiction must not silently become Maricopa");
+    }
+    if (unknown.status !== JURISDICTION_STATUS.UNKNOWN) {
+      errors.push("T08: unbound label must remain UNKNOWN (not invented KNOWN)");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export function runCb02Validation(options = {}) {
@@ -415,6 +522,7 @@ export function runCb02Validation(options = {}) {
   const elr = validateRegistryElrIntegration();
   const ps0502 = validatePs0502CanonicalIdentityCb02();
   const ps0503 = validatePs0503TruthAccountingCb02();
+  const ps0506 = validatePs0506GeneralizationIsolationCb02();
 
   const allErrors = [
     ...gov.errors,
@@ -424,6 +532,7 @@ export function runCb02Validation(options = {}) {
     ...elr.errors,
     ...ps0502.errors,
     ...ps0503.errors,
+    ...ps0506.errors,
   ];
 
   const checklist = [
@@ -459,6 +568,11 @@ export function runCb02Validation(options = {}) {
       id: "CB02-PS05-03",
       criterion: "PS05-03 Provenance / typing / unknown / exhaustion / conflict / freshness",
       status: ps0503.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
+    {
+      id: "CB02-PS05-06",
+      criterion: "PS05-06 Generalization + isolation (generic-contract / multi-key / I15 final)",
+      status: ps0506.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
   ];
 

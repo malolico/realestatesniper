@@ -2,6 +2,8 @@
  * PS05-02 — Deterministic property identity resolver.
  * Outcomes: MATCH | NO_MATCH | AMBIGUOUS | UNRESOLVED
  * No probabilistic AI matching. Jurisdiction is part of identity.
+ *
+ * PS05-06: expand from canonicalFact using family/organism honesty — not Maricopa-only IDs.
  */
 
 import {
@@ -88,9 +90,10 @@ export function resolvePropertyIdentity(input = {}) {
     const fact = input.canonicalFact;
     const raw = fact.rawIdentifiers ?? {};
     const j = fact.jurisdiction;
+    const srcId = fact.sourceIdentity ?? {};
     if (raw.assessor) {
       sources.push({
-        organismId: "ORG-ASR-MC",
+        organismId: raw.assessor.organismId ?? srcId.assessorOrganismId ?? "ORG-ASR-MC",
         jurisdiction: j,
         parcelId: raw.assessor.parcelId,
         apn: raw.assessor.apn,
@@ -99,14 +102,15 @@ export function resolvePropertyIdentity(input = {}) {
     }
     if (raw.gis) {
       sources.push({
-        organismId: "ORG-GIS-MC",
+        organismId: raw.gis.organismId ?? srcId.gisOrganismId ?? "ORG-GIS-MC",
         jurisdiction: j,
         parcelId: raw.gis.parcelId,
+        apn: raw.gis.apn ?? null,
       });
     }
     if (raw.recorder) {
       sources.push({
-        organismId: "ORG-RCR-MC",
+        organismId: raw.recorder.organismId ?? srcId.recorderOrganismId ?? "ORG-RCR-MC",
         jurisdiction: j,
         recorderParcelRef: raw.recorder.parcelRef,
         parcelId: raw.recorder.parcelRef,

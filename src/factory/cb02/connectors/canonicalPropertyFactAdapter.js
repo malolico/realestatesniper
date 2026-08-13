@@ -3,6 +3,8 @@
  * Maps source-specific recorded payloads → RSN canonical property representation.
  * Preserves raw/source identifiers. Does not invent missing values.
  * Maricopa schemas remain source adapters — not the canonical contract.
+ *
+ * PS05-06: payload / SourceRef selection is family-based (not Maricopa-organism-hardcoded).
  */
 
 import {
@@ -23,6 +25,33 @@ export const OWNER_RESOLUTION = Object.freeze({
   UNRESOLVED: "UNRESOLVED",
   UNKNOWN: "UNKNOWN",
 });
+
+/**
+ * @param {Record<string, object>} bag
+ * @param {string} familyId
+ * @param {string[]} [legacyIds]
+ */
+function pickByFamily(bag, familyId, legacyIds = []) {
+  for (const id of legacyIds) {
+    if (bag[id]) return { organismId: id, value: bag[id] };
+  }
+  for (const [organismId, value] of Object.entries(bag)) {
+    if (getOrganism(organismId)?.families?.includes(familyId)) {
+      return { organismId, value };
+    }
+  }
+  // Alias keys used by some tests / callers
+  if (familyId === "REGISTRAL_ASSESSOR" && bag.assessor) {
+    return { organismId: "assessor", value: bag.assessor };
+  }
+  if (familyId === "GIS_OFFICIAL" && bag.gis) {
+    return { organismId: "gis", value: bag.gis };
+  }
+  if (familyId === "REGISTRAL_RECORDER" && bag.recorder) {
+    return { organismId: "recorder", value: bag.recorder };
+  }
+  return { organismId: null, value: null };
+}
 
 /**
  * @param {object|null|undefined} situs
@@ -74,24 +103,30 @@ function resolveTrustMeta(trustMeta = {}) {
  *   payloadsByOrganism?: Record<string, object>|null,
  *   sourceRefsByOrganism?: Record<string, object>|null,
  *   packJurisdictionLabel?: string|null,
+ *   jurisdictionId?: string|null,
  *   trustMeta?: object,
  *   ownerEvidence?: { name?: string|null, resolved?: boolean }|null,
+ *   propertyIdentity?: object|null,
+ *   factoryKey?: string,
  * }} [input]
  */
 export function buildCanonicalPropertyFact(input = {}) {
   const payloads = input.payloadsByOrganism ?? {};
   const sourceRefs = input.sourceRefsByOrganism ?? {};
 
-  const asr = payloads["ORG-ASR-MC"] ?? payloads.assessor ?? null;
-  const gis = payloads["ORG-GIS-MC"] ?? payloads.gis ?? null;
-  const rcr = payloads["ORG-RCR-MC"] ?? payloads.recorder ?? null;
+  const asrPick = pickByFamily(payloads, "REGISTRAL_ASSESSOR", ["ORG-ASR-MC", "ORG-ASR-PC"]);
+  const gisPick = pickByFamily(payloads, "GIS_OFFICIAL", ["ORG-GIS-MC", "ORG-GIS-PC"]);
+  const rcrPick = pickByFamily(payloads, "REGISTRAL_RECORDER", ["ORG-RCR-MC"]);
+  const asr = asrPick.value;
+  const gis = gisPick.value;
+  const rcr = rcrPick.value;
 
   const situsState =
     asr?.situsAddress && typeof asr.situsAddress === "object"
       ? asr.situsAddress.state
       : null;
 
-  // Prefer pack label; else organism catalog jurisdiction when that organism is present.
+  // Prefer pack label / jurisdictionCode; else organism catalog jurisdiction when present.
   let packLabel = input.packJurisdictionLabel ?? null;
   if (!packLabel) {
     const present = Object.keys(payloads);
@@ -103,15 +138,19 @@ export function buildCanonicalPropertyFact(input = {}) {
       }
     }
   }
+  if (!packLabel && typeof asr?.jurisdiction === "string") {
+    packLabel = asr.jurisdiction;
+  }
 
   const jurisdiction = normalizeJurisdiction({
     sourceLabel: packLabel,
     state: situsState ?? null,
+    jurisdictionId: input.jurisdictionId ?? null,
   });
 
   const parcelId =
     asr?.parcelId ?? gis?.parcelId ?? rcr?.parcelRef ?? null;
-  const apn = asr?.apn ?? null;
+  const apn = asr?.apn ?? gis?.apn ?? null;
   const address = normalizeAddress(asr?.situsAddress ?? null);
 
   const organismsPresent = Object.keys(payloads);
@@ -122,6 +161,9 @@ export function buildCanonicalPropertyFact(input = {}) {
         Object.entries(sourceRefs).map(([org, ref]) => [org, ref?.id ?? null])
       )
     ),
+    assessorOrganismId: asrPick.organismId,
+    gisOrganismId: gisPick.organismId,
+    recorderOrganismId: rcrPick.organismId,
   });
 
   const rawIdentifiers = Object.freeze({
@@ -130,12 +172,15 @@ export function buildCanonicalPropertyFact(input = {}) {
           schemaId: asr.schemaId ?? null,
           parcelId: asr.parcelId ?? null,
           apn: asr.apn ?? null,
+          organismId: asrPick.organismId,
         })
       : null,
     gis: gis
       ? Object.freeze({
           schemaId: gis.schemaId ?? null,
           parcelId: gis.parcelId ?? null,
+          apn: gis.apn ?? null,
+          organismId: gisPick.organismId,
         })
       : null,
     recorder: rcr
@@ -143,6 +188,7 @@ export function buildCanonicalPropertyFact(input = {}) {
           schemaId: rcr.schemaId ?? null,
           documentId: rcr.documentId ?? null,
           parcelRef: rcr.parcelRef ?? null,
+          organismId: rcrPick.organismId,
         })
       : null,
   });
@@ -183,9 +229,18 @@ export function buildCanonicalPropertyFact(input = {}) {
     jurisdictionStatus: jurisdiction.status,
   });
 
-  // PS05-03: provenance timing from SourceRefs only — never invent timestamps.
+  // PS05-03/06: provenance timing from SourceRefs only — family-first, not MC-hardcoded.
+  const asrRef = asrPick.organismId ? sourceRefs[asrPick.organismId] : null;
+  const gisRef = gisPick.organismId ? sourceRefs[gisPick.organismId] : null;
+  const rcrRef = rcrPick.organismId ? sourceRefs[rcrPick.organismId] : null;
   const primaryRef =
-    sourceRefs["ORG-ASR-MC"] ?? sourceRefs["ORG-GIS-MC"] ?? sourceRefs["ORG-RCR-MC"] ?? null;
+    asrRef ??
+    gisRef ??
+    rcrRef ??
+    sourceRefs["ORG-ASR-MC"] ??
+    sourceRefs["ORG-GIS-MC"] ??
+    sourceRefs["ORG-RCR-MC"] ??
+    null;
   const vintageAt = primaryRef?.vintageAt ?? null;
   const acquiredAt = primaryRef?.acquiredAt ?? null;
   const freshnessResolved = resolveFreshnessState(
@@ -222,7 +277,7 @@ export function buildCanonicalPropertyFact(input = {}) {
     ownerRef,
     trustMeta,
     provenanceMeta,
-    constitutionalPhase: "PS05-02",
+    constitutionalPhase: "PS05-06",
   };
 
   const sourceCompleteness = evaluateSourceCompleteness({

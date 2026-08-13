@@ -6,6 +6,9 @@
  * does not redesign connectors, Runtime, CB semantics, Hardening, or P-INT catalogs.
  *
  * Mandate: adapters / enrichment / information-source replacement for §4-DEF-01 / §4-DEF-02.
+ *
+ * PS05-06: generic recorded-contract lookup (not Maricopa-only); family-based
+ * assessor/GIS selection so registered non-Maricopa instances (e.g. Pima) load.
  */
 
 import fs from "node:fs";
@@ -13,7 +16,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildSourceRef } from "../sourceRef.js";
 import { getOrganism } from "../sourceOrganismsCatalog.js";
-import { getMaricopaContractByOrganismId } from "./maricopaConnectorContracts.js";
+import { getRecordedContractByOrganismId } from "./recordedPackValidator.js";
 import { loadRecordedPackForIngest } from "./recordedPackLoader.js";
 import { LIVE_NOT_AUTHORIZED } from "./connectorContract.js";
 import { buildCanonicalPropertyFact } from "./canonicalPropertyFactAdapter.js";
@@ -29,12 +32,30 @@ export const DEFAULT_SP03_RECORDED_PACK_ROOT = path.resolve(
   "../../../../data/factory-dso-packs/maricopa/pilot-001"
 );
 
+/** PS05-06 — existing Pima RECORDED_REAL proof instance (non-Maricopa). */
+export const PIMA_RECORDED_REAL_PACK_ROOT = path.resolve(
+  __dirname,
+  "../../../../data/factory-dso-packs/pima/real-pilot-001"
+);
+
 /**
  * @param {string} [packRoot]
  * @returns {string}
  */
 export function resolveDefaultRecordedPackRoot(packRoot) {
   return packRoot ?? DEFAULT_SP03_RECORDED_PACK_ROOT;
+}
+
+/**
+ * Pick first organism SourceRef whose catalog family matches.
+ * @param {Record<string, object>} sourceRefsByOrganism
+ * @param {string} familyId
+ */
+function pickSourceRefByFamily(sourceRefsByOrganism, familyId) {
+  const organismId = Object.keys(sourceRefsByOrganism).find((id) =>
+    getOrganism(id)?.families?.includes(familyId)
+  );
+  return organismId ? sourceRefsByOrganism[organismId] : null;
 }
 
 /**
@@ -51,7 +72,8 @@ export function resolveDefaultRecordedPackRoot(packRoot) {
  */
 export function buildRecordedEnrichmentSourceRef(input) {
   const organism = getOrganism(input.organismId);
-  const contract = getMaricopaContractByOrganismId(input.organismId);
+  // PS05-06: jurisdiction-agnostic recorded contract (Maricopa or Pima).
+  const contract = getRecordedContractByOrganismId(input.organismId);
   if (!organism || organism.status === "PROHIBITED") {
     throw new Error(
       `[SP03-ENG] Cannot enrich prohibited/missing organism ${input.organismId}`
@@ -94,21 +116,6 @@ export function buildRecordedEnrichmentSourceRef(input) {
  *   factoryKey?: string,
  *   attemptLiveFetch?: boolean,
  * }} [options]
- * @returns {{
- *   ok: true,
- *   packRoot: string,
- *   factoryKey: string,
- *   mode: "RECORDED_ONLY",
- *   liveFetch: false,
- *   synthetic: false,
- *   sourceRefsByOrganism: Record<string, object>,
- *   payloadsByOrganism: Record<string, object>,
- *   assessor: object,
- *   gis: object,
- *   recorder: object|null,
- *   constitutionalPhase: string,
- *   mandateClass: string,
- * } | { ok: false, reason: string, code?: string }}
  */
 export function loadRecordedPackEnrichment(packRoot, options = {}) {
   if (options.attemptLiveFetch === true) {
@@ -144,20 +151,23 @@ export function loadRecordedPackEnrichment(packRoot, options = {}) {
     });
   }
 
-  const assessor = sourceRefsByOrganism["ORG-ASR-MC"];
-  const gis = sourceRefsByOrganism["ORG-GIS-MC"];
+  // PS05-06: require assessor + GIS by family — not Maricopa-only organism IDs.
+  const assessor = pickSourceRefByFamily(sourceRefsByOrganism, "REGISTRAL_ASSESSOR");
+  const gis = pickSourceRefByFamily(sourceRefsByOrganism, "GIS_OFFICIAL");
   if (!assessor || !gis) {
     return {
       ok: false,
-      reason: "pack_missing_required_organisms:ORG-ASR-MC,ORG-GIS-MC",
+      reason: "pack_missing_required_organisms:REGISTRAL_ASSESSOR,GIS_OFFICIAL",
     };
   }
 
   const packJurisdictionLabel = loaded.manifest?.jurisdiction ?? null;
+  const packJurisdictionCode = loaded.manifest?.jurisdictionCode ?? null;
   const canonicalPropertyFact = buildCanonicalPropertyFact({
     payloadsByOrganism: loaded.payloadsByOrganism,
     sourceRefsByOrganism,
     packJurisdictionLabel,
+    jurisdictionId: packJurisdictionCode,
     factoryKey,
     trustMeta: {
       sourceMode: SOURCE_MODE.RECORDED_ENRICHMENT,
@@ -183,6 +193,8 @@ export function loadRecordedPackEnrichment(packRoot, options = {}) {
     ),
   });
 
+  const recorder = pickSourceRefByFamily(sourceRefsByOrganism, "REGISTRAL_RECORDER");
+
   return {
     ok: true,
     packRoot: root,
@@ -194,8 +206,9 @@ export function loadRecordedPackEnrichment(packRoot, options = {}) {
     payloadsByOrganism: loaded.payloadsByOrganism,
     assessor,
     gis,
-    recorder: sourceRefsByOrganism["ORG-RCR-MC"] ?? null,
+    recorder: recorder ?? null,
     packJurisdictionLabel,
+    packJurisdictionCode,
     canonicalPropertyFact: enrichedCanonical,
     propertyIdentity,
     sourceCompleteness: enrichedCanonical.sourceCompleteness,
@@ -228,6 +241,7 @@ export function buildFoundationRecordedEnrichmentBundle(factoryKey, options = {}
     packRoot: loaded.packRoot,
     sourceMode: "RECORDED_ENRICHMENT",
     packJurisdictionLabel: loaded.packJurisdictionLabel ?? null,
+    packJurisdictionCode: loaded.packJurisdictionCode ?? null,
     canonicalPropertyFact: loaded.canonicalPropertyFact ?? null,
     propertyIdentity: loaded.propertyIdentity ?? null,
     sourceCompleteness: loaded.sourceCompleteness ?? null,
