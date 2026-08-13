@@ -129,12 +129,18 @@ export function validateDecisionPackageShape(pkg) {
     }
   }
 
-  // PS05-03 thin truth-accounting hooks (additive honesty — not quality/ranking).
+  // PS05-03/PS05-05 truth-accounting honesty — not quality/ranking/opportunity.
   if (!pkg.truthAccounting || typeof pkg.truthAccounting !== "object") {
     errors.push("Missing package section: truthAccounting");
   } else {
     if (pkg.truthAccounting.completenessIsNotQuality !== true) {
       errors.push("truthAccounting.completenessIsNotQuality must be true");
+    }
+    if (pkg.truthAccounting.readinessIsNotQuality !== true) {
+      errors.push("truthAccounting.readinessIsNotQuality must be true");
+    }
+    if (pkg.truthAccounting.readinessIsNotOpportunity !== true) {
+      errors.push("truthAccounting.readinessIsNotOpportunity must be true");
     }
     if (!pkg.truthAccounting.freshness || typeof pkg.truthAccounting.freshness !== "object") {
       errors.push("truthAccounting.freshness must be present");
@@ -144,19 +150,25 @@ export function validateDecisionPackageShape(pkg) {
     }
   }
 
+  // Trust alone must not invent commercial/opportunity semantics.
+  if (pkg.opportunity != null || pkg.investmentRecommendation != null || pkg.ranking != null) {
+    errors.push("Decision Package must not carry opportunity/ranking/investment recommendation fields");
+  }
+
   return { valid: errors.length === 0, errors };
 }
 
 /**
- * Trusted Decision Package validation (PS05-01).
- * Shape-valid + trust.status TRUSTED + decisionTrusted true.
+ * Trusted Decision Package validation (PS05-01 + PS05-05).
+ * Shape-valid + honesty fields + trust.status TRUSTED + decisionTrusted true.
+ * Shape-valid alone is never sufficient.
  * @param {object} pkg
  */
 export function validateTrustedDecisionPackage(pkg) {
   const shape = validateDecisionPackageShape(pkg);
   const errors = [...shape.errors];
   if (pkg?.trust?.status !== "TRUSTED" || pkg?.trust?.decisionTrusted !== true) {
-    errors.push("Decision Package is not Decision-trusted (PS05-01)");
+    errors.push("Decision Package is not Decision-trusted (PS05-01/PS05-05)");
   }
   if (pkg?.trust?.contaminated === true) {
     errors.push("Decision Package trust.contaminated must be false for trusted consumption");

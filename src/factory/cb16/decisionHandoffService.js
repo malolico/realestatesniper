@@ -50,11 +50,14 @@ export class DecisionHandoffService {
 
   /**
    * Resolve readiness hints from Evidence Service + optional orchestration payload.
+   * PS05-05: default trusted path; diagnostic UNTRUSTED requires allowUntrustedDiagnostic.
    * @param {string} factoryKey
    * @param {{
    *   maturity?: { maturity_score?: number },
    *   elrSnapshot?: object,
    *   maturity_score?: number,
+   *   allowUntrustedDiagnostic?: boolean,
+   *   requireTrustedDecisionFacts?: boolean,
    * }} [options]
    */
   resolveHints(factoryKey, options = {}) {
@@ -64,6 +67,8 @@ export class DecisionHandoffService {
       sufficiencyStatus: sufficiency?.status ?? null,
       maturity_score: options.maturity?.maturity_score ?? options.maturity_score,
       elrSnapshot: options.elrSnapshot ?? null,
+      allowUntrustedDiagnostic: options.allowUntrustedDiagnostic === true,
+      requireTrustedDecisionFacts: options.requireTrustedDecisionFacts,
     };
   }
 
@@ -91,6 +96,7 @@ export class DecisionHandoffService {
    *   maturity_score?: number,
    *   transitionToDec?: boolean,
    *   recipient?: string,
+   *   allowUntrustedDiagnostic?: boolean,
    * }} [options]
    */
   prepareAndDeliver(factoryKey, options = {}) {
@@ -151,6 +157,7 @@ export class DecisionHandoffService {
 
     const delivery = deliverDecisionPackage(decisionPackage, {
       recipient: options.recipient ?? "DecisionEngine",
+      allowUntrustedDiagnostic: options.allowUntrustedDiagnostic === true,
     });
 
     recordPackageDelivered(this.registry, factoryKey, {

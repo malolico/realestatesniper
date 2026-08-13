@@ -268,7 +268,9 @@ export async function validatePilotDecisionHandoff() {
       runSwarm: false,
     });
 
-    const result = handoff.handoffFromOrchestration(orchestration);
+    const result = handoff.handoffFromOrchestration(orchestration, {
+      allowUntrustedDiagnostic: true,
+    });
 
     if (!result.factoryKey) errors.push("handoff should return factoryKey");
     if (result.state !== "ST-DEC") {
@@ -327,6 +329,7 @@ export async function validateGatesAndElrHandoffs() {
     const result = handoff.prepareAndDeliver(orchestration.factoryKey, {
       maturity: orchestration.maturity,
       elrSnapshot: orchestration.elrSnapshot,
+      allowUntrustedDiagnostic: true,
     });
 
     const record = registry.getExpediente(result.factoryKey);
@@ -387,6 +390,7 @@ export async function validateNoCommercialCrossing() {
 
     const result = handoff.prepareAndDeliver(orchestration.factoryKey, {
       maturity: orchestration.maturity,
+      allowUntrustedDiagnostic: true,
     });
     const boundary = result.decisionPackage.boundary;
     if (
@@ -458,6 +462,7 @@ export async function validatePs0501TruthBoundaryCb16() {
     });
     const result = handoff.prepareAndDeliver(orchestration.factoryKey, {
       maturity: orchestration.maturity,
+      allowUntrustedDiagnostic: true,
     });
     const pkg = result.decisionPackage;
     const shape = validateDecisionPackageShape(pkg);
@@ -557,6 +562,7 @@ export async function validatePs0503TruthAccountingCb16() {
       truthAccounting: {
         completenessIsNotQuality: true,
         readinessIsNotQuality: true,
+        readinessIsNotOpportunity: true,
         facts: loaded.ok ? loaded.factCompleteness?.facts ?? [] : [],
         sourceCompleteness: loaded.ok ? loaded.sourceCompleteness : null,
         factCompleteness: loaded.ok ? loaded.factCompleteness : null,
@@ -576,6 +582,9 @@ export async function validatePs0503TruthAccountingCb16() {
     }
     if (pkgShape.truthAccounting.completenessIsNotQuality !== true) {
       errors.push("T10: completeness must not be quality");
+    }
+    if (pkgShape.truthAccounting.readinessIsNotOpportunity !== true) {
+      errors.push("T10: readiness must not be opportunity");
     }
     if (pkgShape.truthAccounting.freshness.freshnessState === "CURRENT" && !loaded.ok) {
       errors.push("T07: must not invent CURRENT freshness");
@@ -654,6 +663,186 @@ export async function validatePs0504RecordedRealHonestyCb16() {
 }
 
 /**
+ * PS05-05 — Trusted CB-16 boundary + readiness ≠ opportunity (T01–T12).
+ */
+export async function validatePs0505TrustedBoundaryCb16() {
+  const errors = [];
+  const env = createTempEnv();
+  try {
+    const { deliverDecisionPackage } = await import("./decisionHandoffInterface.js");
+    const { buildOfflineExportEnvelope } = await import(
+      "./export/decisionPackageExportService.js"
+    );
+    const { bus, handoff, registry } = createHandoffStack(env);
+    const orchestration = await bus.orchestrateExpediente("cb16-ps05-05", {
+      parcelId: "dhi-ps05-05-001",
+      runLoopEngine: false,
+    });
+
+    // T01: default trusted handoff refuses UNTRUSTED/contaminated
+    let defaultRefused = false;
+    try {
+      handoff.prepareAndDeliver(orchestration.factoryKey, {
+        maturity: orchestration.maturity,
+        transitionToDec: false,
+      });
+    } catch (err) {
+      defaultRefused = /refused|trusted|contaminated|shape-valid/i.test(err.message);
+      if (!defaultRefused) {
+        errors.push(`T01: unexpected default handoff error: ${err.message}`);
+      }
+    }
+    if (!defaultRefused) {
+      errors.push("T01: default prepareAndDeliver must refuse UNTRUSTED contaminated package");
+    }
+
+    // T02: diagnostic lane can still build/deliver shape-valid UNTRUSTED
+    const diag = handoff.prepareAndDeliver(orchestration.factoryKey, {
+      maturity: orchestration.maturity,
+      allowUntrustedDiagnostic: true,
+      transitionToDec: false,
+    });
+    if (!diag.delivery?.delivered || diag.decisionPackage?.trust?.decisionTrusted === true) {
+      errors.push("T02: diagnostic UNTRUSTED lane must remain bounded and deliverable");
+    }
+    if (diag.delivery?.allowUntrustedDiagnostic !== true) {
+      errors.push("T02: diagnostic delivery must be explicitly marked");
+    }
+
+    // T03: requireTrustedDecisionFacts refuses contaminated (builder)
+    const record = registry.getExpediente(orchestration.factoryKey);
+    // reset state to ST-RDY for builder checks if needed
+    if (record.state !== "ST-RDY") {
+      // use diagnostic-built package trust evidence instead
+    }
+    const refused = buildDecisionPackage(record.state === "ST-RDY" ? record : {
+      ...record,
+      state: "ST-RDY",
+    }, {
+      maturity_score: orchestration.maturity?.maturity_score,
+      requireTrustedDecisionFacts: true,
+    });
+    if (refused.ok !== false) {
+      errors.push("T03: requireTrustedDecisionFacts must refuse contaminated corpus");
+    }
+
+    // T04: deliver interface refuses shape-only UNTRUSTED without diagnostic flag
+    let deliverRefused = false;
+    try {
+      deliverDecisionPackage(diag.decisionPackage, { recipient: "DecisionEngine" });
+    } catch (err) {
+      deliverRefused = /trusted deliver refused|Decision-trusted/i.test(err.message);
+      if (!deliverRefused) {
+        errors.push(`T04: unexpected deliver error: ${err.message}`);
+      }
+    }
+    if (!deliverRefused) {
+      errors.push("T04: deliver must refuse UNTRUSTED without allowUntrustedDiagnostic");
+    }
+
+    // T05: export path refuses UNTRUSTED by default
+    let exportRefused = false;
+    try {
+      buildOfflineExportEnvelope(record.state === "ST-RDY" ? record : { ...record, state: "ST-RDY" }, {});
+    } catch (err) {
+      exportRefused = /trusted export refused|Package build failed|trusted/i.test(err.message);
+      if (!exportRefused) {
+        errors.push(`T05: unexpected export error: ${err.message}`);
+      }
+    }
+    if (!exportRefused) {
+      errors.push("T05: trusted export must refuse UNTRUSTED packages");
+    }
+
+    // Diagnostic export still allowed
+    try {
+      buildOfflineExportEnvelope(
+        record.state === "ST-RDY" ? record : { ...record, state: "ST-RDY" },
+        { allowUntrustedDiagnostic: true }
+      );
+    } catch (err) {
+      errors.push(`T05: diagnostic export lane should work: ${err.message}`);
+    }
+
+    const pkg = diag.decisionPackage;
+
+    // T06–T08 honesty fields
+    if (pkg.truthAccounting?.completenessIsNotQuality !== true) {
+      errors.push("T06: completenessIsNotQuality must be true");
+    }
+    if (pkg.truthAccounting?.readinessIsNotQuality !== true) {
+      errors.push("T07: readinessIsNotQuality must be true");
+    }
+    if (pkg.truthAccounting?.readinessIsNotOpportunity !== true) {
+      errors.push("T08: readinessIsNotOpportunity must be true");
+    }
+    const missingOpp = {
+      ...pkg,
+      truthAccounting: {
+        ...pkg.truthAccounting,
+        readinessIsNotOpportunity: false,
+      },
+    };
+    const oppShape = validateDecisionPackageShape(missingOpp);
+    if (oppShape.valid) {
+      errors.push("T08: schema must reject missing readinessIsNotOpportunity");
+    }
+
+    // T09 boundary / blocked ops
+    if (
+      pkg.boundary?.classifiesDeal !== false ||
+      pkg.boundary?.classifiesPremium !== false ||
+      pkg.boundary?.classifiesDiamond !== false ||
+      pkg.boundary?.decides !== false
+    ) {
+      errors.push("T09: boundary must forbid decide/classify commercial semantics");
+    }
+    if (!isBlockedHandoffOperation("classify_deal") || !isBlockedHandoffOperation("classify_diamond")) {
+      errors.push("T09: classify_deal/diamond must remain blocked");
+    }
+
+    // T10: TRUSTED stamp alone does not create opportunity fields
+    if (pkg.opportunity != null || pkg.investmentRecommendation != null || pkg.ranking != null) {
+      errors.push("T10: package must not carry opportunity/ranking/recommendation fields");
+    }
+    if (pkg.truthAccounting?.readinessIsNotOpportunity !== true) {
+      errors.push("T10: readiness honesty must deny opportunity synonym");
+    }
+
+    // T11: PS05-01 stub contamination still blocks trusted validator
+    const trustedCheck = validateTrustedDecisionPackage(pkg);
+    if (trustedCheck.valid) {
+      errors.push("T11: contaminated package must not pass validateTrustedDecisionPackage");
+    }
+    const eco = await ECONOMY_MOTOR_HANDLERS["MOT-FIN-01"]({ factoryKey: "ps05-05-stub", inputs: {} });
+    if (eco.outputs?.stubBusinessFact !== true || eco.outputs?.equity !== 125000) {
+      errors.push("T11: PS05-01 stub equity lane must remain intact");
+    }
+    const ecoReal = await ECONOMY_MOTOR_HANDLERS["MOT-FIN-01"]({
+      factoryKey: "ps05-05-real",
+      inputs: {
+        recordedPackRoot: path.resolve(
+          path.dirname(fileURLToPath(import.meta.url)),
+          "../../../data/factory-dso-packs/pima/real-pilot-001"
+        ),
+        contentClass: "RECORDED_REAL",
+        recordedReal: true,
+      },
+    });
+    if (ecoReal.outputs?.equity === 125000 || ecoReal.outputs?.contentClass !== "RECORDED_REAL") {
+      errors.push("T11: PS05-04 RECORDED_REAL honesty must remain intact");
+    }
+
+    // T12 covered by runCb16Validation suite aggregation
+  } catch (err) {
+    errors.push(err.message);
+  } finally {
+    fs.rmSync(env.base, { recursive: true, force: true });
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb16Validation(options = {}) {
@@ -667,6 +856,7 @@ export async function runCb16Validation(options = {}) {
   const ps0501 = await validatePs0501TruthBoundaryCb16();
   const ps0503 = await validatePs0503TruthAccountingCb16();
   const ps0504 = await validatePs0504RecordedRealHonestyCb16();
+  const ps0505 = await validatePs0505TrustedBoundaryCb16();
 
   const allErrors = [
     ...gov.errors,
@@ -679,6 +869,7 @@ export async function runCb16Validation(options = {}) {
     ...ps0501.errors,
     ...ps0503.errors,
     ...ps0504.errors,
+    ...ps0505.errors,
   ];
 
   const checklist = [
@@ -733,6 +924,11 @@ export async function runCb16Validation(options = {}) {
       criterion: "PS05-04 RECORDED_REAL honesty path reaches CB-16 without equity 125000 lock",
       status: ps0504.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
+    {
+      id: "CB16-PS05-05",
+      criterion: "PS05-05 Trusted CB-16 boundary + readiness ≠ opportunity (T01–T12)",
+      status: ps0505.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
   ];
 
   const passed = allErrors.length === 0 && checklist.every((i) => i.status === CHECKLIST_STATUS.PASS);
@@ -760,6 +956,8 @@ export async function runCb16Validation(options = {}) {
       syntheticFixturesOnly: true,
       ps0501TruthBoundaryActive: true,
       decisionTrustedRequiresCleanCorpus: true,
+      ps0505TrustedBoundaryActive: true,
+      readinessIsNotOpportunity: true,
     },
     phaseRecord,
     cb17Unlocked: passed ? isPhaseApproved("CB-16") : false,

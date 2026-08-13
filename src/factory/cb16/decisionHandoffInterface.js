@@ -3,6 +3,9 @@
  *
  * Clean delivery port to the future Decision Engine.
  * Factory stops at the frontier (FFO-06 / LFF-07).
+ *
+ * PS05-05: default deliver requires trusted package; diagnostic UNTRUSTED
+ * delivery requires allowUntrustedDiagnostic=true.
  */
 
 import { assertNotAccessTierAssignment } from "../cb00/catalogActorGuard.js";
@@ -11,6 +14,7 @@ import {
   DECISION_HANDOFF_INTERFACE_ID,
   isBlockedHandoffOperation,
   validateDecisionPackageShape,
+  validateTrustedDecisionPackage,
 } from "./decisionPackageSchema.js";
 
 /**
@@ -45,16 +49,29 @@ export function assertHandoffBoundary(operation, context = {}) {
  * Does not invoke Decision internals — port only.
  *
  * @param {object} decisionPackage
- * @param {{ recipient?: string }} [options]
+ * @param {{
+ *   recipient?: string,
+ *   allowUntrustedDiagnostic?: boolean,
+ * }} [options]
  */
 export function deliverDecisionPackage(decisionPackage, options = {}) {
   assertHandoffBoundary("deliver_decision_package");
 
-  const shape = validateDecisionPackageShape(decisionPackage);
-  if (!shape.valid) {
-    throw new Error(
-      `[CB-16 Decision Handoff] Invalid Decision Package: ${shape.errors.join("; ")}`
-    );
+  const allowDiag = options.allowUntrustedDiagnostic === true;
+  if (allowDiag) {
+    const shape = validateDecisionPackageShape(decisionPackage);
+    if (!shape.valid) {
+      throw new Error(
+        `[CB-16 Decision Handoff] Invalid Decision Package: ${shape.errors.join("; ")}`
+      );
+    }
+  } else {
+    const trusted = validateTrustedDecisionPackage(decisionPackage);
+    if (!trusted.valid) {
+      throw new Error(
+        `[CB-16 Decision Handoff] PS05-05 trusted deliver refused (shape-valid ≠ trusted): ${trusted.errors.join("; ")}`
+      );
+    }
   }
 
   const deliveryId = `DHI-${decisionPackage.identity.factory_key}-${Date.now()}`;
@@ -69,10 +86,13 @@ export function deliverDecisionPackage(decisionPackage, options = {}) {
     packageVersion: decisionPackage.meta.version,
     maturity_score: decisionPackage.scores.maturity_score,
     gatesPass: decisionPackage.readiness.allPass,
+    trustedDelivery: !allowDiag,
+    allowUntrustedDiagnostic: allowDiag,
     boundary: {
       factoryTerminated: true,
       decisionSeparated: true,
       decides: false,
+      readinessIsNotOpportunity: true,
     },
     /** Opaque handle for future Decision Engine consumption */
     corpus: decisionPackage,

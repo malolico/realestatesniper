@@ -10,6 +10,7 @@ import { evaluateDecisionReadiness } from "../decisionReadiness.js";
 import {
   DECISION_PACKAGE_VERSION,
   validateDecisionPackageShape,
+  validateTrustedDecisionPackage,
 } from "../decisionPackageSchema.js";
 import {
   findOfflineLocalExportAct,
@@ -61,7 +62,11 @@ export function buildOfflineExportEnvelope(record, hints = {}, inputSnapshotRefs
     );
   }
 
-  const built = buildDecisionPackage(record, hints);
+  const built = buildDecisionPackage(record, {
+    ...hints,
+    // PS05-05: export defaults to trusted path; diagnostic UNTRUSTED requires opt-in.
+    allowUntrustedDiagnostic: hints.allowUntrustedDiagnostic === true,
+  });
   if (!built.ok || !built.package) {
     throw new Error(
       `[P-INT-04 Export] Package build failed: ${(built.errors ?? []).join("; ")}`
@@ -70,9 +75,18 @@ export function buildOfflineExportEnvelope(record, hints = {}, inputSnapshotRefs
 
   const payload = built.package;
   assertPayloadTopLevelAllowlist(payload);
-  const shape = validateDecisionPackageShape(payload);
-  if (!shape.valid) {
-    throw new Error(`[P-INT-04 Export] Invalid package: ${shape.errors.join("; ")}`);
+  if (hints.allowUntrustedDiagnostic === true) {
+    const shape = validateDecisionPackageShape(payload);
+    if (!shape.valid) {
+      throw new Error(`[P-INT-04 Export] Invalid package: ${shape.errors.join("; ")}`);
+    }
+  } else {
+    const trusted = validateTrustedDecisionPackage(payload);
+    if (!trusted.valid) {
+      throw new Error(
+        `[P-INT-04 Export] PS05-05 trusted export refused (shape-valid ≠ trusted): ${trusted.errors.join("; ")}`
+      );
+    }
   }
   if (payload.boundary?.decides !== false) {
     throw new Error("[P-INT-04 Export] boundary.decides must be false");

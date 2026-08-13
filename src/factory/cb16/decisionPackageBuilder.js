@@ -6,6 +6,8 @@
  *
  * PS05-01: attaches trust boundary classification; refuses when
  * requireTrustedDecisionFacts and corpus is synthetic/stub/unavailable contaminated.
+ * PS05-05: trusted consumption path defaults to requireTrustedDecisionFacts;
+ * diagnostic UNTRUSTED builds require allowUntrustedDiagnostic=true.
  */
 
 import {
@@ -74,9 +76,31 @@ function buildTruthAccounting(record, hints, trust) {
     },
     completenessIsNotQuality: true,
     readinessIsNotQuality: true,
+    /** PS05-05 — readiness ≠ opportunity / investment recommendation */
+    readinessIsNotOpportunity: true,
     trustStatus: trust.status,
     decisionTrusted: trust.decisionTrusted === true,
-    constitutionalPhase: "PS05-03",
+    constitutionalPhase: "PS05-05",
+  };
+}
+
+/**
+ * Resolve trust-build hints for PS05-05 trusted path vs diagnostic lane.
+ * Default: requireTrustedDecisionFacts=true (shape-valid ≠ trusted).
+ * Diagnostic: allowUntrustedDiagnostic=true may emit UNTRUSTED for tests.
+ *
+ * @param {object} [hints]
+ */
+export function resolveTrustBuildHints(hints = {}) {
+  if (hints.allowUntrustedDiagnostic === true) {
+    return {
+      ...hints,
+      requireTrustedDecisionFacts: hints.requireTrustedDecisionFacts === true,
+    };
+  }
+  return {
+    ...hints,
+    requireTrustedDecisionFacts: true,
   };
 }
 
@@ -138,10 +162,12 @@ function buildElrExport(elr) {
  *   maturity_score?: number,
  *   elrSnapshot?: object|null,
  *   requireTrustedDecisionFacts?: boolean,
+ *   allowUntrustedDiagnostic?: boolean,
  * }} [hints]
  */
 export function buildDecisionPackage(record, hints = {}) {
-  const readiness = evaluateDecisionReadiness(record, hints);
+  const trustHints = resolveTrustBuildHints(hints);
+  const readiness = evaluateDecisionReadiness(record, trustHints);
   if (!readiness.ready) {
     return {
       ok: false,
@@ -161,11 +187,11 @@ export function buildDecisionPackage(record, hints = {}) {
 
   const trust = evaluateDecisionTrustContamination(elr, { motors });
 
-  if (hints.requireTrustedDecisionFacts === true && !isDecisionPackageTrusted(trust)) {
+  if (trustHints.requireTrustedDecisionFacts === true && !isDecisionPackageTrusted(trust)) {
     return {
       ok: false,
       errors: [
-        "PS05-01: Decision Package refused — contaminated synthetic/stub/unavailable facts",
+        "PS05-05: Decision Package refused — trusted path requires non-contaminated corpus (shape-valid ≠ trusted)",
         ...trust.reasons,
       ],
       package: null,
@@ -197,7 +223,7 @@ export function buildDecisionPackage(record, hints = {}) {
     motors,
     evidence: {
       registryRef: readiness.evidence.evidenceRef,
-      sufficiencyStatus: hints.sufficiencyStatus ?? null,
+      sufficiencyStatus: trustHints.sufficiencyStatus ?? null,
       requiredMotorsPresent: readiness.evidence.requiredMotorsPresent,
     },
     scores: {
@@ -219,6 +245,7 @@ export function buildDecisionPackage(record, hints = {}) {
       freezeAfterHandoff: true,
       target: "DecisionEngine",
       rules: ["FFO-06", "LFF-07"],
+      readinessIsNotOpportunity: true,
     },
     trust: {
       status: trust.status,
@@ -227,11 +254,11 @@ export function buildDecisionPackage(record, hints = {}) {
       reasons: [...trust.reasons],
       rule: trust.rule,
     },
-    truthAccounting: buildTruthAccounting(record, hints, trust),
+    truthAccounting: buildTruthAccounting(record, trustHints, trust),
   };
 
-  if (hints.elrSnapshot) {
-    pkg.elrExport.orchestrationSnapshot = hints.elrSnapshot;
+  if (trustHints.elrSnapshot) {
+    pkg.elrExport.orchestrationSnapshot = trustHints.elrSnapshot;
   }
 
   const shape = validateDecisionPackageShape(pkg);
