@@ -119,7 +119,7 @@ DG-01 A = PARKING OUTSIDE SP05 DEFINITION OF DONE
 | Effect on dossier inclusion | **NONE** |
 | Tier-based truth/semantic changes | **FORBIDDEN** |
 
-**MUST NOT** classify A as solved Product design.  
+**MUST NOT** classify A as solved Product design.
 **MUST NOT** define Premium / Diamond / `access_tier` behavior in this instrument.
 
 **Supported default preserved (Mandate):** `access_tier` remains **Product territory** pending future authority — **not** redesigned here.
@@ -149,7 +149,7 @@ DG-01 B = PARKING OUTSIDE SP05 DEFINITION OF DONE
 | Strategy selection added to dossier? | **NO** |
 | Transaction recommendation created? | **NO** |
 
-**MUST NOT** design a strategy engine in this instrument.  
+**MUST NOT** design a strategy engine in this instrument.
 Questions A and B remain **independent** — disposition of one does not define the other.
 
 ---
