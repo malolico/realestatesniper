@@ -229,18 +229,12 @@ export function buildCanonicalPropertyFact(input = {}) {
     jurisdictionStatus: jurisdiction.status,
   });
 
-  // PS05-03/06: provenance timing from SourceRefs only — family-first, not MC-hardcoded.
+  // PS05-03/06 + SP08-P3: provenance from family-picked SourceRefs only.
+  // Do not invent Maricopa SourceRef when family/source evidence is absent.
   const asrRef = asrPick.organismId ? sourceRefs[asrPick.organismId] : null;
   const gisRef = gisPick.organismId ? sourceRefs[gisPick.organismId] : null;
   const rcrRef = rcrPick.organismId ? sourceRefs[rcrPick.organismId] : null;
-  const primaryRef =
-    asrRef ??
-    gisRef ??
-    rcrRef ??
-    sourceRefs["ORG-ASR-MC"] ??
-    sourceRefs["ORG-GIS-MC"] ??
-    sourceRefs["ORG-RCR-MC"] ??
-    null;
+  const primaryRef = asrRef ?? gisRef ?? rcrRef ?? null;
   const vintageAt = primaryRef?.vintageAt ?? null;
   const acquiredAt = primaryRef?.acquiredAt ?? null;
   const freshnessResolved = resolveFreshnessState(

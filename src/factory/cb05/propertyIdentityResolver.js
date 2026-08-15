@@ -93,7 +93,8 @@ export function resolvePropertyIdentity(input = {}) {
     const srcId = fact.sourceIdentity ?? {};
     if (raw.assessor) {
       sources.push({
-        organismId: raw.assessor.organismId ?? srcId.assessorOrganismId ?? "ORG-ASR-MC",
+        // SP08-P3: explicit organism only — never invent ORG-*-MC when absent.
+        organismId: raw.assessor.organismId ?? srcId.assessorOrganismId ?? null,
         jurisdiction: j,
         parcelId: raw.assessor.parcelId,
         apn: raw.assessor.apn,
@@ -102,7 +103,7 @@ export function resolvePropertyIdentity(input = {}) {
     }
     if (raw.gis) {
       sources.push({
-        organismId: raw.gis.organismId ?? srcId.gisOrganismId ?? "ORG-GIS-MC",
+        organismId: raw.gis.organismId ?? srcId.gisOrganismId ?? null,
         jurisdiction: j,
         parcelId: raw.gis.parcelId,
         apn: raw.gis.apn ?? null,
@@ -110,7 +111,7 @@ export function resolvePropertyIdentity(input = {}) {
     }
     if (raw.recorder) {
       sources.push({
-        organismId: raw.recorder.organismId ?? srcId.recorderOrganismId ?? "ORG-RCR-MC",
+        organismId: raw.recorder.organismId ?? srcId.recorderOrganismId ?? null,
         jurisdiction: j,
         recorderParcelRef: raw.recorder.parcelRef,
         parcelId: raw.recorder.parcelRef,

@@ -5,9 +5,11 @@
 
 import { DsoIngestionService } from "../dsoIngestionService.js";
 import { LIVE_NOT_AUTHORIZED } from "./connectorContract.js";
-import { getMaricopaContractByOrganismId } from "./maricopaConnectorContracts.js";
 import { loadRecordedPackForIngest } from "./recordedPackLoader.js";
-import { validateRecordedPack } from "./recordedPackValidator.js";
+import {
+  getRecordedContractByOrganismId,
+  validateRecordedPack,
+} from "./recordedPackValidator.js";
 
 /**
  * @param {string} packRoot
@@ -33,8 +35,9 @@ export function offlineIngestFromPack(packRoot, options = {}) {
   }
 
   // Guard: any listed contract must refuse live fetch.
+  // SP08-P3: resolve via generic recorded-contract authority (MC ∪ Pima), not Maricopa-only.
   for (const entry of pre.manifest.organisms) {
-    const contract = getMaricopaContractByOrganismId(entry.organismId);
+    const contract = getRecordedContractByOrganismId(entry.organismId);
     if (!contract) {
       return {
         ok: false,

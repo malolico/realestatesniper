@@ -19,8 +19,10 @@ import { IngestionLegitimacyGate } from "./ingestionLegitimacyGate.js";
 import { SourceIngestionLedger } from "./sourceIngestionLedger.js";
 import { SourceRegistry } from "./sourceRegistry.js";
 import { isSourceRef } from "./sourceRef.js";
-import { loadRecordedPackEnrichment, PIMA_RECORDED_REAL_PACK_ROOT } from "./connectors/recordedPackEnrichmentAdapter.js";
+import { loadRecordedPackEnrichment, PIMA_RECORDED_REAL_PACK_ROOT, DEFAULT_SP03_RECORDED_PACK_ROOT } from "./connectors/recordedPackEnrichmentAdapter.js";
 import { buildCanonicalPropertyFact } from "./connectors/canonicalPropertyFactAdapter.js";
+import { offlineIngestFromPack } from "./connectors/offlineIngestFromPack.js";
+import { LIVE_NOT_AUTHORIZED } from "./connectors/connectorContract.js";
 import {
   JURISDICTION_STATUS,
   KNOWN_JURISDICTIONS,
@@ -512,6 +514,144 @@ export function validatePs0506GeneralizationIsolationCb02() {
 }
 
 /**
+ * SP08-P3 — Bounded Scale Out honesty (Grant-01 T01–T06, T12–T15 @ CB-02).
+ */
+export function validateSp08P3ScaleOutHonestyCb02() {
+  const errors = [];
+  try {
+    const stubDso = {
+      ingest(_factoryKey, request) {
+        return {
+          accepted: true,
+          deriveToEvidence: false,
+          source_ref: { id: `SRC-STUB-${request.organismId}` },
+        };
+      },
+    };
+
+    // T01: Maricopa offline ingest resolves MC contract (stub DSO — proves contract path)
+    const mcIngest = offlineIngestFromPack(DEFAULT_SP03_RECORDED_PACK_ROOT, {
+      dsoIngestionService: stubDso,
+    });
+    if (!mcIngest.ok) {
+      errors.push(`T01: Maricopa offline ingest must succeed: ${mcIngest.reason}`);
+    } else {
+      const mcOrgs = (mcIngest.results ?? []).map((r) => r.organismId);
+      if (!mcOrgs.some((id) => String(id).endsWith("-MC"))) {
+        errors.push("T01: Maricopa offline ingest must include MC organism results");
+      }
+      if (!getRecordedContractByOrganismId("ORG-ASR-MC")) {
+        errors.push("T01: Maricopa recorded contract must resolve");
+      }
+    }
+
+    // T02: Pima offline ingest via ONE FACTORY (generic recorded-contract path)
+    const pimaIngest = offlineIngestFromPack(PIMA_RECORDED_REAL_PACK_ROOT, {
+      dsoIngestionService: stubDso,
+    });
+    if (!pimaIngest.ok) {
+      errors.push(`T02: Pima offline ingest must succeed via ONE FACTORY: ${pimaIngest.reason}`);
+    } else {
+      const pimaOrgs = (pimaIngest.results ?? []).map((r) => r.organismId);
+      if (!pimaOrgs.includes("ORG-ASR-PC") && !pimaOrgs.some((id) => String(id).endsWith("-PC"))) {
+        errors.push("T02: Pima offline ingest must include Pima organism results");
+      }
+    }
+
+    // T03: Unknown / uncontracted organism authority fails closed
+    if (getRecordedContractByOrganismId("ORG-TTL-VND") != null) {
+      errors.push("T03: ORG-TTL-VND must not have a recorded offline contract");
+    }
+    if (getRecordedContractByOrganismId("ORG-DOES-NOT-EXIST") != null) {
+      errors.push("T03: unknown organism must not resolve a recorded contract");
+    }
+
+    // T04: No silent substitution / LIVE
+    const live = offlineIngestFromPack(DEFAULT_SP03_RECORDED_PACK_ROOT, {
+      attemptLiveFetch: true,
+    });
+    if (live.ok === true || live.code !== LIVE_NOT_AUTHORIZED) {
+      errors.push("T04/T14: attemptLiveFetch must remain LIVE_NOT_AUTHORIZED");
+    }
+    if (getMaricopaContractByOrganismId("ORG-ASR-PC") != null) {
+      errors.push("T04: Maricopa-only lookup must not silently own Pima organisms");
+    }
+
+    // T05: Source completeness handles explicit non-MC organism honestly
+    const pimaComp = evaluateSourceCompleteness({
+      payloadsByOrganism: { "ORG-ASR-PC": {}, "ORG-GIS-PC": {} },
+      sourceRefsByOrganism: {
+        "ORG-ASR-PC": { id: "SRC-PC-ASR" },
+        "ORG-GIS-PC": { id: "SRC-PC-GIS" },
+      },
+    });
+    const pcAsr = pimaComp.sources.find((s) => s.organismId === "ORG-ASR-PC");
+    const pcGis = pimaComp.sources.find((s) => s.organismId === "ORG-GIS-PC");
+    if (!pcAsr || !pcGis) {
+      errors.push("T05: completeness must evaluate explicit Pima organisms");
+    }
+    if (pcAsr?.status !== SOURCE_COMPLETENESS_STATUS.CHECKED) {
+      errors.push("T05: Pima ASR with payload+SourceRef must be CHECKED");
+    }
+    if (pimaComp.sources.some((s) => String(s.organismId).endsWith("-MC"))) {
+      errors.push("T05: Pima-only evaluation must not invent MC organisms");
+    }
+
+    // T06: CHECKED ≠ evidence/coverage completeness promotion
+    if (pimaComp.completenessIsNotCoverage !== true || pimaComp.checkedIsNotEvidenceComplete !== true) {
+      errors.push("T06: completeness must declare CHECKED ≠ coverage/evidence-complete");
+    }
+    if (pimaComp.allChecked === true && (pimaComp.note ?? "").toLowerCase().includes("coverage complete")) {
+      errors.push("T06: must not claim coverage complete from CHECKED");
+    }
+
+    // T12: Provenance without invented MC SourceRef
+    const poisoned = buildCanonicalPropertyFact({
+      payloadsByOrganism: {
+        "ORG-ASR-PC": {
+          schemaId: "rsn.payload.asr.pima.v1",
+          parcelId: "209010680",
+          apn: "209-01-0680",
+          situsAddress: { line1: "x", city: "Tucson", state: "AZ", postalCode: "85701" },
+        },
+      },
+      sourceRefsByOrganism: {
+        "ORG-ASR-MC": {
+          id: "SRC-POISON-MC",
+          vintageAt: "2020-01-01T00:00:00.000Z",
+          acquiredAt: "2020-01-01T00:00:00.000Z",
+        },
+      },
+      packJurisdictionLabel: "Pima County, AZ",
+      jurisdictionId: "US-AZ-PIMA",
+    });
+    if (poisoned.provenanceMeta?.primarySourceRefId === "SRC-POISON-MC") {
+      errors.push("T12: must not invent MC SourceRef when family-picked Pima ref is absent");
+    }
+    if (poisoned.jurisdiction?.id !== "US-AZ-PIMA") {
+      errors.push("T12: Pima jurisdiction identity must remain US-AZ-PIMA");
+    }
+
+    // T13: no READY/ACTIVE/COVERAGE_COMPLETE promotion tokens from completeness
+    const blob = JSON.stringify(pimaComp);
+    if (/COVERAGE_COMPLETE|"READY"|"ACTIVE"/.test(blob)) {
+      errors.push("T13: completeness result must not promote READY/ACTIVE/COVERAGE_COMPLETE");
+    }
+
+    // T15: P1/P2 compatibility — registry + recorded-contract coexistence
+    if (!KNOWN_JURISDICTIONS["US-AZ-MARICOPA"] || !KNOWN_JURISDICTIONS["US-AZ-PIMA"]) {
+      errors.push("T15: Maricopa and Pima must remain in KNOWN_JURISDICTIONS");
+    }
+    if (!getRecordedContractByOrganismId("ORG-ASR-MC") || !getRecordedContractByOrganismId("ORG-ASR-PC")) {
+      errors.push("T15: MC and Pima recorded contracts must both resolve");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export function runCb02Validation(options = {}) {
@@ -523,6 +663,7 @@ export function runCb02Validation(options = {}) {
   const ps0502 = validatePs0502CanonicalIdentityCb02();
   const ps0503 = validatePs0503TruthAccountingCb02();
   const ps0506 = validatePs0506GeneralizationIsolationCb02();
+  const sp08p3 = validateSp08P3ScaleOutHonestyCb02();
 
   const allErrors = [
     ...gov.errors,
@@ -533,6 +674,7 @@ export function runCb02Validation(options = {}) {
     ...ps0502.errors,
     ...ps0503.errors,
     ...ps0506.errors,
+    ...sp08p3.errors,
   ];
 
   const checklist = [
@@ -574,6 +716,11 @@ export function runCb02Validation(options = {}) {
       criterion: "PS05-06 Generalization + isolation (generic-contract / multi-key / I15 final)",
       status: ps0506.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
+    {
+      id: "CB02-SP08-P3",
+      criterion: "SP08-P3 Scale Out honesty (offline ingest / completeness / provenance)",
+      status: sp08p3.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
   ];
 
   const passed = allErrors.length === 0 && checklist.every((i) => i.status === CHECKLIST_STATUS.PASS);
@@ -596,4 +743,20 @@ export function runCb02Validation(options = {}) {
     phaseRecord,
     cb03Unlocked: passed ? isPhaseApproved("CB-02") : false,
   };
+}
+
+const isCb02Cli =
+  typeof process !== "undefined" &&
+  process.argv[1] &&
+  String(process.argv[1]).replace(/\\/g, "/").endsWith("/validateCb02.js");
+
+if (isCb02Cli) {
+  const result = runCb02Validation();
+  if (!result.passed) {
+    console.error("CB-02 VALIDATION FAILED");
+    for (const e of result.errors) console.error(` - ${e}`);
+    process.exit(1);
+  }
+  console.log("CB-02 VALIDATION PASSED");
+  process.exit(0);
 }

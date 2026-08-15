@@ -1,7 +1,12 @@
 /**
  * PS05-03 — Minimum Decision-relevant source completeness (bounded ASR/GIS/RCR).
  * Presence alone ≠ CHECKED unless execution evidence supports it.
+ *
+ * SP08-P3: expected organism/source universe is explicit — not a silent Maricopa-only set.
+ * CHECKED / availability ≠ EVIDENCE_COMPLETE / COVERAGE_COMPLETE / READY / ACTIVE.
  */
+
+import { getOrganism } from "./sourceOrganismsCatalog.js";
 
 export const SOURCE_COMPLETENESS_STATUS = Object.freeze({
   EXPECTED: "EXPECTED",
@@ -13,7 +18,7 @@ export const SOURCE_COMPLETENESS_STATUS = Object.freeze({
   STALE: "STALE",
 });
 
-/** Bounded source classes for current Factory handoff. */
+/** Legacy Maricopa-bounded handoff classes (explicit opt-in / documentation only). */
 export const BOUNDED_SOURCE_CLASSES = Object.freeze([
   Object.freeze({
     sourceClass: "REGISTRAL_ASSESSOR",
@@ -29,10 +34,88 @@ export const BOUNDED_SOURCE_CLASSES = Object.freeze([
   }),
 ]);
 
+const DECISION_SOURCE_FAMILIES = Object.freeze([
+  "REGISTRAL_ASSESSOR",
+  "GIS_OFFICIAL",
+  "REGISTRAL_RECORDER",
+]);
+
+/**
+ * @param {string} organismId
+ * @returns {string}
+ */
+function sourceClassForOrganism(organismId) {
+  const org = getOrganism(organismId);
+  const families = Array.isArray(org?.families) ? org.families : [];
+  for (const familyId of DECISION_SOURCE_FAMILIES) {
+    if (families.includes(familyId)) return familyId;
+  }
+  if (families.length > 0) return families[0];
+  return "UNSPECIFIED";
+}
+
+/**
+ * Resolve explicit expected source rows (no silent universal MC universe).
+ * @param {object} input
+ * @returns {readonly { sourceClass: string, organismId: string }[]}
+ */
+function resolveExpectedSources(input) {
+  if (Array.isArray(input.expectedSources) && input.expectedSources.length > 0) {
+    return Object.freeze(
+      input.expectedSources.map((row) =>
+        Object.freeze({
+          sourceClass:
+            typeof row.sourceClass === "string" && row.sourceClass
+              ? row.sourceClass
+              : sourceClassForOrganism(row.organismId),
+          organismId: row.organismId,
+        })
+      )
+    );
+  }
+  if (Array.isArray(input.boundedSourceClasses) && input.boundedSourceClasses.length > 0) {
+    return Object.freeze(
+      input.boundedSourceClasses.map((row) =>
+        Object.freeze({
+          sourceClass: row.sourceClass,
+          organismId: row.organismId,
+        })
+      )
+    );
+  }
+
+  const payloads = input.payloadsByOrganism ?? {};
+  const sourceRefs = input.sourceRefsByOrganism ?? {};
+  const ids = new Set([
+    ...Object.keys(payloads),
+    ...Object.keys(sourceRefs),
+    ...(input.unavailableOrganisms ?? []),
+    ...(input.failedOrganisms ?? []),
+    ...(input.prohibitedOrganisms ?? []),
+    ...(input.staleOrganisms ?? []),
+    ...(input.notCheckedOrganisms ?? []),
+    ...(input.checkedOrganisms ?? []),
+  ]);
+
+  const rows = [...ids]
+    .filter((id) => typeof id === "string" && id.trim())
+    .sort()
+    .map((organismId) =>
+      Object.freeze({
+        sourceClass: sourceClassForOrganism(organismId),
+        organismId,
+      })
+    );
+
+  return Object.freeze(rows);
+}
+
 /**
  * @param {{
  *   payloadsByOrganism?: Record<string, object>|null,
  *   sourceRefsByOrganism?: Record<string, object>|null,
+ *   expectedSources?: { sourceClass?: string, organismId: string }[],
+ *   boundedSourceClasses?: { sourceClass: string, organismId: string }[],
  *   unavailableOrganisms?: string[],
  *   failedOrganisms?: string[],
  *   prohibitedOrganisms?: string[],
@@ -51,7 +134,9 @@ export function evaluateSourceCompleteness(input = {}) {
   const notChecked = new Set(input.notCheckedOrganisms ?? []);
   const checkedExplicit = new Set(input.checkedOrganisms ?? []);
 
-  const sources = BOUNDED_SOURCE_CLASSES.map(({ sourceClass, organismId }) => {
+  const expected = resolveExpectedSources(input);
+
+  const sources = expected.map(({ sourceClass, organismId }) => {
     let status = SOURCE_COMPLETENESS_STATUS.EXPECTED;
     let reason = "expected_for_bounded_handoff";
 
@@ -107,13 +192,17 @@ export function evaluateSourceCompleteness(input = {}) {
     schemaId: "rsn.source.completeness.v1",
     sources: Object.freeze(sources),
     byStatus: Object.freeze(byStatus),
-    allChecked: sources.every((s) => s.status === SOURCE_COMPLETENESS_STATUS.CHECKED),
+    allChecked:
+      sources.length > 0 &&
+      sources.every((s) => s.status === SOURCE_COMPLETENESS_STATUS.CHECKED),
     hasGaps: sources.some(
       (s) =>
         s.status !== SOURCE_COMPLETENESS_STATUS.CHECKED &&
         s.status !== SOURCE_COMPLETENESS_STATUS.STALE
     ),
     constitutionalPhase: "PS05-03",
-    note: "Bounded Decision-relevant source classes only — not jurisdiction/national exhaustion",
+    note: "Explicit organism/source bindings only — CHECKED ≠ coverage/readiness; not jurisdiction/national exhaustion",
+    completenessIsNotCoverage: true,
+    checkedIsNotEvidenceComplete: true,
   });
 }

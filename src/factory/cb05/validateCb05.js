@@ -31,7 +31,11 @@ import {
 } from "./foundationSourceFixtures.js";
 import { SOURCE_MODE } from "./decisionTrustBoundary.js";
 import { FOUNDATION_MOTOR_HANDLERS } from "./foundationMotorHandlers.js";
-import { PROPERTY_IDENTITY_STATUS } from "./propertyIdentityResolver.js";
+import { PROPERTY_IDENTITY_STATUS, resolvePropertyIdentity } from "./propertyIdentityResolver.js";
+import {
+  JURISDICTION_STATUS,
+  normalizeJurisdiction,
+} from "../cb02/jurisdictionRegistry.js";
 import { LEGITIMACY_MOTOR_HANDLERS } from "../cb07/legitimacyMotorHandlers.js";
 import { buildFoundationRecordedEnrichmentBundle, PIMA_RECORDED_REAL_PACK_ROOT } from "../cb02/connectors/recordedPackEnrichmentAdapter.js";
 import { ECONOMY_MOTOR_HANDLERS } from "../cb09/economyMotorHandlers.js";
@@ -545,6 +549,162 @@ export async function validatePs0506GeneralizationIsolationCb05() {
 }
 
 /**
+ * SP08-P3 — Property identity honesty (Grant-01 T07–T11, T15 @ CB-05).
+ */
+export function validateSp08P3ScaleOutHonestyCb05() {
+  const errors = [];
+  try {
+    const maricopa = normalizeJurisdiction({ sourceLabel: "Maricopa County, AZ" });
+    const pima = normalizeJurisdiction({ sourceLabel: "Pima County, AZ" });
+
+    // T07: Explicit Maricopa property identity stable
+    const mcId = resolvePropertyIdentity({
+      sources: [
+        {
+          organismId: "ORG-ASR-MC",
+          jurisdiction: maricopa,
+          parcelId: "123-45-678",
+          apn: "123-45-678",
+        },
+        {
+          organismId: "ORG-GIS-MC",
+          jurisdiction: maricopa,
+          parcelId: "123-45-678",
+          apn: "123-45-678",
+        },
+      ],
+    });
+    if (mcId.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+      errors.push("T07: explicit Maricopa multi-source identity must MATCH");
+    }
+    if (!String(mcId.canonicalKey ?? "").startsWith("US-AZ-MARICOPA:")) {
+      errors.push("T07: Maricopa canonicalKey must be US-AZ-MARICOPA-prefixed");
+    }
+
+    // T08: Explicit Pima property identity stable
+    const pimaId = resolvePropertyIdentity({
+      sources: [
+        {
+          organismId: "ORG-ASR-PC",
+          jurisdiction: pima,
+          parcelId: "209010680",
+          apn: "209-01-0680",
+        },
+        {
+          organismId: "ORG-GIS-PC",
+          jurisdiction: pima,
+          parcelId: "209010680",
+          apn: "209-01-0680",
+        },
+      ],
+    });
+    if (pimaId.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+      errors.push("T08: explicit Pima multi-source identity must MATCH");
+    }
+    if (!String(pimaId.canonicalKey ?? "").startsWith("US-AZ-PIMA:")) {
+      errors.push("T08: Pima canonicalKey must be US-AZ-PIMA-prefixed");
+    }
+
+    // T09: Same APN Maricopa/Pima ≠ MATCH
+    const cross = resolvePropertyIdentity({
+      sources: [
+        {
+          organismId: "ORG-ASR-MC",
+          jurisdiction: maricopa,
+          apn: "209-01-0680",
+          parcelId: "209010680",
+        },
+        {
+          organismId: "ORG-ASR-PC",
+          jurisdiction: pima,
+          apn: "209-01-0680",
+          parcelId: "209010680",
+        },
+      ],
+    });
+    if (cross.status !== PROPERTY_IDENTITY_STATUS.NO_MATCH) {
+      errors.push("T09: same APN across Maricopa/Pima must NOT MATCH");
+    }
+
+    // T10: Missing organism cannot silently become ORG-*-MC
+    const expanded = resolvePropertyIdentity({
+      sources: [
+        {
+          organismId: null,
+          jurisdiction: maricopa,
+          parcelId: "P-1",
+          apn: "111-11-111",
+        },
+        {
+          organismId: null,
+          jurisdiction: maricopa,
+          parcelId: "P-1",
+          apn: "111-11-111",
+        },
+      ],
+    });
+    if (expanded.status !== PROPERTY_IDENTITY_STATUS.MATCH) {
+      errors.push("T10: identity MATCH must still work with explicit null organismId");
+    }
+    const fromFact = resolvePropertyIdentity({
+      canonicalFact: {
+        jurisdiction: pima,
+        rawIdentifiers: {
+          assessor: { parcelId: "209010680", apn: "209-01-0680" },
+          gis: { parcelId: "209010680", apn: "209-01-0680" },
+        },
+        sourceIdentity: {},
+      },
+    });
+    const probe = resolvePropertyIdentity({
+      canonicalFact: {
+        jurisdiction: pima,
+        rawIdentifiers: {
+          assessor: { parcelId: "ONLY-ONE", apn: "ONLY-ONE" },
+        },
+        sourceIdentity: {},
+      },
+    });
+    if (JSON.stringify(probe).includes("ORG-ASR-MC") || JSON.stringify(fromFact).includes("ORG-ASR-MC")) {
+      errors.push("T10: missing organism must not silently become ORG-*-MC");
+    }
+
+    // T11: Unknown jurisdiction remains fail-closed
+    const unknown = normalizeJurisdiction({ sourceLabel: "Somewhere Unknown" });
+    if (unknown.status !== JURISDICTION_STATUS.UNKNOWN) {
+      errors.push("T11: unbound jurisdiction label must remain UNKNOWN");
+    }
+    const unknownId = resolvePropertyIdentity({
+      sources: [
+        {
+          organismId: "ORG-ASR-MC",
+          jurisdiction: unknown,
+          parcelId: "X1",
+          apn: "X1",
+        },
+        {
+          organismId: "ORG-GIS-MC",
+          jurisdiction: unknown,
+          parcelId: "X1",
+          apn: "X1",
+        },
+      ],
+    });
+    if (unknownId.status !== PROPERTY_IDENTITY_STATUS.UNRESOLVED) {
+      errors.push("T11: unknown jurisdiction identity must remain UNRESOLVED / fail-closed");
+    }
+
+    // T15: P1 compatibility — coexistence keys differ
+    if (mcId.canonicalKey === pimaId.canonicalKey) {
+      errors.push("T15: Maricopa and Pima canonical keys must differ");
+    }
+  } catch (err) {
+    errors.push(err.message);
+  }
+  return { errors };
+}
+
+/**
  * @param {{ markComplete?: boolean, approvedBy?: string }} [options]
  */
 export async function runCb05Validation(options = {}) {
@@ -559,6 +719,7 @@ export async function runCb05Validation(options = {}) {
   const ps0502 = await validatePs0502CanonicalIdentityCb05();
   const ps0503 = await validatePs0503TruthAccountingCb05();
   const ps0506 = await validatePs0506GeneralizationIsolationCb05();
+  const sp08p3 = validateSp08P3ScaleOutHonestyCb05();
 
   const allErrors = [
     ...gov.errors,
@@ -572,6 +733,7 @@ export async function runCb05Validation(options = {}) {
     ...ps0502.errors,
     ...ps0503.errors,
     ...ps0506.errors,
+    ...sp08p3.errors,
   ];
 
   const checklist = [
@@ -620,6 +782,11 @@ export async function runCb05Validation(options = {}) {
       criterion: "PS05-06 Generalization + isolation — Pima FND path / I15 final",
       status: ps0506.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
     },
+    {
+      id: "CB05-SP08-P3",
+      criterion: "SP08-P3 Scale Out honesty (property identity / organism defaults)",
+      status: sp08p3.errors.length === 0 ? CHECKLIST_STATUS.PASS : CHECKLIST_STATUS.PENDING,
+    },
   ];
 
   checklist[3].status =
@@ -649,4 +816,20 @@ export async function runCb05Validation(options = {}) {
     phaseRecord,
     cb06Unlocked: passed ? isPhaseApproved("CB-05") : false,
   };
+}
+
+const isCb05Cli =
+  typeof process !== "undefined" &&
+  process.argv[1] &&
+  String(process.argv[1]).replace(/\\/g, "/").endsWith("/validateCb05.js");
+
+if (isCb05Cli) {
+  const result = await runCb05Validation();
+  if (!result.passed) {
+    console.error("CB-05 VALIDATION FAILED");
+    for (const e of result.errors) console.error(` - ${e}`);
+    process.exit(1);
+  }
+  console.log("CB-05 VALIDATION PASSED");
+  process.exit(0);
 }
