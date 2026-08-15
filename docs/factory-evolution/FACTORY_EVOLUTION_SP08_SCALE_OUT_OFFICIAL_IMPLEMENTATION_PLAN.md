@@ -418,11 +418,11 @@ PARK WITH EXPLICIT RATIONALE
 
 **Fact classes (planned treatment · not amended here):**
 
-1. equivalent source representations  
-2. partial equivalence  
-3. source-only facts  
-4. jurisdiction-specific facts  
-5. unsupported facts  
+1. equivalent source representations
+2. partial equivalence
+3. source-only facts
+4. jurisdiction-specific facts
+5. unsupported facts
 6. candidate new canonical facts → **SP08-DG-02**
 
 ```text
