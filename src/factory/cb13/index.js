@@ -63,3 +63,39 @@ export { evaluateIntelligenceQuality, recordLoopIntQlt01, LOOP_INT_QLT_01 } from
 export { evaluateIntelligenceFreshness, recordLoopIntFrs01, LOOP_INT_FRS_01 } from "./loopIntFrs01.js";
 export { IntelligenceLayerService } from "./intelligenceLayerService.js";
 export { runCb13Validation } from "./validateCb13.js";
+
+/** SP09-P1 — Research Contracts (contract language only; no Adaptive Research behavior) */
+export {
+  RESEARCH_CONTRACT_PROGRAM,
+  RESEARCH_CONTRACT_VERSION,
+  RESEARCH_QUESTION_SCHEMA_ID,
+  RESEARCH_ACTION_SCHEMA_ID,
+  PLANNING_DECISION_SCHEMA_ID,
+  RESEARCH_TASK_SCHEMA_ID,
+  RESEARCH_OUTCOME_SCHEMA_ID,
+  RESEARCH_QUESTION_STATUS,
+  RESEARCH_ACTION_ROLE,
+  PLANNING_DECISION_STATUS,
+  RESEARCH_TASK_STATUS,
+  RESEARCH_OUTCOME_STATUS,
+  RESEARCH_OUTCOME_AUTHORITY,
+  FORBIDDEN_CAPABILITY_RESOLUTION_KEYS,
+  validateResearchQuestion,
+  validateResearchAction,
+  validatePlanningDecision,
+  validateResearchTask,
+  validateResearchOutcome,
+  validateResearchContractChain,
+  assertResearchQuestion,
+  assertResearchAction,
+  assertPlanningDecision,
+  assertResearchTask,
+  assertResearchOutcome,
+  assertResearchContractChain,
+  buildResearchQuestion,
+  buildResearchAction,
+  buildPlanningDecision,
+  buildResearchTask,
+  buildResearchOutcome,
+} from "./researchContracts.js";
+export { runSp09P1ResearchContractsValidation } from "./validateSp09P1ResearchContracts.js";
