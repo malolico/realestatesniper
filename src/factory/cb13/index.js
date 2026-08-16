@@ -131,3 +131,20 @@ export {
   planAdaptiveResearch,
 } from "./adaptivePlanner.js";
 export { runSp09P3AdaptivePlannerValidation } from "./validateSp09P3AdaptivePlanner.js";
+
+/** SP09-P4 — Research Execution Bridge (interface adaptation only; no auth grant) */
+export {
+  RESEARCH_EXECUTION_BRIDGE_PROGRAM,
+  RESEARCH_EXECUTION_BRIDGE_VERSION,
+  RESEARCH_EXECUTION_BRIDGE_AUTHORITY,
+  buildDispatchArtifact,
+  validateDispatchArtifact,
+  normalizeMotorRuntimeResult,
+  normalizeLoopRuntimeResult,
+  normalizeSwarmRuntimeResult,
+  normalizeSwarmMandate,
+  validateLoopCtx,
+  validateResearchExecutionBridgeInput,
+  executeResearchBridge,
+} from "./researchExecutionBridge.js";
+export { runSp09P4ResearchExecutionBridgeValidation } from "./validateSp09P4ResearchExecutionBridge.js";
