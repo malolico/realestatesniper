@@ -99,3 +99,23 @@ export {
   buildResearchOutcome,
 } from "./researchContracts.js";
 export { runSp09P1ResearchContractsValidation } from "./validateSp09P1ResearchContracts.js";
+
+/** SP09-P2 — Minimum Capability Semantics (match only; no execution) */
+export {
+  CAPABILITY_SEMANTICS_PROGRAM,
+  CAPABILITY_SEMANTICS_VERSION,
+  CAPABILITY_SEMANTICS_SCHEMA_ID,
+  CAPABILITY_FAMILY,
+  CAPABILITY_RESOLUTION_STATUS,
+  CAPABILITY_NEED,
+  CAPABILITY_SEMANTICS_MAP,
+  CAPABILITY_SEMANTICS_AUTHORITY,
+  verifyCatalogIdentity,
+  validateCapabilityNeedInput,
+  buildMatchedCapabilityResolution,
+  buildUnresolvedCapabilityResolution,
+  validateCapabilitySemanticsResult,
+  resolveCapabilityNeed,
+  resolveCapabilityNeedFromTask,
+} from "./capabilitySemantics.js";
+export { runSp09P2CapabilitySemanticsValidation } from "./validateSp09P2CapabilitySemantics.js";
