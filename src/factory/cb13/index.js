@@ -119,3 +119,15 @@ export {
   resolveCapabilityNeedFromTask,
 } from "./capabilitySemantics.js";
 export { runSp09P2CapabilitySemanticsValidation } from "./validateSp09P2CapabilitySemantics.js";
+
+/** SP09-P3 — Adaptive Planner V1 (WHAT/WHY only; no execution) */
+export {
+  ADAPTIVE_PLANNER_PROGRAM,
+  ADAPTIVE_PLANNER_VERSION,
+  ADAPTIVE_PLANNER_AUTHORITY,
+  validateResearchPlannerStateV1,
+  nonSelectionReferenceActionId,
+  validateAdaptivePlannerInput,
+  planAdaptiveResearch,
+} from "./adaptivePlanner.js";
+export { runSp09P3AdaptivePlannerValidation } from "./validateSp09P3AdaptivePlanner.js";
