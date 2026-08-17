@@ -51,3 +51,10 @@ export { runCb02Validation } from "./validateCb02.js";
 
 /** P-INT-02 Offline — recorded packs + RECORDED_ONLY contracts */
 export * from "./connectors/index.js";
+
+/** SP10 — Recorded Discovery */
+export {
+  processRecordedObservation,
+  RECORDED_DISCOVERY_DISPOSITION,
+} from "./discovery/recordedDiscoveryPipeline.js";
+export { runSp10RecordedDiscoveryValidation } from "./validateSp10RecordedDiscovery.js";
