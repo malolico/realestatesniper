@@ -148,3 +148,14 @@ export {
   executeResearchBridge,
 } from "./researchExecutionBridge.js";
 export { runSp09P4ResearchExecutionBridgeValidation } from "./validateSp09P4ResearchExecutionBridge.js";
+
+/** SP09-P5 — Evidence Feedback (RESULT → CB06 MotEvd01 / LOOP observation; no re-plan) */
+export {
+  EVIDENCE_FEEDBACK_PROGRAM,
+  EVIDENCE_FEEDBACK_VERSION,
+  EVIDENCE_FEEDBACK_KIND,
+  EVIDENCE_FEEDBACK_AUTHORITY,
+  validateEvidenceFeedbackInput,
+  applyEvidenceFeedback,
+} from "./evidenceFeedback.js";
+export { runSp09P5EvidenceFeedbackValidation } from "./validateSp09P5EvidenceFeedback.js";
