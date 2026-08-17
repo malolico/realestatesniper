@@ -159,3 +159,14 @@ export {
   applyEvidenceFeedback,
 } from "./evidenceFeedback.js";
 export { runSp09P5EvidenceFeedbackValidation } from "./validateSp09P5EvidenceFeedback.js";
+
+/** SP09-P6 — Bounded Re-plan (one P3 evaluation; P6-local disposition; no execution) */
+export {
+  BOUNDED_REPLAN_PROGRAM,
+  BOUNDED_REPLAN_VERSION,
+  BOUNDED_REPLAN_DISPOSITION,
+  BOUNDED_REPLAN_AUTHORITY,
+  validateBoundedReplanInput,
+  applyBoundedReplan,
+} from "./boundedReplan.js";
+export { runSp09P6BoundedReplanValidation } from "./validateSp09P6BoundedReplan.js";
