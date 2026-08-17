@@ -170,3 +170,10 @@ export {
   applyBoundedReplan,
 } from "./boundedReplan.js";
 export { runSp09P6BoundedReplanValidation } from "./validateSp09P6BoundedReplan.js";
+
+/** SP09-P7 — Golden Path / Acceptance Proof (compose P1–P6; no new production behavior) */
+export {
+  SP09_P7_PROGRAM,
+  SP09_P7_VERSION,
+  runSp09P7GoldenPathValidation,
+} from "./validateSp09P7GoldenPath.js";
