@@ -11,7 +11,7 @@
       "responsePath": "response/ORG-ASR-MC.json",
       "payloadSchemaId": "maricopa.assessor.payload.v1",
       "vintageAt": "2024-06-01T00:00:00.000Z",
-      "contentChecksum": "64e9b0b8abcd0157d129cced293e80a63588d42e59155ac5388c7886db5c65e8"
+      "contentChecksum": "dcfcd86eb8b5b93340ae668f100230f623f6268cadebc47c447a243a6ae9e227"
     },
     {
       "organismId": "ORG-GIS-MC",
@@ -19,14 +19,14 @@
       "responsePath": "response/ORG-GIS-MC.json",
       "payloadSchemaId": "maricopa.gis.payload.v1",
       "vintageAt": "2024-05-15T00:00:00.000Z",
-      "contentChecksum": "b868f37e1af0df7c0e543a41675ce64de77db3d8489a275b3ddbfd43ffc648b5"
+      "contentChecksum": "c0ed68eaebdce2f1d19471f501422adca08e3195b8430fbb89d39210150b5196"
     },
     {
       "organismId": "ORG-RCR-MC",
       "familyId": "REGISTRAL_RECORDER",
       "responsePath": "response/ORG-RCR-MC.json",
       "payloadSchemaId": "maricopa.recorder.payload.v1",
-      "contentChecksum": "e9693641b308ea7cbacdbc7baf827e233e967c56ae07a41f60155472c3f0d875"
+      "contentChecksum": "2c9552c1b93544379fbc694ff4a9ad6113dd7f505b40ed85cf13500033da0d1f"
     }
   ],
   "acquiredAt": "2026-07-26T00:00:00.000Z",
