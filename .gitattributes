@@ -1,1 +1,3 @@
 .githooks/* text eol=lf
+data/factory-dso-packs/** text eol=lf
+
