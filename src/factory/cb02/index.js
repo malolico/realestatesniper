@@ -58,3 +58,7 @@ export {
   RECORDED_DISCOVERY_DISPOSITION,
 } from "./discovery/recordedDiscoveryPipeline.js";
 export { runSp10RecordedDiscoveryValidation } from "./validateSp10RecordedDiscovery.js";
+
+/** SP11 — LIVE Discovery (P1) */
+export { processLiveObservation } from "./discovery/liveDiscoveryPipeline.js";
+export { runSp11LiveDiscoveryValidation } from "./validateSp11LiveDiscovery.js";
