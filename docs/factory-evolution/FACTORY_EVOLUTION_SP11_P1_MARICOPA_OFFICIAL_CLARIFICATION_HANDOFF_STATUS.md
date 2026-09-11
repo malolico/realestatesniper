@@ -1,6 +1,6 @@
 # STRATEGIC PROGRAM 11 — LIVE DISCOVERY
 ## SP11-P1 — MARICOPA OFFICIAL CLARIFICATION HANDOFF STATUS
-### Documentary Continuity · R1/R2 reconciliation · E3 · outbound wait · Assessor IT ETI referral
+### Documentary Continuity · R1/R2 reconciliation · E3 · Assessor IT ETI referral · Secured Master bulk sync
 #### Document ID: SP11-P1-MARICOPA-OFFICIAL-CLARIFICATION-HANDOFF-STATUS-01
 
 | Campo | Valor |
@@ -15,8 +15,8 @@
 | **Branch** | `integration/factory-complete-20260725` |
 | **Parent HEAD** | **`fd2a272aa49accb1d3a3fe7ac33dacb052589f5e`** |
 | **Classification** | DOCUMENTARY CONTINUITY / HANDOFF STATUS |
-| **Current status** | **`MARICOPA_RESPONSE_RECEIVED / ETI_REFERRAL_PENDING`** |
-| **Nature** | Continuity record of Maricopa Assessor documentation reconciliation (R1), Assessor IT E3 correction (R2), confirmed facts, open items, outbound clarification email, Assessor IT inbound ETI referral / route exhaustion for remaining open items, and updated waiting posture · **≠ freeze amendment** · **≠ LIVE grant** · **≠ SP11 COMPLETE** · **≠ SP11-P2 opening** |
+| **Current status** | **`MARICOPA_RESPONSE_RECEIVED / ETI_REFERRAL_PENDING / SECURED_MASTER_BULK_IMPLEMENTED`** |
+| **Nature** | Continuity record of Maricopa Assessor documentation reconciliation (R1), Assessor IT E3 correction (R2), confirmed facts, open items, outbound clarification email, Assessor IT inbound ETI referral / route exhaustion for remaining open items, and Secured Master BULK_SNAPSHOT implementation sync · **≠ freeze amendment** · **≠ LIVE grant** · **≠ SP11 COMPLETE** · **≠ SP11-P2 opening** · **≠ real Data Vault Factory consumption** |
 
 ```text
 SP11-P1-MARICOPA-OFFICIAL-CLARIFICATION-HANDOFF-STATUS-01
@@ -25,6 +25,8 @@ SP11-P1-MARICOPA-OFFICIAL-CLARIFICATION-HANDOFF-STATUS-01
   = ASSESSOR_IT_ROUTE_EXHAUSTED_FOR_REMAINING_OPEN_ITEMS = YES
   = ETI_CONTACT_PENDING = YES
   = DATA_SALES_REVIEW_PENDING = YES
+  = SECURED_MASTER_BULK_SNAPSHOT_IMPLEMENTATION = COMPLETE
+  = SECURED_MASTER_REAL_FACTORY_CONSUMPTION = NOT_IMPLEMENTED
   = AWAITING_MARICOPA_RESPONSE = NO
   = SP11-P2 = NOT OPENED
   = HTTP_API_CALLS = 0
@@ -39,6 +41,9 @@ SP11-P1-MARICOPA-OFFICIAL-CLARIFICATION-HANDOFF-STATUS-01
 ≠ token validation
 ≠ field-map confirmation
 ≠ production readiness
+≠ real Data Vault → Factory consumption
+≠ assessedYear resolved for snapshot 2026-09-02
+≠ commercial redistribution authorized
 ≠ general rupture of Maricopa contact
 ≠ ETI contacted or confirmed
 ≠ Data Sales suitability confirmed
@@ -57,8 +62,8 @@ SP11-P1-MARICOPA-OFFICIAL-CLARIFICATION-HANDOFF-STATUS-01
 | **Branch** | `integration/factory-complete-20260725` |
 | **Parent HEAD** | `fd2a272aa49accb1d3a3fe7ac33dacb052589f5e` |
 | **Classification** | DOCUMENTARY CONTINUITY / HANDOFF STATUS |
-| **Current status** | `MARICOPA_RESPONSE_RECEIVED / ETI_REFERRAL_PENDING` |
-| **Explicitly not** | freeze amendment · LIVE grant · SP11 COMPLETE · SP11-P2 opening |
+| **Current status** | `MARICOPA_RESPONSE_RECEIVED / ETI_REFERRAL_PENDING / SECURED_MASTER_BULK_IMPLEMENTED` |
+| **Explicitly not** | freeze amendment · LIVE grant · SP11 COMPLETE · SP11-P2 opening · real Data Vault Factory consumption · assessedYear resolved · commercial redistribution authorized |
 
 ---
 
@@ -72,10 +77,11 @@ This instrument canonically records:
 - remaining open questions;
 - outbound clarification email status;
 - inbound Assessor IT response (ETI referral / route exhaustion for remaining open items);
+- Secured Master BULK_SNAPSHOT implementation Continuity sync (§15);
 - the Continuity waiting / next-gate posture;
 - LIVE control flags (HTTP LIVE 0 · token unused).
 
-It does **not** authorize LIVE execution, open SP11-P2, amend freezes, or claim SP11 COMPLETE.
+It does **not** authorize LIVE execution, open SP11-P2, amend freezes, claim SP11 COMPLETE, or claim authorized real Data Vault → Factory consumption.
 
 ---
 
@@ -265,6 +271,9 @@ ETI_CONTACT_PENDING = YES
 DATA_SALES_SUGGESTED_FOR_BULK = YES
 DATA_SALES_SUITABILITY_CONFIRMED = NO
 DATA_SALES_REVIEW_PENDING = YES
+SECURED_MASTER_BULK_SNAPSHOT_IMPLEMENTATION = COMPLETE
+SECURED_MASTER_REAL_FACTORY_CONSUMPTION = NOT_IMPLEMENTED
+SECURED_MASTER_ASSESSED_YEAR_RESOLVED = NO
 AWAITING_MARICOPA_RESPONSE = NO
 FIELD_MAP_CONFIRMED = NO
 NUMERIC_RATE_LIMIT_CONFIRMED = NO
@@ -282,6 +291,7 @@ TOKEN_IN_REPOSITORY = FORBIDDEN
 PRODUCTION_CAPACITY_CONFIRMED = NO
 SP11_COMPLETE = NO
 ```
+
 
 `ASSESSOR_IT_ROUTE_EXHAUSTED_FOR_REMAINING_OPEN_ITEMS` applies **only** to the remaining open technical and operational questions listed in §7. It does **not** mean a general rupture of contact with Maricopa County.
 
@@ -302,7 +312,10 @@ This document does **not** mean:
 - SP11-P2 opened;
 - SP11 complete;
 - ETI contacted or confirmed as the correct API owner;
-- Data Sales suitability confirmed for the open API questions.
+- Data Sales suitability confirmed for the open API questions;
+- Secured Master real Data Vault → Factory consumption implemented;
+- assessedYear resolved for snapshot **2026-09-02**;
+- commercial SaaS redistribution authorized.
 
 ---
 
@@ -318,6 +331,8 @@ CURRENT NEXT GATES (DOCUMENTATION UNIT DOES NOT EXECUTE THEM)
 5. No token use.
 6. No external contact inside this documentation unit.
 ```
+
+**Completed context (does not replace the gates above):** Secured Master BULK_SNAPSHOT offline parser/adapter/validator implementation is **COMPLETE** at Continuity tip commit `b8c8518fbdc7da12265cdffbdd4aacb66628f601` (see §15). That completion is **not** a substitute for ETI design, Data Sales review, SP11-P2 opening, LIVE authorization, or real Factory consumption of the Data Vault snapshot.
 
 Do **not** include the future ETI email body here. Do **not** declare that ETI has accepted or received anything.
 
@@ -395,3 +410,104 @@ Any requested technical ambiguity closed by this reply = NO
 LIVE authorization granted = NO
 SP11-P2 opening occurred = NO
 ```
+
+---
+
+## 15. SECURED MASTER BULK_SNAPSHOT — CONTINUITY SYNC (2026-09-11)
+
+This section **synchronizes Continuity** with work already completed, independently audited, validated, committed, and pushed. It does **not** rewrite earlier historical waiting states. It does **not** reorder §12 next gates.
+
+### 15.1 Custody / physical snapshot (outside Git)
+
+| Campo | Binding |
+|-------|---------|
+| **Dataset** | `Secured_Master` |
+| **Organism** | `ORG-ASR-MC` |
+| **Family** | `REGISTRAL_ASSESSOR` |
+| **Access mode** | `BULK_SNAPSHOT` |
+| **Source update / snapshot date** | **2026-09-02** |
+| **Acquisition / custody date** | **2026-09-11** |
+| **Storage** | Controlled external Data Vault custody (**outside Git**) |
+| **Archive contents** | Five book-series TXT files `BK100`–`BK500` plus official File Spec PDF |
+| **Physical schema** | Pipe-delimited · exact **39**-field header · identical across books |
+| **BK500 structural note** | One embedded-LF logical-record split observed; bounded fail-closed reconstruction rule established (concat without inserted `\|`; max two physical fragments; result must be exactly 39 fields) |
+
+Do **not** conflate snapshot date **2026-09-02** with acquisition date **2026-09-11**.
+
+### 15.2 Implementation status
+
+```text
+SECURED_MASTER_BULK_SNAPSHOT_IMPLEMENTATION =
+  IMPLEMENTED
+  INDEPENDENTLY_AUDITED
+  VALIDATED
+  COMMITTED
+  PUSHED
+  SYNCHRONIZED
+
+CANONICAL_IMPLEMENTATION_COMMIT = b8c8518fbdc7da12265cdffbdd4aacb66628f601
+BRANCH = integration/factory-complete-20260725
+LOCAL_REMOTE_AHEAD_BEHIND_AT_COMPLETION = 0 / 0
+WORKING_TREE_AT_COMPLETION = CLEAN
+```
+
+Earlier superseded local commit hashes are **not** canonical Continuity tips for this implementation.
+
+### 15.3 Implemented Factory surfaces
+
+- `src/factory/cb02/discovery/securedMasterSnapshotContract.js`
+- `src/factory/cb02/discovery/securedMasterBulkParser.js`
+- `src/factory/cb02/discovery/securedMasterToAsrPayloadAdapter.js`
+- `src/factory/cb02/validateSecuredMasterBulk.js`
+- `src/factory/cb02/index.js` (export of `runSecuredMasterBulkValidation` only)
+
+### 15.4 Critical limitation — real Factory consumption
+
+```text
+STATUS = PARSER / ADAPTER / VALIDATOR INFRASTRUCTURE ONLY
+
+SECURED_MASTER_REAL_FACTORY_CONSUMPTION = NOT_IMPLEMENTED
+AUTHORIZED_DATA_VAULT_TO_FACTORY_PIPELINE = NO
+PRODUCTION_INGESTION = NO
+OPERATIONAL_CONSUMPTION_OF_REAL_SNAPSHOT = NO
+```
+
+Offline synthetic validation proves the parser path. It does **not** mean the Factory currently consumes the real Data Vault snapshot.
+
+### 15.5 assessedYear gate
+
+- `maricopa.assessor.payload.v1` **requires** `assessedYear`.
+- Secured Master row data does **not** provide an explicit assessedYear / tax-year column.
+- Official File Spec states data is for the “current tax year” but does **not**, in current Continuity evidence, establish the explicit applicable tax/assessment year for snapshot **2026-09-02**.
+- `assessedYear` must **not** be derived from snapshot date or acquisition date.
+- Real snapshot source records may be parsed; valid ASR payload emission remains **gated** until explicit trusted tax-year metadata exists.
+
+### 15.6 Situs state / FolioKey identity rules
+
+- Do **not** fabricate `situsAddress.state`; state may remain absent/null.
+- `parcelId` and `apn` use trimmed `FolioKey`.
+- Do **not** fabricate APN display separators.
+
+### 15.7 API LIVE independence
+
+```text
+LIVE_HTTP = FORBIDDEN / FROZEN
+TOKEN_USED = NO
+SECURED_MASTER_BULK_SNAPSHOT_AUTHORIZES_LIVE = NO
+maricopaAssessorLiveClient.js = NOT_REPLACED / NOT_REPURPOSED
+```
+
+The existing Maricopa Assessor LIVE API path remains preserved and independent. BULK_SNAPSHOT does **not** authorize LIVE.
+
+### 15.8 Commercial rights (unchanged open gate)
+
+Free/public download availability does **not** establish blanket commercial SaaS redistribution rights. Production / client redistribution remains rights-gated. Continuity does **not** invent permission.
+
+### 15.9 Relation to §12 next gates
+
+Secured Master bulk implementation completion is **completed context**. Canonical next-gate ordering in §12 remains:
+
+1. ETI written-contact design  
+2. Official Data Sales read-only review  
+
+`SP11-P2 = NOT OPENED` · LIVE = **NOT AUTHORIZED**.
