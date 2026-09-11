@@ -1,6 +1,6 @@
 # STRATEGIC PROGRAM 11 — LIVE DISCOVERY
 ## SP11-P1 — MARICOPA OFFICIAL CLARIFICATION HANDOFF STATUS
-### Documentary Continuity · R1/R2 reconciliation · E3 · outbound wait
+### Documentary Continuity · R1/R2 reconciliation · E3 · outbound wait · Assessor IT ETI referral
 #### Document ID: SP11-P1-MARICOPA-OFFICIAL-CLARIFICATION-HANDOFF-STATUS-01
 
 | Campo | Valor |
@@ -11,16 +11,26 @@
 | **Path** | `docs/factory-evolution/FACTORY_EVOLUTION_SP11_P1_MARICOPA_OFFICIAL_CLARIFICATION_HANDOFF_STATUS.md` |
 | **Project** | RealEstateSniper — Factory 2.0 |
 | **Date** | **2026-09-10** |
+| **Last status update** | **2026-09-11** |
 | **Branch** | `integration/factory-complete-20260725` |
 | **Parent HEAD** | **`fd2a272aa49accb1d3a3fe7ac33dacb052589f5e`** |
 | **Classification** | DOCUMENTARY CONTINUITY / HANDOFF STATUS |
-| **Current status** | **`AWAITING_MARICOPA_RESPONSE`** |
-| **Nature** | Continuity record of Maricopa Assessor documentation reconciliation (R1), Assessor IT E3 correction (R2), confirmed facts, open items, outbound clarification email, and waiting posture · **≠ freeze amendment** · **≠ LIVE grant** · **≠ SP11 COMPLETE** · **≠ SP11-P2 opening** |
+| **Current status** | **`MARICOPA_RESPONSE_RECEIVED / ETI_REFERRAL_PENDING`** |
+| **Nature** | Continuity record of Maricopa Assessor documentation reconciliation (R1), Assessor IT E3 correction (R2), confirmed facts, open items, outbound clarification email, Assessor IT inbound ETI referral / route exhaustion for remaining open items, and updated waiting posture · **≠ freeze amendment** · **≠ LIVE grant** · **≠ SP11 COMPLETE** · **≠ SP11-P2 opening** |
 
 ```text
 SP11-P1-MARICOPA-OFFICIAL-CLARIFICATION-HANDOFF-STATUS-01
   = DOCUMENTARY CONTINUITY / HANDOFF STATUS ONLY
-  = AWAITING_MARICOPA_RESPONSE
+  = MARICOPA_RESPONSE_RECEIVED = YES
+  = ASSESSOR_IT_ROUTE_EXHAUSTED_FOR_REMAINING_OPEN_ITEMS = YES
+  = ETI_CONTACT_PENDING = YES
+  = DATA_SALES_REVIEW_PENDING = YES
+  = AWAITING_MARICOPA_RESPONSE = NO
+  = SP11-P2 = NOT OPENED
+  = HTTP_API_CALLS = 0
+  = LIVE_CALLS = 0
+  = TOKEN_ACCESSED = NO
+  = TOKEN_USED = NO
 
 ≠ freeze amendment
 ≠ LIVE grant / LIVE HTTP authorization
@@ -29,6 +39,9 @@ SP11-P1-MARICOPA-OFFICIAL-CLARIFICATION-HANDOFF-STATUS-01
 ≠ token validation
 ≠ field-map confirmation
 ≠ production readiness
+≠ general rupture of Maricopa contact
+≠ ETI contacted or confirmed
+≠ Data Sales suitability confirmed
 ```
 
 ---
@@ -39,11 +52,12 @@ SP11-P1-MARICOPA-OFFICIAL-CLARIFICATION-HANDOFF-STATUS-01
 |-------|---------|
 | **Document ID** | `SP11-P1-MARICOPA-OFFICIAL-CLARIFICATION-HANDOFF-STATUS-01` |
 | **Date** | 2026-09-10 |
+| **Last status update** | 2026-09-11 |
 | **Project** | RealEstateSniper — Factory 2.0 |
 | **Branch** | `integration/factory-complete-20260725` |
 | **Parent HEAD** | `fd2a272aa49accb1d3a3fe7ac33dacb052589f5e` |
 | **Classification** | DOCUMENTARY CONTINUITY / HANDOFF STATUS |
-| **Current status** | `AWAITING_MARICOPA_RESPONSE` |
+| **Current status** | `MARICOPA_RESPONSE_RECEIVED / ETI_REFERRAL_PENDING` |
 | **Explicitly not** | freeze amendment · LIVE grant · SP11 COMPLETE · SP11-P2 opening |
 
 ---
@@ -57,7 +71,8 @@ This instrument canonically records:
 - confirmed facts;
 - remaining open questions;
 - outbound clarification email status;
-- the Continuity waiting point;
+- inbound Assessor IT response (ETI referral / route exhaustion for remaining open items);
+- the Continuity waiting / next-gate posture;
 - LIVE control flags (HTTP LIVE 0 · token unused).
 
 It does **not** authorize LIVE execution, open SP11-P2, amend freezes, or claim SP11 COMPLETE.
@@ -215,19 +230,48 @@ Do **not** re-open E3-closed items (API fees; footer location; existence of auto
 | **Date** | 2026-09-10 |
 | **Channel** | reply to the existing Assessor IT email thread |
 | **Purpose** | request clarification only on remaining open items |
-| **Status** | `AWAITING_MARICOPA_RESPONSE` |
+| **Status** | `AWAITING_MARICOPA_RESPONSE` *(historical then-current wait)* |
 | **Receipt confirmation** | **NOT CONFIRMED** |
 | **Exact send time** | **NOT RECORDED** |
 | **Message-ID** | **NOT RECORDED** |
 
 No recipient mailbox, send time-of-day, Message-ID, or delivery confirmation is invented in this record.
 
+```text
+HISTORICAL WAITING STATE PRESERVED
+
+On 2026-09-10, after Manolo sent the outbound clarification email on the same
+Assessor IT thread, the then-current Continuity wait was:
+
+  AWAITING_MARICOPA_RESPONSE = YES
+
+This historical waiting state was closed by the Assessor IT response received
+on 2026-09-11 and is superseded only as the current status by the
+inbound-response record below.
+```
+
 ---
 
 ## 10. MANDATORY STATE FLAGS
 
 ```text
-AWAITING_MARICOPA_RESPONSE = YES
+MARICOPA_RESPONSE_RECEIVED = YES
+ASSESSOR_IT_FORWARDING_AVAILABLE = NO
+ASSESSOR_IT_CONTACT_WITH_RESPONSIBLE_DEPARTMENT = NO
+ASSESSOR_IT_ROUTE_EXHAUSTED_FOR_REMAINING_OPEN_ITEMS = YES
+ETI_SUGGESTED_BY_ASSESSOR_IT = YES
+ETI_CONTACTED = NO
+ETI_CONTACT_PENDING = YES
+DATA_SALES_SUGGESTED_FOR_BULK = YES
+DATA_SALES_SUITABILITY_CONFIRMED = NO
+DATA_SALES_REVIEW_PENDING = YES
+AWAITING_MARICOPA_RESPONSE = NO
+FIELD_MAP_CONFIRMED = NO
+NUMERIC_RATE_LIMIT_CONFIRMED = NO
+COMMERCIAL_USE_SCOPE_CONFIRMED = NO
+STORAGE_RIGHTS_CONFIRMED = NO
+CACHE_RIGHTS_CONFIRMED = NO
+REDISTRIBUTION_RIGHTS_CONFIRMED = NO
 SP11-P2 = NOT OPENED
 HTTP_API_CALLS = 0
 LIVE_CALLS = 0
@@ -235,10 +279,11 @@ REAL_RECORDS_OBSERVED = 0
 TOKEN_ACCESSED = NO
 TOKEN_USED = NO
 TOKEN_IN_REPOSITORY = FORBIDDEN
-FIELD_MAP_CONFIRMED = NO
 PRODUCTION_CAPACITY_CONFIRMED = NO
 SP11_COMPLETE = NO
 ```
+
+`ASSESSOR_IT_ROUTE_EXHAUSTED_FOR_REMAINING_OPEN_ITEMS` applies **only** to the remaining open technical and operational questions listed in §7. It does **not** mean a general rupture of contact with Maricopa County.
 
 ---
 
@@ -255,22 +300,26 @@ This document does **not** mean:
 - redistribution authorized;
 - production readiness;
 - SP11-P2 opened;
-- SP11 complete.
+- SP11 complete;
+- ETI contacted or confirmed as the correct API owner;
+- Data Sales suitability confirmed for the open API questions.
 
 ---
 
 ## 12. NEXT ACTION
 
 ```text
-WAIT FOR OFFICIAL MARICOPA RESPONSE
+CURRENT NEXT GATES (DOCUMENTATION UNIT DOES NOT EXECUTE THEM)
+
+1. Design a separate ETI written-contact unit.
+2. Perform a separate official Data Sales read-only review.
+3. Preserve SP11-P2 closed.
+4. No LIVE.
+5. No token use.
+6. No external contact inside this documentation unit.
 ```
 
-When a response arrives:
-
-1. record the evidence;
-2. reconcile it read-only;
-3. propose the next gate;
-4. **do not** execute LIVE automatically.
+Do **not** include the future ETI email body here. Do **not** declare that ETI has accepted or received anything.
 
 ---
 
@@ -282,7 +331,7 @@ When a response arrives:
 SHARED_BASELINE = fd2a272aa49accb1d3a3fe7ac33dacb052589f5e
 ```
 
-### After local Continuity commit of this instrument (push not authorized by this unit)
+### After local Continuity commit of the original handoff instrument (historical snapshot)
 
 ```text
 LOCAL_STATUS = LOCAL_COMPLETE_REMOTE_PENDING
@@ -291,4 +340,58 @@ COMPLETE_SHARED = NO
 OTHER_COLLABORATOR_CURRENT_WITH_LATEST_DOCUMENT = NO
 ```
 
-This document does **not** declare that Carlos already possesses this instrument on any remote tip.
+This subsection preserves the historical pre-push snapshot for the **original** handoff publication unit. It is **not** the permanent post-push truth.
+
+### After authorized push of the original handoff commit (historical fact)
+
+```text
+ORIGINAL_HANDOFF_COMMIT = ef37232caf8e6408f89792cebc9775229ff09c04
+ORIGINAL_HANDOFF_PUBLISHED = YES
+MANOLO_LOCAL_EQUALS_REMOTE_AT_THAT_TIP = YES
+AHEAD_BEHIND_AT_THAT_TIP = 0 / 0
+COMPLETE_SHARED_FOR_ORIGINAL_HANDOFF = YES
+```
+
+### After local Continuity update commit of this Assessor IT ETI-referral status (this unit; push not authorized)
+
+```text
+LOCAL_STATUS = LOCAL_COMPLETE_REMOTE_PENDING
+REMOTE_STATUS = UNCHANGED_PENDING_AUTHORIZED_PUSH
+COMPLETE_SHARED_FOR_THIS_UPDATE = NO
+OTHER_COLLABORATOR_HAS_THIS_UPDATE = NO
+```
+
+These values describe the **post-local-commit / pre-authorized-push** snapshot for this update only. They are **not** permanent after a future authorized push.
+
+This document does **not** declare that Carlos already possesses this update on any remote tip.
+
+---
+
+## 14. INBOUND ASSESSOR IT RESPONSE — ETI REFERRAL / ROUTE EXHAUSTION
+
+| Campo | Binding |
+|-------|---------|
+| **Evidence class** | **E3 — direct official communication** |
+| **Received date** | **2026-09-11** |
+| **Channel** | existing Assessor IT email thread |
+| **Full body / transcript** | **not reproduced** in this Continuity instrument |
+
+### Faithful summary (traceable; not a full transcript)
+
+Assessor IT replied that it cannot answer the remaining open items, has no contact with the responsible department, and cannot forward the request. Assessor IT suggested calling the Maricopa County main number and asking specifically for **ETI**, while warning that requests mentioning “website” or “API” may be routed back to Assessor IT. For bulk data, Assessor IT pointed to the **Data Sales** section under Programs & Resources on the Assessor website, without confirming suitability for the open API questions.
+
+### Binding classifications from this reply
+
+```text
+Assessor IT cannot answer the remaining open items = YES
+Assessor IT has no contact with the responsible department = YES
+Assessor IT cannot forward the request = YES
+ETI suggested via County main number = YES
+Website/API routing may return the request to Assessor IT = YES (warned)
+Data Sales suggested for bulk-data investigation = YES
+ETI suitability for this API = NOT YET CONFIRMED
+Data Sales suitability = NOT CONFIRMED
+Any requested technical ambiguity closed by this reply = NO
+LIVE authorization granted = NO
+SP11-P2 opening occurred = NO
+```
