@@ -143,6 +143,19 @@ export function isValidSaleDate(s) {
 }
 
 /**
+ * Secured Master interim source defect only: MM01YYYY.
+ * Characters 3–4 are the artificial default and are not a sale day.
+ * @param {string} s
+ */
+function isSecuredMasterDefectMm01Yyyy(s) {
+  if (!/^\d{2}01\d{4}$/.test(s)) return false;
+  const mm = Number(s.slice(0, 2));
+  const yyyy = Number(s.slice(4, 8));
+  if (mm < 1 || mm > 12 || yyyy < 1900 || yyyy > 2100) return false;
+  return true;
+}
+
+/**
  * Blank optional numeric must remain null — never 0.
  * @param {string} s
  * @returns {null|number|{ error: string }}
@@ -385,7 +398,7 @@ export function parseSecuredMasterBook(input = {}) {
       i += consume;
       continue;
     }
-    if (!isValidSaleDate(saleDate)) {
+    if (!isValidSaleDate(saleDate) && !isSecuredMasterDefectMm01Yyyy(saleDate)) {
       rejects.push(
         Object.freeze({
           severity: SEVERITY_SOURCE_RECORD_REJECTED,

@@ -14,6 +14,7 @@ import {
   CODE_EMPTY_FOLIO_KEY,
   CODE_FIELD_COUNT_INVALID,
   CODE_HEADER_MISMATCH,
+  isValidSaleDate,
   parseOptionalNumeric,
   parseSecuredMasterBook,
 } from "./discovery/securedMasterBulkParser.js";
@@ -24,6 +25,10 @@ import {
   ASSESSED_YEAR_METADATA_REQUIRED,
   adaptSecuredMasterRecordToAsrPayload,
 } from "./discovery/securedMasterToAsrPayloadAdapter.js";
+import {
+  SCHEMA_ASR_MC_V1,
+  validatePayloadAgainstSchema,
+} from "./connectors/payloadSchemas.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -248,6 +253,136 @@ function t11PayloadGatedNoTaxYear() {
   return pass("T11");
 }
 
+const ACCEPTED_RECORD_KEYS = Object.freeze([
+  "logicalIndex",
+  "physicalLineStart",
+  "physicalLineEnd",
+  "fields",
+  "folioKey",
+  "reconstructedFromEmbeddedLf",
+  "rawLogicalFingerprint",
+  "optionalNumerics",
+  "provenance",
+]);
+
+function containsDateOrIso(value, seen = new Set()) {
+  if (value instanceof Date) return true;
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) return true;
+  if (!value || typeof value !== "object") return false;
+  if (seen.has(value)) return false;
+  seen.add(value);
+  return Object.values(value).some((entry) => containsDateOrIso(entry, seen));
+}
+
+function t14SaleDateDefectCompatibility() {
+  const errors = [];
+  if (isValidSaleDate("") !== true) errors.push("blank failed isValidSaleDate");
+  if (isValidSaleDate("062023") !== true) errors.push("canonical failed isValidSaleDate");
+  if (isValidSaleDate("10012020") !== false) {
+    errors.push("isValidSaleDate accepted MM01YYYY");
+  }
+  if (SECURED_MASTER_EXPECTED_HEADER_FIELDS[34] !== "SaleDate") {
+    errors.push("SaleDate index drifted");
+  }
+
+  const acceptTokens = [
+    "",
+    "062023",
+    "10012020",
+    "08012024",
+    "11012017",
+    "01011900",
+    "12012100",
+  ];
+  const accepted = parseSecuredMasterBook({
+    bookId: "BK100",
+    bytes: bookBytes([
+      headerLine(),
+      ...acceptTokens.map((sale, i) =>
+        synthRow({
+          FolioKey: `20901068${i}`,
+          DeedDate: "12252023",
+          SaleDate: sale,
+        })
+      ),
+    ]),
+  });
+  if (!accepted.ok || accepted.records.length !== acceptTokens.length) {
+    errors.push(`accept count=${accepted.records.length} rejects=${accepted.rejects.length}`);
+  }
+  if (accepted.rejects.length !== 0) errors.push("accept book produced rejects");
+
+  for (let i = 0; i < accepted.records.length; i += 1) {
+    const rec = accepted.records[i];
+    if (Object.keys(rec).join("|") !== ACCEPTED_RECORD_KEYS.join("|")) {
+      errors.push(`record keys ${Object.keys(rec).join("|")}`);
+    }
+    if (rec.fields.length !== 39) errors.push("fields.length");
+    if (rec.fields[34] !== acceptTokens[i]) {
+      errors.push(`verbatim ${acceptTokens[i]} -> ${rec.fields[34]}`);
+    }
+    if ("saleDateRead" in rec || "day" in rec) errors.push("date property added");
+    if (containsDateOrIso(rec)) errors.push("Date or ISO present");
+  }
+
+  const defect = accepted.records.find((rec) => rec.fields[34] === "10012020");
+  if (!defect) {
+    errors.push("missing 10012020 record");
+  } else {
+    const adapted = adaptSecuredMasterRecordToAsrPayload({
+      record: defect,
+      taxYearMetadata: { assessedYear: 2024 },
+    });
+    if (!adapted.ok) errors.push(`adapter ${adapted.reason}`);
+    else {
+      const schema = validatePayloadAgainstSchema(SCHEMA_ASR_MC_V1, adapted.payload);
+      if (!schema.ok) errors.push(`schema ${schema.reason}`);
+      const payloadKeys = Object.keys(adapted.payload).sort().join("|");
+      if (payloadKeys !== "apn|assessedYear|landUseCode|parcelId|schemaId|situsAddress") {
+        errors.push(`payload keys ${payloadKeys}`);
+      }
+    }
+  }
+
+  const rejectTokens = [
+    "00012024",
+    "13012024",
+    "01011899",
+    "01012101",
+    "10022020",
+    "10152020",
+    "10202",
+    "1001202",
+    "100120200",
+    "10AB2020",
+  ];
+  for (const token of rejectTokens) {
+    const rejected = parseSecuredMasterBook({
+      bookId: "BK100",
+      bytes: bookBytes([headerLine(), synthRow({ SaleDate: token })]),
+    });
+    if (rejected.records.length !== 0) errors.push(`accepted reject token ${token}`);
+    const saleReject = rejected.rejects.some(
+      (row) => row.code === "DATE_PARSE_FAILED" && row.field === "SaleDate"
+    );
+    if (!saleReject) errors.push(`missing SaleDate reject ${token}`);
+  }
+
+  const badDeed = parseSecuredMasterBook({
+    bookId: "BK100",
+    bytes: bookBytes([
+      headerLine(),
+      synthRow({ DeedDate: "2023-12-25", SaleDate: "10012020" }),
+    ]),
+  });
+  if (badDeed.records.length !== 0) errors.push("bad DeedDate accepted");
+  if (!badDeed.rejects.some((row) => row.code === "DATE_PARSE_FAILED" && row.field === "DeedDate")) {
+    errors.push("DeedDate reject missing");
+  }
+
+  return errors.length ? fail("T14", errors) : pass("T14");
+}
+
 function t12NoLiveImport() {
   const files = [
     "discovery/securedMasterSnapshotContract.js",
@@ -294,6 +429,7 @@ export function runSecuredMasterBulkValidation() {
       t09FortyFields(),
       t10PayloadWithTaxYear(),
       t11PayloadGatedNoTaxYear(),
+      t14SaleDateDefectCompatibility(),
       t12NoLiveImport(),
     ];
   } finally {
