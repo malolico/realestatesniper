@@ -6,14 +6,17 @@
  * Synthetic deterministic data only. No Toshiba. No network. No LIVE client.
  */
 
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   CODE_BK500_RECONSTRUCTION_FAILED,
   CODE_EMPTY_FOLIO_KEY,
+  CODE_ENCODING_REJECTED,
   CODE_FIELD_COUNT_INVALID,
   CODE_HEADER_MISMATCH,
+  CODE_SOURCE_RECORD_ENCODING_REJECTED,
   isValidSaleDate,
   parseOptionalNumeric,
   parseSecuredMasterBook,
@@ -65,6 +68,65 @@ function synthRow(overrides = {}) {
 
 function bookBytes(lines) {
   return Buffer.from(lines.join("\r\n") + "\r\n", "utf8");
+}
+
+function sha256(bytes) {
+  return createHash("sha256").update(bytes).digest("hex");
+}
+
+function joinRawFields(parts) {
+  const chunks = [];
+  for (let i = 0; i < parts.length; i += 1) {
+    if (i > 0) chunks.push(Buffer.from("|"));
+    chunks.push(parts[i]);
+  }
+  return Buffer.concat(chunks);
+}
+
+function baseFieldParts(overrides = {}) {
+  const text = Array(39).fill("");
+  text[0] = overrides.FolioKey ?? "209010680";
+  text[1] = overrides.OwnerName ?? "SYNTH OWNER";
+  text[8] = overrides.SitusAddress ?? "100 SYNTH ST";
+  text[10] = overrides.SitusCity ?? "PHOENIX";
+  text[11] = overrides.SitusPostalCode ?? "85001";
+  text[14] = overrides.DeedDate ?? "01152024";
+  text[22] = overrides.PUC ?? "0001";
+  text[34] = overrides.SaleDate ?? "012024";
+  for (const [name, value] of Object.entries(overrides)) {
+    const idx = SECURED_MASTER_EXPECTED_HEADER_FIELDS.indexOf(name);
+    if (idx >= 0) text[idx] = value;
+  }
+  return text.map((value) => Buffer.from(value, "utf8"));
+}
+
+function insertByte(parts, fieldName, offset, byte) {
+  const idx = SECURED_MASTER_EXPECTED_HEADER_FIELDS.indexOf(fieldName);
+  const cur = parts[idx];
+  const at = Math.max(0, Math.min(offset, cur.length));
+  const next = Buffer.alloc(cur.length + 1);
+  next.set(cur.subarray(0, at), 0);
+  next[at] = byte;
+  next.set(cur.subarray(at), at + 1);
+  parts[idx] = next;
+}
+
+function bookFromRawRows(rawRows) {
+  const chunks = [Buffer.from(headerLine(), "utf8")];
+  for (const row of rawRows) {
+    chunks.push(Buffer.from("\r\n"));
+    chunks.push(row);
+  }
+  chunks.push(Buffer.from("\r\n"));
+  return Buffer.concat(chunks);
+}
+
+function containsReplacementChar(value, seen = new Set()) {
+  if (typeof value === "string") return value.includes("\uFFFD");
+  if (!value || typeof value !== "object") return false;
+  if (seen.has(value)) return false;
+  seen.add(value);
+  return Object.values(value).some((entry) => containsReplacementChar(entry, seen));
 }
 
 function t01HeaderAccepted() {
@@ -383,6 +445,211 @@ function t14SaleDateDefectCompatibility() {
   return errors.length ? fail("T14", errors) : pass("T14");
 }
 
+function encodingRejects(result) {
+  return result.rejects.filter((row) => row.code === CODE_SOURCE_RECORD_ENCODING_REJECTED);
+}
+
+function assertEncodingReject(errors, label, rawRow, fieldName, options = {}) {
+  const parsed = parseSecuredMasterBook({
+    bookId: "BK100",
+    bytes: bookFromRawRows([rawRow]),
+  });
+  if (!parsed.ok) {
+    errors.push(`${label} file rejected ${parsed.code}`);
+    return;
+  }
+  if (parsed.records.length !== 0) errors.push(`${label} accepted a record`);
+  const rows = encodingRejects(parsed);
+  if (rows.length !== 1) {
+    errors.push(`${label} encoding rejects=${rows.length}`);
+    return;
+  }
+  const row = rows[0];
+  if (row.severity !== "SOURCE_RECORD_REJECTED") errors.push(`${label} severity`);
+  if (row.code === CODE_ENCODING_REJECTED) errors.push(`${label} reused file code`);
+  if (row.logicalIndex !== 1) errors.push(`${label} logicalIndex=${row.logicalIndex}`);
+  if (row.physicalLineStart !== 2 || row.physicalLineEnd !== 2) {
+    errors.push(`${label} lines ${row.physicalLineStart}-${row.physicalLineEnd}`);
+  }
+  if (row.field !== fieldName) errors.push(`${label} field=${row.field}`);
+  if (row.rawLogicalFingerprint !== sha256(rawRow)) errors.push(`${label} fingerprint`);
+  if (options.expectFolio) {
+    if (row.folioKey !== options.expectFolio) errors.push(`${label} folioKey=${row.folioKey}`);
+  } else if (Object.prototype.hasOwnProperty.call(row, "folioKey")) {
+    errors.push(`${label} folioKey present`);
+  }
+  if (containsReplacementChar(parsed)) errors.push(`${label} U+FFFD`);
+}
+
+function t15RecordEncodingReject() {
+  const errors = [];
+
+  const ascii = joinRawFields(baseFieldParts());
+  const asciiBook = parseSecuredMasterBook({
+    bookId: "BK100",
+    bytes: bookFromRawRows([ascii]),
+  });
+  if (!asciiBook.ok || asciiBook.records.length !== 1 || asciiBook.rejects.length !== 0) {
+    errors.push("clean ASCII rejected");
+  } else {
+    const rec = asciiBook.records[0];
+    if (Object.keys(rec).join("|") !== ACCEPTED_RECORD_KEYS.join("|")) errors.push("ASCII keys");
+    if (rec.fields.some((value) => typeof value !== "string")) errors.push("ASCII field type");
+    if (rec.rawLogicalFingerprint !== sha256(ascii)) errors.push("ASCII fingerprint");
+    if (containsReplacementChar(asciiBook)) errors.push("ASCII U+FFFD");
+  }
+
+  const multibyteParts = baseFieldParts({ MailingCity: "San Jos" });
+  multibyteParts[4] = Buffer.concat([multibyteParts[4], Buffer.from([0xc3, 0xa9])]);
+  const multibyte = joinRawFields(multibyteParts);
+  const multibyteBook = parseSecuredMasterBook({
+    bookId: "BK100",
+    bytes: bookFromRawRows([multibyte]),
+  });
+  if (!multibyteBook.ok || multibyteBook.records.length !== 1) {
+    errors.push("valid UTF-8 multibyte rejected");
+  } else if (multibyteBook.records[0].fields[4] !== "San José") {
+    errors.push("multibyte field value");
+  } else if (multibyteBook.records[0].rawLogicalFingerprint !== sha256(multibyte)) {
+    errors.push("multibyte fingerprint");
+  }
+
+  const saleBook = parseSecuredMasterBook({
+    bookId: "BK100",
+    bytes: bookBytes([
+      headerLine(),
+      synthRow({ FolioKey: "209010681", SaleDate: "062023" }),
+      synthRow({ FolioKey: "209010682", SaleDate: "10012020" }),
+    ]),
+  });
+  if (!saleBook.ok || saleBook.records.length !== 2 || saleBook.rejects.length !== 0) {
+    errors.push("SaleDate compatibility changed");
+  } else if (saleBook.records[0].fields[34] !== "062023" || saleBook.records[1].fields[34] !== "10012020") {
+    errors.push("SaleDate verbatim changed");
+  }
+
+  const city = baseFieldParts({ MailingCity: "PHOENIX", FolioKey: "209010680" });
+  insertByte(city, "MailingCity", 5, 0xc9);
+  assertEncodingReject(errors, "0xC9 MailingCity", joinRawFields(city), "MailingCity", {
+    expectFolio: "209010680",
+  });
+
+  const owner = baseFieldParts({ FolioKey: "209010683" });
+  insertByte(owner, "OwnerName", 0, 0xa0);
+  assertEncodingReject(errors, "0xA0 OwnerName", joinRawFields(owner), "OwnerName", {
+    expectFolio: "209010683",
+  });
+
+  const mail = baseFieldParts({ MailingAddress1: "123 MAIN", FolioKey: "209010684" });
+  insertByte(mail, "MailingAddress1", 8, 0xdf);
+  assertEncodingReject(errors, "0xDF MailingAddress1", joinRawFields(mail), "MailingAddress1", {
+    expectFolio: "209010684",
+  });
+
+  const cityD4 = baseFieldParts({ MailingCity: "PHOENIX", FolioKey: "209010685" });
+  insertByte(cityD4, "MailingCity", 1, 0xd4);
+  assertEncodingReject(errors, "0xD4 MailingCity", joinRawFields(cityD4), "MailingCity", {
+    expectFolio: "209010685",
+  });
+
+  const folio = baseFieldParts({ FolioKey: "209010686" });
+  insertByte(folio, "FolioKey", 3, 0xc9);
+  assertEncodingReject(errors, "FolioKey", joinRawFields(folio), "FolioKey");
+
+  for (const fieldName of ["SitusAddress", "SitusCity", "SitusPostalCode", "PUC"]) {
+    const parts = baseFieldParts({ FolioKey: "209010687" });
+    insertByte(parts, fieldName, 0, 0x81);
+    assertEncodingReject(errors, fieldName, joinRawFields(parts), fieldName, {
+      expectFolio: "209010687",
+    });
+  }
+
+  const unknown = baseFieldParts({ MailingCity: "PHOENIX", FolioKey: "209010688" });
+  insertByte(unknown, "MailingCity", 2, 0x81);
+  assertEncodingReject(errors, "0x81", joinRawFields(unknown), "MailingCity", {
+    expectFolio: "209010688",
+  });
+
+  const multi = baseFieldParts({ MailingCity: "PHOENIX", FolioKey: "209010689" });
+  insertByte(multi, "OwnerName", 0, 0xa0);
+  insertByte(multi, "MailingCity", 5, 0xc9);
+  const multiRaw = joinRawFields(multi);
+  const multiBook = parseSecuredMasterBook({
+    bookId: "BK100",
+    bytes: bookFromRawRows([multiRaw]),
+  });
+  const multiRejects = encodingRejects(multiBook);
+  if (multiBook.records.length !== 0) errors.push("multiple-byte record accepted");
+  if (multiRejects.length !== 2) errors.push(`multiple-byte rejects=${multiRejects.length}`);
+  if (multiRejects.map((row) => row.field).join("|") !== "OwnerName|MailingCity") {
+    errors.push(`multiple-byte fields=${multiRejects.map((row) => row.field).join("|")}`);
+  }
+  if (multiRejects.some((row) => row.logicalIndex !== 1 || row.rawLogicalFingerprint !== sha256(multiRaw))) {
+    errors.push("multiple-byte trace");
+  }
+  if (multiRejects.some((row) => row.folioKey !== "209010689")) errors.push("multiple-byte folio");
+  if (containsReplacementChar(multiBook)) errors.push("multiple-byte U+FFFD");
+
+  const header = Buffer.from(headerLine(), "utf8");
+  header[3] = 0xc9;
+  const headerBook = parseSecuredMasterBook({
+    bookId: "BK100",
+    bytes: Buffer.concat([header, Buffer.from("\r\n"), joinRawFields(baseFieldParts()), Buffer.from("\r\n")]),
+  });
+  if (headerBook.ok || headerBook.code !== CODE_ENCODING_REJECTED || headerBook.severity !== "FILE_REJECTED") {
+    errors.push(`header code=${headerBook.code} severity=${headerBook.severity}`);
+  }
+  if (headerBook.records.length !== 0 || headerBook.rejects.length !== 0) {
+    errors.push("header produced records or record rejects");
+  }
+
+  const wide = baseFieldParts();
+  insertByte(wide, "MailingCity", 0, 0xc9);
+  const wideRaw = Buffer.concat([joinRawFields(wide), Buffer.from("|EXTRA")]);
+  const wideBook = parseSecuredMasterBook({
+    bookId: "BK100",
+    bytes: bookFromRawRows([wideRaw]),
+  });
+  if (!wideBook.ok) errors.push("malformed field count file-rejected");
+  if (wideBook.records.length !== 0) errors.push("malformed field count accepted");
+  if (!wideBook.rejects.some((row) => row.code === CODE_FIELD_COUNT_INVALID)) {
+    errors.push("malformed field count lost FIELD_COUNT_INVALID");
+  }
+  if (wideBook.rejects.some((row) => row.code === CODE_SOURCE_RECORD_ENCODING_REJECTED)) {
+    errors.push("malformed field count became encoding reject");
+  }
+
+  const goodRaw = joinRawFields(baseFieldParts({ FolioKey: "209010690" }));
+  const badParts = baseFieldParts({ FolioKey: "209010691", MailingCity: "PHOENIX" });
+  insertByte(badParts, "MailingCity", 5, 0xc9);
+  const mixed = parseSecuredMasterBook({
+    bookId: "BK100",
+    bytes: bookFromRawRows([goodRaw, joinRawFields(badParts)]),
+  });
+  if (!mixed.ok || mixed.records.length !== 1 || mixed.records[0].folioKey !== "209010690") {
+    errors.push("mixed book did not keep the clean record");
+  } else if (Object.keys(mixed.records[0]).join("|") !== ACCEPTED_RECORD_KEYS.join("|")) {
+    errors.push("mixed accepted keys");
+  } else {
+    const adapted = adaptSecuredMasterRecordToAsrPayload({
+      record: mixed.records[0],
+      taxYearMetadata: { assessedYear: 2027 },
+    });
+    if (!adapted.ok || adapted.accessMode !== "BULK_SNAPSHOT") errors.push(`adapter ${adapted.reason}`);
+    else {
+      const schema = validatePayloadAgainstSchema(SCHEMA_ASR_MC_V1, adapted.payload);
+      if (!schema.ok) errors.push(`schema ${schema.reason}`);
+      if (adapted.payload.assessedYear !== 2027) errors.push("assessed year");
+    }
+  }
+  if (encodingRejects(mixed).length !== 1 || encodingRejects(mixed)[0].folioKey !== "209010691") {
+    errors.push("mixed encoding reject missing");
+  }
+  if (containsReplacementChar(mixed)) errors.push("mixed U+FFFD");
+
+  return errors.length ? fail("T15", errors) : pass("T15");
+}
+
 function t12NoLiveImport() {
   const files = [
     "discovery/securedMasterSnapshotContract.js",
@@ -430,6 +697,7 @@ export function runSecuredMasterBulkValidation() {
       t10PayloadWithTaxYear(),
       t11PayloadGatedNoTaxYear(),
       t14SaleDateDefectCompatibility(),
+      t15RecordEncodingReject(),
       t12NoLiveImport(),
     ];
   } finally {

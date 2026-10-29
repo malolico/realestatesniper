@@ -21,6 +21,7 @@ export const SEVERITY_SNAPSHOT_REJECTED = "SNAPSHOT_REJECTED";
 export const CODE_HEADER_MISMATCH = "HEADER_MISMATCH";
 export const CODE_BOOK_FILE_UNEXPECTED = "BOOK_FILE_UNEXPECTED";
 export const CODE_ENCODING_REJECTED = "ENCODING_REJECTED";
+export const CODE_SOURCE_RECORD_ENCODING_REJECTED = "SOURCE_RECORD_ENCODING_REJECTED";
 export const CODE_FIELD_COUNT_INVALID = "FIELD_COUNT_INVALID";
 export const CODE_BK500_RECONSTRUCTION_FAILED = "BK500_RECONSTRUCTION_FAILED";
 export const CODE_EMPTY_FOLIO_KEY = "EMPTY_FOLIO_KEY";
@@ -40,16 +41,18 @@ function toBuffer(bytes) {
   return { ok: false, reason: CODE_BYTES_REQUIRED };
 }
 
+const strictUtf8Decoder = new TextDecoder("utf-8", { fatal: true });
+
 /**
- * UTF-8 strict decode of full buffer (reject lone surrogates / invalid sequences).
+ * Strict UTF-8 decode. Invalid sequences throw and never become U+FFFD.
  * @param {Buffer} buffer
+ * @returns {{ ok: true, text: string } | { ok: false }}
  */
 function decodeUtf8Strict(buffer) {
-  const decoder = new TextDecoder("utf-8", { fatal: true });
   try {
-    return { ok: true, text: decoder.decode(buffer) };
+    return { ok: true, text: strictUtf8Decoder.decode(buffer) };
   } catch {
-    return { ok: false, reason: CODE_ENCODING_REJECTED };
+    return { ok: false };
   }
 }
 
@@ -102,11 +105,58 @@ function fieldCount(content) {
 }
 
 /**
+ * Split a logical row on the raw pipe byte. The delimiter is not decoded.
  * @param {Buffer} content
- * @returns {string[]}
+ * @returns {Buffer[]}
  */
-function splitFieldsUtf8(content) {
-  return content.toString("utf8").split("|");
+function splitRawFields(content) {
+  /** @type {Buffer[]} */
+  const fields = [];
+  let start = 0;
+  for (let i = 0; i < content.length; i += 1) {
+    if (content[i] === 0x7c) {
+      fields.push(content.subarray(start, i));
+      start = i + 1;
+    }
+  }
+  fields.push(content.subarray(start));
+  return fields;
+}
+
+/**
+ * Strict field text for one logical row.
+ * A successful result is 39 authoritative UTF-8 strings.
+ * A failure names every invalid field in index order and keeps folioKey
+ * only when field 0 itself decodes. One invalid field produces one reject
+ * later, so additional failures stay visible without a second collection.
+ * @param {Buffer} rawLogical
+ * @returns {{ ok: true, fields: string[] } | { ok: false, failedFields: string[], folioKey?: string }}
+ */
+function decodeLogicalFields(rawLogical) {
+  const whole = decodeUtf8Strict(rawLogical);
+  if (whole.ok) {
+    return { ok: true, fields: whole.text.split("|") };
+  }
+
+  const slices = splitRawFields(rawLogical);
+  /** @type {string[]} */
+  const failedFields = [];
+  let folioDecoded = false;
+  let folioKey = "";
+  for (let index = 0; index < slices.length; index += 1) {
+    const decoded = decodeUtf8Strict(slices[index]);
+    if (!decoded.ok) {
+      failedFields.push(SECURED_MASTER_EXPECTED_HEADER_FIELDS[index] ?? `field_${index}`);
+      continue;
+    }
+    if (index === 0) {
+      folioDecoded = true;
+      folioKey = decoded.text.trim();
+    }
+  }
+
+  if (folioDecoded) return { ok: false, failedFields, folioKey };
+  return { ok: false, failedFields };
 }
 
 /**
@@ -198,19 +248,8 @@ export function parseSecuredMasterBook(input = {}) {
     });
   }
 
-  const decoded = decodeUtf8Strict(bufRes.buffer);
-  if (!decoded.ok) {
-    return Object.freeze({
-      ok: false,
-      severity: SEVERITY_FILE_REJECTED,
-      code: CODE_ENCODING_REJECTED,
-      bookId,
-      records: Object.freeze([]),
-      rejects: Object.freeze([]),
-    });
-  }
-
-  // Re-encode path uses original bytes for EOL fidelity (split on buffer, not string).
+  // Line splits, field counts, and fingerprints stay on the original bytes.
+  // Strict UTF-8 is applied to the header and to each logical field.
   const physical = splitPhysicalLines(bufRes.buffer);
   if (physical.length === 0) {
     return Object.freeze({
@@ -224,7 +263,18 @@ export function parseSecuredMasterBook(input = {}) {
   }
 
   const headerLine = physical[0];
-  const headerFields = splitFieldsUtf8(headerLine.content);
+  const headerDecoded = decodeUtf8Strict(headerLine.content);
+  if (!headerDecoded.ok) {
+    return Object.freeze({
+      ok: false,
+      severity: SEVERITY_FILE_REJECTED,
+      code: CODE_ENCODING_REJECTED,
+      bookId,
+      records: Object.freeze([]),
+      rejects: Object.freeze([]),
+    });
+  }
+  const headerFields = headerDecoded.text.split("|");
   const headerOk =
     headerFields.length === SECURED_MASTER_FIELD_COUNT &&
     headerFields.every((name, i) => name === SECURED_MASTER_EXPECTED_HEADER_FIELDS[i]);
@@ -254,11 +304,15 @@ export function parseSecuredMasterBook(input = {}) {
     // Skip completely empty trailing NONE line only if truly empty with no EOL content — keep empty content as reject later
     const curCount = fieldCount(cur.content);
 
-    // Duplicate header detection
+    // Duplicate header detection. Invalid UTF-8 is not a header match.
+    /** @type {ReturnType<typeof decodeLogicalFields> | null} */
+    let prepared = null;
     if (curCount === SECURED_MASTER_FIELD_COUNT) {
-      const maybeHeader = splitFieldsUtf8(cur.content);
+      prepared = decodeLogicalFields(cur.content);
       if (
-        maybeHeader.every((name, idx) => name === SECURED_MASTER_EXPECTED_HEADER_FIELDS[idx])
+        prepared.ok &&
+        prepared.fields.length === SECURED_MASTER_FIELD_COUNT &&
+        prepared.fields.every((name, idx) => name === SECURED_MASTER_EXPECTED_HEADER_FIELDS[idx])
       ) {
         return Object.freeze({
           ok: false,
@@ -349,8 +403,34 @@ export function parseSecuredMasterBook(input = {}) {
       continue;
     }
 
-    const fields = splitFieldsUtf8(rawLogical);
+    const decoded = prepared !== null && rawLogical === cur.content
+      ? prepared
+      : decodeLogicalFields(rawLogical);
     logicalIndex += 1;
+
+    if (!decoded.ok) {
+      const rawLogicalFingerprint = fingerprintRaw(rawLogical);
+      for (const fieldName of decoded.failedFields) {
+        /** @type {Record<string, unknown>} */
+        const reject = {
+          severity: SEVERITY_SOURCE_RECORD_REJECTED,
+          code: CODE_SOURCE_RECORD_ENCODING_REJECTED,
+          logicalIndex,
+          physicalLineStart,
+          physicalLineEnd,
+          field: fieldName,
+          rawLogicalFingerprint,
+        };
+        if (Object.prototype.hasOwnProperty.call(decoded, "folioKey")) {
+          reject.folioKey = decoded.folioKey;
+        }
+        rejects.push(Object.freeze(reject));
+      }
+      i += consume;
+      continue;
+    }
+
+    const fields = decoded.fields;
 
     if (fields.length !== SECURED_MASTER_FIELD_COUNT) {
       rejects.push(
